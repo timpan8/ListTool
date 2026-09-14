@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
 import type { History } from '../core/history';
 import type { Tool } from '../core/registry';
@@ -10,13 +10,23 @@ import { ToolPicker } from './ToolPicker';
 interface Props {
   dataset: Dataset;
   history: History;
+  /** A tool chosen in the command palette, to open straight into. */
+  pendingTool: Tool | null;
+  onPendingHandled: () => void;
   onClose: () => void;
 }
 
 /** The collapsible right-hand panel: tools on one tab, this list's history on the other. */
-export function SidePanel({ dataset, history, onClose }: Props) {
+export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onClose }: Props) {
   const [tab, setTab] = useState<'tools' | 'history'>('tools');
   const [tool, setTool] = useState<Tool | null>(null);
+
+  useEffect(() => {
+    if (pendingTool === null) return;
+    setTab('tools');
+    setTool(pendingTool);
+    onPendingHandled();
+  }, [pendingTool, onPendingHandled]);
 
   return (
     <aside class="side" aria-label={en.panel.tools}>

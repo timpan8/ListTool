@@ -1,5 +1,7 @@
-import { computed, signal } from '@preact/signals';
+import { computed, effect, signal } from '@preact/signals';
 import type { Dataset } from './model';
+import { DEFAULT_SETTINGS, type Settings } from './settings';
+import { clear as clearStorage, load, save } from './storage';
 import {
   canRedo,
   canUndo,
@@ -23,6 +25,9 @@ const tabs = signal<Tab[]>([]);
 const activeIdSignal = signal<string | null>(null);
 const selectedColumnSignal = signal<string | null>(null);
 const noticeSignal = signal<string>('');
+const settingsSignal = signal<Settings>(DEFAULT_SETTINGS);
+const favoritesSignal = signal<string[]>([]);
+const recentsSignal = signal<string[]>([]);
 
 let nextDatasetNumber = 1;
 
@@ -65,6 +70,10 @@ export const selectedColumn = computed<string | null>(() => selectedColumnSignal
 
 /** Transient message for the status region: "Copied to clipboard". */
 export const notice = computed<string>(() => noticeSignal.value);
+
+export const settings = computed<Settings>(() => settingsSignal.value);
+export const favorites = computed<string[]>(() => favoritesSignal.value);
+export const recents = computed<string[]>(() => recentsSignal.value);
 
 function updateTab(id: string, change: (history: History) => History): void {
   tabs.value = tabs.value.map((tab) =>
@@ -163,11 +172,109 @@ export function setNotice(message: string): void {
   }, NOTICE_MS);
 }
 
+
+// ---------- settings, favorites, recents ----------
+
+export function updateSettings(change: Partial<Settings>): void {
+  settingsSignal.value = { ...settingsSignal.value, ...change };
+}
+
+export function toggleFavorite(toolId: string): void {
+  const current = favoritesSignal.value;
+  favoritesSignal.value = current.includes(toolId)
+    ? current.filter((id) => id !== toolId)
+    : [...current, toolId];
+}
+
+/** How many recently used tools to remember. */
+const RECENTS_LIMIT = 5;
+
+export function noteToolUsed(toolId: string): void {
+  const without = recentsSignal.value.filter((id) => id !== toolId);
+  recentsSignal.value = [toolId, ...without].slice(0, RECENTS_LIMIT);
+}
+
+// ---------- persistence ----------
+
+/** Writes are debounced: typing in a tool option should not hit storage per keystroke. */
+const SAVE_DELAY_MS = 400;
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
+let quotaWarned = false;
+
+function persistNow(onQuota: () => void): void {
+  const keep = settingsSignal.value.keepLists;
+  const result = save({
+    settings: settingsSignal.value,
+    favorites: favoritesSignal.value,
+    recents: recentsSignal.value,
+    datasets: keep ? tabs.value.map((tab) => current(tab.history)) : [],
+  });
+
+  if (result === 'quota' && !quotaWarned) {
+    quotaWarned = true;
+    onQuota();
+  }
+}
+
+/**
+ * Restore the workspace from storage. Ids are never reused, so the counter continues
+ * past whatever was stored.
+ */
+export function hydrate(): void {
+  const stored = load();
+  settingsSignal.value = stored.settings;
+  favoritesSignal.value = stored.favorites;
+  recentsSignal.value = stored.recents;
+
+  if (stored.datasets.length > 0) {
+    tabs.value = stored.datasets.map((dataset) => ({
+      id: dataset.id,
+      history: createHistory(dataset),
+    }));
+    activeIdSignal.value = stored.datasets[0]?.id ?? null;
+  }
+
+  const highest = stored.datasets.reduce((top, dataset) => {
+    const parsed = Number.parseInt(dataset.id.replace(/^d/, ''), 10);
+    return Number.isFinite(parsed) ? Math.max(top, parsed) : top;
+  }, 0);
+  nextDatasetNumber = highest + 1;
+}
+
+/** Start saving on every change. Returns a stop function. */
+export function startPersistence(onQuota: () => void): () => void {
+  return effect(() => {
+    // Touch everything that is persisted so the effect re-runs when any of it changes.
+    void tabs.value;
+    void settingsSignal.value;
+    void favoritesSignal.value;
+    void recentsSignal.value;
+
+    if (saveTimer !== undefined) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      persistNow(onQuota);
+      saveTimer = undefined;
+    }, SAVE_DELAY_MS);
+  });
+}
+
+/** Settings → Clear all data: wipe the key and empty the workspace immediately. */
+export function clearAllData(): void {
+  if (saveTimer !== undefined) clearTimeout(saveTimer);
+  saveTimer = undefined;
+  clearStorage();
+  resetWorkspace();
+  quotaWarned = false;
+}
+
 /** Test seam: drop everything and start over. */
 export function resetWorkspace(): void {
   tabs.value = [];
   activeIdSignal.value = null;
   selectedColumnSignal.value = null;
+  settingsSignal.value = DEFAULT_SETTINGS;
+  favoritesSignal.value = [];
+  recentsSignal.value = [];
   setNotice('');
   nextDatasetNumber = 1;
 }

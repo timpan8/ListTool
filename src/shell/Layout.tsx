@@ -1,5 +1,6 @@
 import type { Dataset } from '../core/model';
 import type { History } from '../core/history';
+import type { Tool } from '../core/registry';
 import { en } from '../i18n/en';
 import { CompareMode } from './CompareMode';
 import { DatasetTabs } from './DatasetTabs';
@@ -14,6 +15,8 @@ interface Props {
   history: History | null;
   panelOpen: boolean;
   comparing: boolean;
+  pendingTool: Tool | null;
+  onPendingHandled: () => void;
   onImport: () => void;
   onReparse: () => void;
   onExport: () => void;
@@ -21,6 +24,7 @@ interface Props {
   onCompare: () => void;
   onCloseCompare: () => void;
   onClosePanel: () => void;
+  onSettings: () => void;
 }
 
 /** The fixed chrome: header and tabs, toolbar, the active list, status bar. */
@@ -29,6 +33,8 @@ export function Layout({
   history,
   panelOpen,
   comparing,
+  pendingTool,
+  onPendingHandled,
   onImport,
   onReparse,
   onExport,
@@ -36,12 +42,16 @@ export function Layout({
   onCompare,
   onCloseCompare,
   onClosePanel,
+  onSettings,
 }: Props) {
   return (
     <div class="app">
       <header class="app__header">
         <h1 class="app__name">{en.app.name}</h1>
         <DatasetTabs onAdd={onImport} />
+        <button type="button" class="button button--quiet" onClick={onSettings}>
+          {en.toolbar.settings}
+        </button>
       </header>
 
       <Toolbar
@@ -62,7 +72,13 @@ export function Layout({
           )}
         </main>
         {panelOpen && !comparing && dataset !== null && history !== null ? (
-          <SidePanel dataset={dataset} history={history} onClose={onClosePanel} />
+          <SidePanel
+            dataset={dataset}
+            history={history}
+            pendingTool={pendingTool}
+            onPendingHandled={onPendingHandled}
+            onClose={onClosePanel}
+          />
         ) : null}
       </div>
 

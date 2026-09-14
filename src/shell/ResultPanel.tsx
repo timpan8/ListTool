@@ -1,13 +1,23 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
 import { defaultOptions, type Options, type Tool } from '../core/registry';
-import { addDataset, applyStep, openDatasets } from '../core/store';
+import { withSettings } from '../core/settings';
+import { addDataset, applyStep, noteToolUsed, openDatasets, settings } from '../core/store';
 import { en } from '../i18n/en';
 import { format } from '../i18n/format';
 import { DataTable } from './DataTable';
 import { OptionsPanel } from './OptionsPanel';
 
 const PREVIEW_ROWS = 8;
+
+/** A tool's own defaults, with the user's settings applied by option key. */
+function startingOptions(tool: Tool): Options {
+  return withSettings(
+    defaultOptions(tool.options),
+    tool.options.map((field) => field.key),
+    settings.value,
+  );
+}
 
 interface Props {
   dataset: Dataset;
@@ -22,11 +32,11 @@ interface Props {
  * tool's own option list.
  */
 export function ResultPanel({ dataset, tool, onBack, onApplied }: Props) {
-  const [options, setOptions] = useState<Options>(defaultOptions(tool.options));
+  const [options, setOptions] = useState<Options>(startingOptions(tool));
   const [secondId, setSecondId] = useState('');
 
   useEffect(() => {
-    setOptions(defaultOptions(tool.options));
+    setOptions(startingOptions(tool));
   }, [tool]);
 
   // A dual tool needs a second list; anything but the one being worked on will do.
@@ -50,6 +60,7 @@ export function ResultPanel({ dataset, tool, onBack, onApplied }: Props) {
     } else {
       applyStep(dataset.id, step, result.output);
     }
+    noteToolUsed(tool.id);
     onApplied();
   }
 
