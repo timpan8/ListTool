@@ -2,23 +2,9 @@ import { cell } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
-import { safeRegExp, targetColumns, withRows } from '../helpers';
+import { matchesText, safeRegExp, targetColumns, withRows } from '../helpers';
 
 const strings = en.tools.filter;
-
-function matches(value: string, mode: string, pattern: string, ignoreCase: boolean): boolean {
-  if (mode === 'regex') {
-    const regex = safeRegExp(pattern, ignoreCase ? 'iu' : 'u');
-    return regex !== null && regex.test(value);
-  }
-  const haystack = ignoreCase ? value.toLocaleLowerCase() : value;
-  const needle = ignoreCase ? pattern.toLocaleLowerCase() : pattern;
-
-  if (mode === 'equals') return haystack === needle;
-  if (mode === 'starts') return haystack.startsWith(needle);
-  if (mode === 'ends') return haystack.endsWith(needle);
-  return haystack.includes(needle);
-}
 
 export const filterRowsTool: Tool = {
   id: 'filter-rows',
@@ -62,7 +48,7 @@ export const filterRowsTool: Tool = {
 
     const kept = input.rows.filter((row) => {
       const hit = columns.some((column) =>
-        matches(cell(row, column.id), mode, pattern, ignoreCase),
+        matchesText(cell(row, column.id), mode, pattern, ignoreCase),
       );
       return invert ? !hit : hit;
     });

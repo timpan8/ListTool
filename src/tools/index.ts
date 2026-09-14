@@ -35,6 +35,9 @@ import { chunkListTool } from './transform/chunk-list';
 import { setValueTool } from './transform/set-value';
 import { selectedRowsTool } from './transform/selected-rows';
 import { appendRowsTool } from './transform/append-rows';
+import { filterRulesTool } from './transform/filter-rules';
+import { templateColumnTool } from './columns/template-column';
+import { headerRowTool } from './columns/header-row';
 import { transposeTool } from './columns/transpose';
 import { groupByTool } from './extract/group-by';
 import { joinListsTool } from './compare/join-lists';
@@ -58,6 +61,7 @@ export const tools: Tool[] = [
   normalizePhoneTool,
   sortTool,
   filterRowsTool,
+  filterRulesTool,
   findReplaceTool,
   prefixSuffixTool,
   numberRowsTool,
@@ -76,6 +80,8 @@ export const tools: Tool[] = [
   moveColumnTool,
   keepColumnsTool,
   transposeTool,
+  headerRowTool,
+  templateColumnTool,
   buildDisplayNameTool,
   generateEmailTool,
   extractPatternTool,

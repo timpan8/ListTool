@@ -1,22 +1,11 @@
-import { cell, type Dataset } from '../core/model';
+import type { Dataset } from '../core/model';
 import { booleanOption, stringOption, type Exporter, type Options } from '../core/registry';
+import { fillTemplate } from '../core/template';
 import { en } from '../i18n/en';
 
 const strings = en.exporters.template;
 
-/** `{column id}` — the same placeholder shape the rest of the app uses. */
-const PLACEHOLDER = /\{([\w.-]+)\}/g;
-
 const DEFAULT_ROW = '{value}';
-
-function fill(template: string, dataset: Dataset, values: Record<string, string>, keepUnknown: boolean): string {
-  const known = new Set(dataset.columns.map((column) => column.id));
-  return template.replace(PLACEHOLDER, (match, key: string) => {
-    if (known.has(key)) return values[key] ?? '';
-    // An unknown placeholder is usually a typo, so it is shown rather than swallowed.
-    return keepUnknown ? match : '';
-  });
-}
 
 export const templateExporter: Exporter = {
   id: 'template',
@@ -34,11 +23,7 @@ export const templateExporter: Exporter = {
     const keepUnknown = booleanOption(options, 'unknown', true);
 
     const body = dataset.rows
-      .map((row) => {
-        const values: Record<string, string> = {};
-        for (const column of dataset.columns) values[column.id] = cell(row, column.id);
-        return fill(template, dataset, values, keepUnknown);
-      })
+      .map((row) => fillTemplate(template, row, dataset.columns, keepUnknown))
       .join(stringOption(options, 'between', '\n'));
 
     return [

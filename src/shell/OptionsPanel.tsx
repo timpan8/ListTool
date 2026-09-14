@@ -136,7 +136,9 @@ export function OptionsPanel({
             : field.type === 'column'
               ? field.allowAll === true
                 ? [{ value: '', label: en.options.allColumns }, ...columnChoices]
-                : columnChoices
+                : field.allowNone === true
+                  ? [{ value: '', label: en.options.noColumns }, ...columnChoices]
+                  : columnChoices
               : null;
 
         return (

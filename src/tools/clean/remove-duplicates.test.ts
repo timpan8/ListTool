@@ -73,3 +73,96 @@ describe('remove duplicates', () => {
     expect(values([])).toEqual([]);
   });
 });
+
+describe('choosing which duplicate survives', () => {
+  const PEOPLE = tableOf(
+    ['email', 'name', 'updated'],
+    [
+      { email: 'anna@example.com', name: 'Anna', updated: '2024-01-01' },
+      { email: 'ANNA@example.com', name: '', updated: '2026-05-05' },
+      { email: 'anna@example.com', name: 'Anna Andersson', updated: '2025-02-02' },
+      { email: 'bo@example.com', name: 'Bo', updated: '2024-03-03' },
+    ],
+  );
+
+  function kept(options: Record<string, unknown>): string[] {
+    return removeDuplicatesTool
+      .run(PEOPLE, { column: 'email', trim: true, ignoreCase: true, ...options })
+      .output.rows.map((row) => cell(row, 'updated'));
+  }
+
+  it('keeps the first of each set by default', () => {
+    expect(kept({ keep: 'first' })).toEqual(['2024-01-01', '2024-03-03']);
+  });
+
+  it('keeps the last of each set', () => {
+    expect(kept({ keep: 'last' })).toEqual(['2025-02-02', '2024-03-03']);
+  });
+
+  it('keeps the row with the fewest empty cells', () => {
+    expect(kept({ keep: 'fullest' })).toEqual(['2024-01-01', '2024-03-03']);
+  });
+
+  it('keeps the largest value in a chosen column, which is how you keep the newest', () => {
+    expect(kept({ keep: 'largest', keepColumn: 'updated' })).toEqual([
+      '2026-05-05',
+      '2024-03-03',
+    ]);
+  });
+
+  it('keeps the smallest value in a chosen column', () => {
+    expect(kept({ keep: 'smallest', keepColumn: 'updated' })).toEqual([
+      '2024-01-01',
+      '2024-03-03',
+    ]);
+  });
+
+  it('reads the deciding column as a number when it is one', () => {
+    const scores = tableOf(
+      ['id', 'score'],
+      [
+        { id: 'a', score: '9' },
+        { id: 'a', score: '10' },
+      ],
+    );
+    const output = removeDuplicatesTool.run(scores, {
+      column: 'id',
+      keep: 'largest',
+      keepColumn: 'score',
+    }).output;
+    expect(cell(output.rows[0]!, 'score')).toBe('10');
+  });
+
+  it('keeps the earlier row when the deciding values tie', () => {
+    const tied = tableOf(
+      ['id', 'score'],
+      [
+        { id: 'a', score: '1' },
+        { id: 'a', score: '1' },
+      ],
+    );
+    const output = removeDuplicatesTool.run(tied, {
+      column: 'id',
+      keep: 'largest',
+      keepColumn: 'score',
+    }).output;
+    expect(output.rows[0]?.id).toBe('r1');
+  });
+
+  it('keeps the rows in the order the list had them, whichever one won', () => {
+    const output = removeDuplicatesTool.run(PEOPLE, {
+      column: 'email',
+      keep: 'last',
+    }).output;
+    expect(output.rows.map((row) => cell(row, 'email'))).toEqual([
+      'anna@example.com',
+      'bo@example.com',
+    ]);
+  });
+
+  it('falls back to the first column when none was chosen to decide', () => {
+    expect(() =>
+      removeDuplicatesTool.run(PEOPLE, { column: 'email', keep: 'largest', keepColumn: '' }),
+    ).not.toThrow();
+  });
+});

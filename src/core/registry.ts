@@ -26,8 +26,10 @@ export type OptionField =
    * Dropdown of a dataset's columns → column id. `allowAll` adds an "All columns" choice
    * whose value is '' — half the cleaning tools work either on one column or on the whole
    * row, and that choice belongs in the generated form rather than in a second field or a
-   * special case in the shell. `from: 'second'` offers the SECOND list's columns instead,
-   * which is the only honest way for a dual tool to ask "which column over there?".
+   * special case in the shell. `allowNone` adds a "None" choice, also '', for a field that
+   * is genuinely optional: a second sort key, a tie-breaker. `from: 'second'` offers the
+   * SECOND list's columns instead, which is the only honest way for a dual tool to ask
+   * "which column over there?".
    */
   | {
       key: string;
@@ -35,6 +37,7 @@ export type OptionField =
       type: 'column';
       default?: string;
       allowAll?: boolean;
+      allowNone?: boolean;
       from?: ColumnSource;
       help?: string;
     }
@@ -76,6 +79,20 @@ export interface ToolResult {
   extraLists?: { name: string; dataset: Dataset }[];
 }
 
+/**
+ * What a tool would find if it ran. A tool that can answer this cheaply says so, and the
+ * tool picker leads with the answer: "27 duplicates" above the list of tools, with this
+ * tool already configured behind it. Nothing is ever changed by asking.
+ */
+export interface Finding {
+  /** Human-readable, shown verbatim: "27 duplicates". */
+  summary: string;
+  /** How many things were found. Nothing is reported for 0. */
+  count: number;
+  /** The options to open the tool with, so the fix is one click and still previewed. */
+  options?: Options;
+}
+
 export interface Tool {
   /** kebab-case, never renamed: recipes reference it. */
   id: string;
@@ -88,6 +105,11 @@ export interface Tool {
   options: OptionField[];
   appliesTo?(input: Dataset, second?: Dataset): boolean;
   run(input: Dataset, options: Options, second?: Dataset): ToolResult;
+  /**
+   * Optional, and PURE like the rest: what this tool would find in the list as it stands.
+   * null when there is nothing to report — which is most tools, most of the time.
+   */
+  check?(input: Dataset): Finding | null;
 }
 
 export interface Parser {
