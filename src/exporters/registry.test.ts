@@ -42,6 +42,28 @@ describe('exporter registry', () => {
     }
   });
 
+  it('renders the same string twice, for every exporter', () => {
+    for (const exporter of exporters) {
+      const options = defaultOptions(exporter.options);
+      expect(exporter.render(list, options)).toBe(exporter.render(list, options));
+    }
+  });
+
+  it('offers HTML that is a table, for every exporter that offers any', () => {
+    for (const exporter of exporters) {
+      const html = exporter.html?.(list, defaultOptions(exporter.options));
+      if (html === undefined) continue;
+      expect(html).toContain('<table>');
+      expect(html).toContain('</table>');
+    }
+  });
+
+  it('survives an empty dataset in its HTML form too', () => {
+    for (const exporter of exporters) {
+      expect(() => exporter.html?.(empty, defaultOptions(exporter.options))).not.toThrow();
+    }
+  });
+
   it('never mutates the dataset it renders', () => {
     const dataset = draftDataset({
       columns: [{ id: 'c1', name: 'name' }],
@@ -50,6 +72,7 @@ describe('exporter registry', () => {
     const before = JSON.stringify(dataset);
     for (const exporter of exporters) {
       exporter.render(dataset, defaultOptions(exporter.options));
+      exporter.html?.(dataset, defaultOptions(exporter.options));
     }
     expect(JSON.stringify(dataset)).toBe(before);
   });

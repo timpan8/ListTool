@@ -108,6 +108,12 @@ export interface Exporter {
   options: OptionField[];
   /** PURE — the shell does copy/download. */
   render(dataset: Dataset, options: Options): string;
+  /**
+   * The same content as HTML, for exporters whose output is table-shaped. When an
+   * exporter offers this, Copy puts it on the clipboard beside the plain text, and a
+   * paste into Excel or Word lands in cells. PURE, like render.
+   */
+  html?(dataset: Dataset, options: Options): string;
 }
 
 /** The option record a field list describes when nothing has been changed yet. */

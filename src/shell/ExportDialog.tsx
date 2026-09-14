@@ -7,7 +7,7 @@ import { en } from '../i18n/en';
 import { format } from '../i18n/format';
 import { Dialog } from './Dialog';
 import { OptionsPanel } from './OptionsPanel';
-import { copyText } from './clipboard';
+import { copyExported } from './copyOut';
 import { downloadText, filenameFor } from './download';
 
 const PREVIEW_LINES = 10;
@@ -37,7 +37,8 @@ export function ExportDialog({ dataset, onClose }: Props) {
   }
 
   async function copy(): Promise<void> {
-    setNotice((await copyText(text)) ? en.toolbar.copied : en.toolbar.copyFailed);
+    const copied = await copyExported(exporter, dataset, options);
+    setNotice(copied ? en.toolbar.copied : en.toolbar.copyFailed);
     onClose();
   }
 

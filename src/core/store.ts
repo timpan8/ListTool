@@ -1,5 +1,6 @@
 import { computed, effect, signal } from '@preact/signals';
 import type { Dataset } from './model';
+import type { ViewFilter } from './view';
 import {
   applyRecipe,
   createRecipe,
@@ -9,7 +10,15 @@ import {
   type ReplayMessages,
 } from './recipes';
 import { DEFAULT_SETTINGS, type Settings } from './settings';
-import { clear as clearStorage, load, save } from './storage';
+export type { ViewFilter } from './view';
+import {
+  clear as clearStorage,
+  deserialize,
+  load,
+  save,
+  serialize,
+  type Persisted,
+} from './storage';
 import {
   canRedo,
   canUndo,
@@ -33,6 +42,7 @@ const tabs = signal<Tab[]>([]);
 const activeIdSignal = signal<string | null>(null);
 const selectedColumnSignal = signal<string | null>(null);
 const selectedRowsSignal = signal<string[]>([]);
+const viewFilterSignal = signal<ViewFilter | null>(null);
 const noticeSignal = signal<string>('');
 const settingsSignal = signal<Settings>(DEFAULT_SETTINGS);
 const favoritesSignal = signal<string[]>([]);
@@ -84,6 +94,9 @@ export const selectedColumn = computed<string | null>(() => selectedColumnSignal
  */
 export const selectedRows = computed<string[]>(() => selectedRowsSignal.value);
 
+/** The value picked in the column profile, or null when the whole list is shown. */
+export const viewFilter = computed<ViewFilter | null>(() => viewFilterSignal.value);
+
 /** Transient message for the status region: "Copied to clipboard". */
 export const notice = computed<string>(() => noticeSignal.value);
 
@@ -110,6 +123,7 @@ export function addDataset(draft: Dataset, name: string): string {
   activeIdSignal.value = id;
   selectedColumnSignal.value = null;
   selectedRowsSignal.value = [];
+  viewFilterSignal.value = null;
   return id;
 }
 
@@ -163,6 +177,7 @@ export function setActive(id: string): void {
   activeIdSignal.value = id;
   selectedColumnSignal.value = null;
   selectedRowsSignal.value = [];
+  viewFilterSignal.value = null;
 }
 
 /** A duplicate starts a fresh history: it is a new list, not a branch of the old one. */
@@ -184,6 +199,7 @@ export function close(id: string): void {
     activeIdSignal.value = neighbour?.id ?? null;
     selectedColumnSignal.value = null;
     selectedRowsSignal.value = [];
+    viewFilterSignal.value = null;
   }
 }
 
@@ -204,6 +220,11 @@ export function toggleRow(rowId: string): void {
 /** Replace the whole selection — "tick every row shown" and "clear" both come here. */
 export function selectRows(rowIds: string[]): void {
   selectedRowsSignal.value = rowIds;
+}
+
+/** Show only the rows whose column holds this value. null shows everything again. */
+export function setViewFilter(filter: ViewFilter | null): void {
+  viewFilterSignal.value = filter;
 }
 
 /** How long a status message stays before the status bar goes quiet again. */
@@ -323,35 +344,63 @@ function persistNow(onQuota: () => void): void {
   }
 }
 
+/** The highest number used by a set of ids of the form `<prefix><n>`. */
+function highestNumber(ids: string[], prefix: string): number {
+  return ids.reduce((top, id) => {
+    const parsed = Number.parseInt(id.replace(new RegExp(`^${prefix}`), ''), 10);
+    return Number.isFinite(parsed) ? Math.max(top, parsed) : top;
+  }, 0);
+}
+
 /**
- * Restore the workspace from storage. Ids are never reused, so the counter continues
- * past whatever was stored.
+ * Put a whole workspace in place: what storage held at start-up, and what a saved file
+ * holds when one is opened. Ids are never reused, so the counters continue past whatever
+ * arrived — a restored list can never collide with one made afterwards.
  */
-export function hydrate(): void {
-  const stored = load();
+export function restoreWorkspace(stored: Persisted): void {
   settingsSignal.value = stored.settings;
   favoritesSignal.value = stored.favorites;
   recentsSignal.value = stored.recents;
   recipesSignal.value = stored.recipes;
-  nextRecipeNumber =
-    stored.recipes.reduce((top, recipe) => {
-      const parsed = Number.parseInt(recipe.id.replace(/^r/, ''), 10);
-      return Number.isFinite(parsed) ? Math.max(top, parsed) : top;
-    }, 0) + 1;
+  nextRecipeNumber = highestNumber(stored.recipes.map((recipe) => recipe.id), 'r') + 1;
 
-  if (stored.datasets.length > 0) {
-    tabs.value = stored.datasets.map((dataset) => ({
-      id: dataset.id,
-      history: createHistory(dataset),
-    }));
-    activeIdSignal.value = stored.datasets[0]?.id ?? null;
-  }
+  tabs.value = stored.datasets.map((dataset) => ({
+    id: dataset.id,
+    history: createHistory(dataset),
+  }));
+  activeIdSignal.value = stored.datasets[0]?.id ?? null;
+  selectedColumnSignal.value = null;
+  selectedRowsSignal.value = [];
+  viewFilterSignal.value = null;
 
-  const highest = stored.datasets.reduce((top, dataset) => {
-    const parsed = Number.parseInt(dataset.id.replace(/^d/, ''), 10);
-    return Number.isFinite(parsed) ? Math.max(top, parsed) : top;
-  }, 0);
-  nextDatasetNumber = highest + 1;
+  nextDatasetNumber = highestNumber(stored.datasets.map((dataset) => dataset.id), 'd') + 1;
+}
+
+/** Restore the workspace from storage. Called once, before the first render. */
+export function hydrate(): void {
+  restoreWorkspace(load());
+}
+
+/** The whole workspace as text, for saving a copy to a file. */
+export function workspaceFile(): string {
+  return serialize({
+    settings: settingsSignal.value,
+    favorites: favoritesSignal.value,
+    recents: recentsSignal.value,
+    datasets: tabs.value.map((tab) => current(tab.history)),
+    recipes: recipesSignal.value,
+  });
+}
+
+/**
+ * Open a saved workspace, replacing what is here. Returns false when the text is not one,
+ * so the caller can say so rather than quietly emptying the screen.
+ */
+export function openWorkspaceFile(text: string): boolean {
+  const parsed = deserialize(text);
+  if (parsed === null) return false;
+  restoreWorkspace(parsed);
+  return true;
 }
 
 /** Start saving on every change. Returns a stop function. */
@@ -387,6 +436,7 @@ export function resetWorkspace(): void {
   activeIdSignal.value = null;
   selectedColumnSignal.value = null;
   selectedRowsSignal.value = [];
+  viewFilterSignal.value = null;
   settingsSignal.value = DEFAULT_SETTINGS;
   favoritesSignal.value = [];
   recentsSignal.value = [];

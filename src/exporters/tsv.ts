@@ -1,4 +1,5 @@
 import { booleanOption, type Exporter } from '../core/registry';
+import { renderHtmlTable } from './html-table';
 import { chosenColumns, renderTable } from './table-text';
 import { en } from '../i18n/en';
 
@@ -15,6 +16,13 @@ export const tsvExporter: Exporter = {
       dataset,
       chosenColumns(dataset, options),
       '\t',
+      booleanOption(options, 'header', true),
+    );
+  },
+  html(dataset, options) {
+    return renderHtmlTable(
+      dataset,
+      chosenColumns(dataset, options),
       booleanOption(options, 'header', true),
     );
   },

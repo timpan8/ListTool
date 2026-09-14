@@ -192,6 +192,14 @@ export const en = {
       separatorComma: 'Comma ,',
       separatorNewline: 'Newline',
     },
+    htmlTable: {
+      name: 'HTML table',
+      description: 'A table copied out of a web page, Excel or Word.',
+      header: 'First row is a header',
+      headerAuto: 'Decide from the table',
+      headerYes: 'Yes',
+      headerNo: 'No',
+    },
     emails: {
       name: 'Emails in text',
       description: 'Pull every email address out of arbitrary text.',
@@ -609,6 +617,24 @@ export const en = {
     nothingChanged: 'Nothing changed.',
   },
 
+  profile: {
+    title: 'Columns',
+    intro: 'What is actually in each column. Click a value to show only its rows.',
+    empty: 'This list has no rows to look at yet.',
+    filled: '{n} filled',
+    blank: '{n} empty',
+    unique: '{n} distinct',
+    length: '{shortest}–{longest} characters',
+    top: 'Most common',
+    onlyRows: 'Show only rows where {column} is {value}',
+    onlyBlank: 'Show only rows where {column} is empty',
+    blankValue: '(empty)',
+    filtering: 'Showing only rows where {column} is {value}',
+    filteringBlank: 'Showing only rows where {column} is empty',
+    clearFilter: 'Show all rows',
+    filterHint: 'This filters the view. It never changes the list.',
+  },
+
   compare: {
     title: 'Compare',
     open: 'Compare',
@@ -678,6 +704,16 @@ export const en = {
     keepLists: 'Keep lists between sessions',
     keepListsHelp:
       'Lists are stored in this browser only. Turn this off and only settings, favourites and recipes are kept.',
+    workspace: 'This workspace',
+    saveFile: 'Save a copy…',
+    saveFileHelp:
+      'Writes every list, recipe and setting to a file on your computer. The file is made in the browser; nothing is uploaded.',
+    openFile: 'Open a saved copy…',
+    openFileHelp: 'Replaces everything here with what the file holds.',
+    opened: 'Workspace opened.',
+    openFailed: 'That file is not a saved workspace.',
+    saved: 'Workspace saved.',
+    workspaceFilename: 'list-tool-workspace',
     storage: 'Stored data',
     clear: 'Clear all data',
     clearHelp: 'Wipes everything this site has stored in your browser, immediately.',

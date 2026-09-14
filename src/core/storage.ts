@@ -56,6 +56,29 @@ function readDataset(value: unknown): Dataset | null {
   return raw as unknown as Dataset;
 }
 
+/**
+ * Narrow an unknown value into a workspace, field by field. Used for what localStorage
+ * holds and for what a saved file holds — a file is only a copy of the same thing, so it
+ * gets exactly the same scrutiny and no separate format to keep in step.
+ */
+export function readPersisted(value: unknown): Persisted {
+  if (typeof value !== 'object' || value === null) return EMPTY_PERSISTED;
+  const raw = value as Record<string, unknown>;
+
+  return {
+    version: typeof raw['version'] === 'number' ? raw['version'] : VERSION,
+    settings: readSettings(raw['settings']),
+    favorites: readStrings(raw['favorites']),
+    recents: readStrings(raw['recents']),
+    datasets: Array.isArray(raw['datasets'])
+      ? raw['datasets'].map(readDataset).filter((dataset): dataset is Dataset => dataset !== null)
+      : [],
+    recipes: Array.isArray(raw['recipes'])
+      ? raw['recipes'].map(readRecipe).filter((recipe): recipe is Recipe => recipe !== null)
+      : [],
+  };
+}
+
 /** Read what was stored. Anything unreadable is treated as "nothing stored". */
 export function load(): Persisted {
   const store = storage();
@@ -64,25 +87,26 @@ export function load(): Persisted {
   try {
     const text = store.getItem(STORAGE_KEY);
     if (text === null) return EMPTY_PERSISTED;
-
-    const parsed: unknown = JSON.parse(text);
-    if (typeof parsed !== 'object' || parsed === null) return EMPTY_PERSISTED;
-    const raw = parsed as Record<string, unknown>;
-
-    return {
-      version: typeof raw['version'] === 'number' ? raw['version'] : VERSION,
-      settings: readSettings(raw['settings']),
-      favorites: readStrings(raw['favorites']),
-      recents: readStrings(raw['recents']),
-      datasets: Array.isArray(raw['datasets'])
-        ? raw['datasets'].map(readDataset).filter((dataset): dataset is Dataset => dataset !== null)
-        : [],
-      recipes: Array.isArray(raw['recipes'])
-        ? raw['recipes'].map(readRecipe).filter((recipe): recipe is Recipe => recipe !== null)
-        : [],
-    };
+    return readPersisted(JSON.parse(text));
   } catch {
     return EMPTY_PERSISTED;
+  }
+}
+
+/** The workspace as a file's worth of text. Never leaves the browser unless saved. */
+export function serialize(state: Omit<Persisted, 'version'>): string {
+  return JSON.stringify({ version: VERSION, ...state }, null, 2);
+}
+
+/** Read a saved file back. null when the text is not a workspace at all. */
+export function deserialize(text: string): Persisted | null {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (typeof parsed !== 'object' || parsed === null) return null;
+    if (!('version' in parsed)) return null;
+    return readPersisted(parsed);
+  } catch {
+    return null;
   }
 }
 

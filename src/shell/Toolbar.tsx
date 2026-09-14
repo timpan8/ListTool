@@ -10,7 +10,7 @@ import {
 import { DEFAULT_EXPORTER_ID, exporterById } from '../exporters';
 import { defaultOptions } from '../core/registry';
 import { en } from '../i18n/en';
-import { copyText } from './clipboard';
+import { copyExported } from './copyOut';
 
 interface Props {
   onImport: () => void;
@@ -31,8 +31,8 @@ export function Toolbar({ onImport, onTools, onCompare, onExport }: Props) {
     if (dataset === null) return;
     const exporter = exporterById(DEFAULT_EXPORTER_ID);
     if (exporter === undefined) return;
-    const text = exporter.render(dataset, defaultOptions(exporter.options));
-    setNotice((await copyText(text)) ? en.toolbar.copied : en.toolbar.copyFailed);
+    const copied = await copyExported(exporter, dataset, defaultOptions(exporter.options));
+    setNotice(copied ? en.toolbar.copied : en.toolbar.copyFailed);
   }
 
   return (
