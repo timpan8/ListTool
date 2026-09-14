@@ -32,6 +32,7 @@ export interface Tab {
 const tabs = signal<Tab[]>([]);
 const activeIdSignal = signal<string | null>(null);
 const selectedColumnSignal = signal<string | null>(null);
+const selectedRowsSignal = signal<string[]>([]);
 const noticeSignal = signal<string>('');
 const settingsSignal = signal<Settings>(DEFAULT_SETTINGS);
 const favoritesSignal = signal<string[]>([]);
@@ -77,6 +78,12 @@ export const canRedoActive = computed<boolean>(() => {
 /** Column the status bar counts on. null = the whole row. */
 export const selectedColumn = computed<string | null>(() => selectedColumnSignal.value);
 
+/**
+ * Rows ticked in the table, in the active list's own order. A tool asks for them by
+ * declaring a `rows` option field; the shell never decides what a selection means.
+ */
+export const selectedRows = computed<string[]>(() => selectedRowsSignal.value);
+
 /** Transient message for the status region: "Copied to clipboard". */
 export const notice = computed<string>(() => noticeSignal.value);
 
@@ -102,6 +109,7 @@ export function addDataset(draft: Dataset, name: string): string {
   tabs.value = [...tabs.value, { id, history: createHistory(dataset) }];
   activeIdSignal.value = id;
   selectedColumnSignal.value = null;
+  selectedRowsSignal.value = [];
   return id;
 }
 
@@ -117,14 +125,31 @@ export function applyStep(id: string, step: Step, output: Dataset): void {
   const identity = current(tab.history);
   const snapshot: Dataset = { ...output, id: identity.id, name: identity.name };
   updateTab(id, (history) => pushStep(history, step, snapshot));
+  // A tick on a row that the step removed means nothing, so it goes; the rest survive,
+  // which is what lets someone tick once and then run two tools over the same rows.
+  if (id === activeIdSignal.value) pruneSelection(snapshot);
+}
+
+function pruneSelection(dataset: Dataset): void {
+  const alive = new Set(dataset.rows.map((row) => row.id));
+  const kept = selectedRowsSignal.value.filter((rowId) => alive.has(rowId));
+  if (kept.length !== selectedRowsSignal.value.length) selectedRowsSignal.value = kept;
 }
 
 export function undo(id: string): void {
   updateTab(id, undoHistory);
+  pruneAfterMove(id);
 }
 
 export function redo(id: string): void {
   updateTab(id, redoHistory);
+  pruneAfterMove(id);
+}
+
+function pruneAfterMove(id: string): void {
+  if (id !== activeIdSignal.value) return;
+  const tab = tabs.value.find((candidate) => candidate.id === id);
+  if (tab !== undefined) pruneSelection(current(tab.history));
 }
 
 export function rename(id: string, name: string): void {
@@ -137,6 +162,7 @@ export function setActive(id: string): void {
   if (!tabs.value.some((tab) => tab.id === id)) return;
   activeIdSignal.value = id;
   selectedColumnSignal.value = null;
+  selectedRowsSignal.value = [];
 }
 
 /** A duplicate starts a fresh history: it is a new list, not a branch of the old one. */
@@ -157,11 +183,27 @@ export function close(id: string): void {
     const neighbour = remaining[Math.min(closedAt, remaining.length - 1)];
     activeIdSignal.value = neighbour?.id ?? null;
     selectedColumnSignal.value = null;
+    selectedRowsSignal.value = [];
   }
 }
 
 export function selectColumn(columnId: string | null): void {
   selectedColumnSignal.value = columnId;
+}
+
+/** Tick or untick one row. Order follows the list, never the order they were clicked. */
+export function toggleRow(rowId: string): void {
+  const chosen = new Set(selectedRowsSignal.value);
+  if (chosen.has(rowId)) chosen.delete(rowId);
+  else chosen.add(rowId);
+  const dataset = activeDataset.value;
+  const order = dataset === null ? [...chosen] : dataset.rows.map((row) => row.id);
+  selectedRowsSignal.value = order.filter((id) => chosen.has(id));
+}
+
+/** Replace the whole selection — "tick every row shown" and "clear" both come here. */
+export function selectRows(rowIds: string[]): void {
+  selectedRowsSignal.value = rowIds;
 }
 
 /** How long a status message stays before the status bar goes quiet again. */
@@ -344,6 +386,7 @@ export function resetWorkspace(): void {
   tabs.value = [];
   activeIdSignal.value = null;
   selectedColumnSignal.value = null;
+  selectedRowsSignal.value = [];
   settingsSignal.value = DEFAULT_SETTINGS;
   favoritesSignal.value = [];
   recentsSignal.value = [];

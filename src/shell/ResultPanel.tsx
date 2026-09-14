@@ -1,23 +1,22 @@
 import { useEffect, useState } from 'preact/hooks';
+import { diffDatasets } from '../core/diff';
 import type { Dataset } from '../core/model';
-import { defaultOptions, type Options, type Tool } from '../core/registry';
-import { withSettings } from '../core/settings';
-import { addDataset, applyStep, noteToolUsed, openDatasets, settings } from '../core/store';
+import type { Options, Tool } from '../core/registry';
+import {
+  addDataset,
+  applyStep,
+  noteToolUsed,
+  openDatasets,
+  selectedRows,
+  setActive,
+  setNotice,
+  settings,
+} from '../core/store';
 import { en } from '../i18n/en';
-import { format } from '../i18n/format';
-import { DataTable } from './DataTable';
+import { format, plural } from '../i18n/format';
 import { OptionsPanel } from './OptionsPanel';
-
-const PREVIEW_ROWS = 8;
-
-/** A tool's own defaults, with the user's settings applied by option key. */
-function startingOptions(tool: Tool): Options {
-  return withSettings(
-    defaultOptions(tool.options),
-    tool.options.map((field) => field.key),
-    settings.value,
-  );
-}
+import { startingOptions, withSelection } from './toolOptions';
+import { ToolPreview } from './ToolPreview';
 
 interface Props {
   dataset: Dataset;
@@ -32,11 +31,11 @@ interface Props {
  * tool's own option list.
  */
 export function ResultPanel({ dataset, tool, onBack, onApplied }: Props) {
-  const [options, setOptions] = useState<Options>(startingOptions(tool));
+  const [options, setOptions] = useState<Options>(startingOptions(tool, settings.value));
   const [secondId, setSecondId] = useState('');
 
   useEffect(() => {
-    setOptions(startingOptions(tool));
+    setOptions(startingOptions(tool, settings.value));
   }, [tool]);
 
   // A dual tool needs a second list; anything but the one being worked on will do.
@@ -46,20 +45,35 @@ export function ResultPanel({ dataset, tool, onBack, onApplied }: Props) {
       ? (others.find((candidate) => candidate.id === secondId) ?? others[0])
       : undefined;
 
-  const result = tool.run(dataset, options, second);
+  const chosen = withSelection(tool.options, options, selectedRows.value);
+  const result = tool.run(dataset, chosen, second);
 
   function apply(toNewList: boolean): void {
     const step = {
       toolId: tool.id,
-      options: second === undefined ? options : { ...options, secondListId: second.id },
+      options: second === undefined ? chosen : { ...chosen, secondListId: second.id },
       summary: result.summary,
       at: Date.now(),
     };
+    let landed = dataset.id;
     if (toNewList) {
-      addDataset(result.output, format(en.panel.copySuffix, { name: dataset.name, tool: tool.name }));
+      landed = addDataset(
+        result.output,
+        format(en.panel.copySuffix, { name: dataset.name, tool: tool.name }),
+      );
     } else {
       applyStep(dataset.id, step, result.output);
     }
+
+    // A tool that produced further lists opens them as tabs, and the result the person
+    // was looking at stays in front — it is still where they were.
+    const extras = result.extraLists ?? [];
+    for (const extra of extras) addDataset(extra.dataset, extra.name);
+    if (extras.length > 0) {
+      setActive(landed);
+      setNotice(plural(extras.length, en.panel.extraLists));
+    }
+
     noteToolUsed(tool.id);
     onApplied();
   }
@@ -108,36 +122,18 @@ export function ResultPanel({ dataset, tool, onBack, onApplied }: Props) {
       <OptionsPanel
         idPrefix={`tool-${tool.id}`}
         fields={tool.options}
-        options={options}
+        options={chosen}
         columns={dataset.columns}
         secondColumns={second?.columns ?? []}
         onChange={(key, value) => setOptions({ ...options, [key]: value })}
       />
 
-      <p class="notice" role="status">
-        {result.summary}
-      </p>
-
-      {(result.warnings ?? []).map((warning) => (
-        <p key={warning} class="notice notice--warning" role="status">
-          {warning}
-        </p>
-      ))}
-
-      <section class="preview">
-        <h4 class="preview__title">{en.panel.preview}</h4>
-        {result.output.rows.length === 0 ? (
-          <p class="field__help">{en.import.previewEmpty}</p>
-        ) : (
-          <>
-            <p class="field__help">{format(en.panel.previewNote, { n: PREVIEW_ROWS })}</p>
-            <DataTable
-              columns={result.output.columns}
-              rows={result.output.rows.slice(0, PREVIEW_ROWS)}
-            />
-          </>
-        )}
-      </section>
+      <ToolPreview
+        output={result.output}
+        summary={result.summary}
+        {...(result.warnings === undefined ? {} : { warnings: result.warnings })}
+        diff={diffDatasets(dataset, result.output)}
+      />
 
       <div class="result__actions">
         <button type="button" class="button" onClick={() => apply(true)}>

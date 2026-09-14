@@ -56,6 +56,12 @@ const PAIRS: [string, string, number][] = [
   ['--color-focus', '--color-surface', 3],
   ['--color-border-strong', '--color-surface', 3],
   ['--color-border-strong', '--color-surface-sunken', 3],
+  // A marked row still has to be readable: the tint is never the only signal, but text
+  // sitting on it must pass all the same.
+  ['--color-text', '--color-surface-marked', 4.5],
+  ['--color-text-muted', '--color-surface-marked', 4.5],
+  ['--color-accent', '--color-surface-marked', 4.5],
+  ['--color-border-strong', '--color-surface-marked', 3],
 ];
 
 describe.each([

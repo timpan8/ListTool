@@ -53,6 +53,13 @@ export const en = {
     noMatches: 'No rows match {query}.',
     showing: 'Showing {shown} of {total} rows',
     rowNumber: '#',
+    selectRow: 'Tick row {n}',
+    selectAll: 'Tick every row shown',
+    selection: { one: '{n} row ticked', other: '{n} rows ticked' },
+    clearSelection: 'Clear ticks',
+    selectionHint: 'Tools that work on a selection are under Tools — Selected rows, Set value.',
+    editCell: 'Edit {column}, row {n}',
+    editHint: 'Enter saves, Esc cancels',
   },
 
   status: {
@@ -91,6 +98,10 @@ export const en = {
     previewNote: 'First {n} rows',
     previewEmpty: 'Nothing to preview yet.',
     nameLabel: 'List name',
+    target: 'Put it',
+    targetNew: 'In a new list',
+    targetAppend: 'At the end of {name}',
+    append: 'Add to the list',
     submit: 'Import',
     resubmit: 'Re-parse',
     cancel: 'Cancel',
@@ -450,6 +461,14 @@ export const en = {
       mixedShapes:
         'The two lists have different columns, so the result is a single column of the matched values.',
     },
+    append: {
+      name: 'Add another list to the end',
+      description: 'Put a second list after this one, matching the columns up.',
+      byName: 'Match the columns by name when the ids differ',
+      summary: 'Added {added} ({before} → {after})',
+      added: { one: '{n} row', other: '{n} rows' },
+      newColumns: '{n} columns of the second list had no match here and were added.',
+    },
     fixMojibake: {
       name: 'Fix mojibake',
       description: 'Repair Ã¤ Ã¶ Ã¥ back into ä ö å.',
@@ -734,6 +753,10 @@ export const en = {
     needsTwoColumns: 'This tool needs at least two columns.',
     unavailable: 'This tool does not fit the active list.',
     copySuffix: '{name} — {tool}',
+    extraLists: { one: 'and {n} further list opened', other: 'and {n} further lists opened' },
+    changedCell: 'changed',
+    addedRow: 'new row',
+    addedColumn: 'new column',
   },
 
   exporters: {

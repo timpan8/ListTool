@@ -372,6 +372,64 @@ textarea {
   background: var(--color-surface-sunken);
 }
 
+.table__tick {
+  width: 1%;
+  text-align: center;
+}
+
+/* A ticked row and a changed cell are marked; the mark, not the tint, is the signal. */
+.table tr.is-ticked > td {
+  background: var(--color-surface-marked);
+}
+
+.table tr.is-new > td,
+.table td.is-changed,
+.table th.is-new {
+  background: var(--color-surface-marked);
+}
+
+.mark {
+  color: var(--color-accent);
+  margin-right: var(--space-2);
+  font-size: var(--text-xs);
+  vertical-align: 1px;
+}
+
+/* A cell you can edit: a button that fills the cell and looks like the text it shows. */
+.cell {
+  display: block;
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: pre-wrap;
+  cursor: text;
+}
+
+.cell__input {
+  width: 100%;
+  min-width: 6ch;
+  height: var(--control-height);
+  font: inherit;
+}
+
+.view__selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-marked);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
+}
+
 /* ---------- status bar ---------- */
 
 .statusbar {

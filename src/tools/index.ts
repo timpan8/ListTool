@@ -34,6 +34,7 @@ import { splitIntoRowsTool } from './transform/split-into-rows';
 import { chunkListTool } from './transform/chunk-list';
 import { setValueTool } from './transform/set-value';
 import { selectedRowsTool } from './transform/selected-rows';
+import { appendRowsTool } from './transform/append-rows';
 import { transposeTool } from './columns/transpose';
 import { groupByTool } from './extract/group-by';
 import { joinListsTool } from './compare/join-lists';
@@ -64,6 +65,7 @@ export const tools: Tool[] = [
   removeRowsInBTool,
   splitIntoRowsTool,
   chunkListTool,
+  appendRowsTool,
   setValueTool,
   selectedRowsTool,
   splitColumnTool,

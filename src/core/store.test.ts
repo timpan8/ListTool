@@ -18,7 +18,10 @@ import {
   recents,
   settings,
   selectedColumn,
+  selectedRows,
+  selectRows,
   setActive,
+  toggleRow,
   setNotice,
   toggleFavorite,
   undo,
@@ -199,6 +202,67 @@ describe('column selection', () => {
     selectColumn(VALUE_COLUMN);
     setActive(first);
     expect(selectedColumn.value).toBeNull();
+  });
+});
+
+describe('row selection', () => {
+  it('starts with nothing ticked', () => {
+    addDataset(list('a', 'b'), 'A');
+    expect(selectedRows.value).toEqual([]);
+  });
+
+  it('ticks and unticks one row', () => {
+    addDataset(list('a', 'b'), 'A');
+    toggleRow('r2');
+    expect(selectedRows.value).toEqual(['r2']);
+    toggleRow('r2');
+    expect(selectedRows.value).toEqual([]);
+  });
+
+  it('keeps the ticks in the list order, not the order they were clicked', () => {
+    addDataset(list('a', 'b', 'c'), 'A');
+    toggleRow('r3');
+    toggleRow('r1');
+    expect(selectedRows.value).toEqual(['r1', 'r3']);
+  });
+
+  it('replaces the whole selection in one go', () => {
+    addDataset(list('a', 'b'), 'A');
+    selectRows(['r1', 'r2']);
+    expect(selectedRows.value).toEqual(['r1', 'r2']);
+    selectRows([]);
+    expect(selectedRows.value).toEqual([]);
+  });
+
+  it('drops a tick on a row a step removed, and keeps the rest', () => {
+    const id = addDataset(list('a', 'b', 'c'), 'A');
+    selectRows(['r1', 'r3']);
+    applyStep(id, step, { ...list('a', 'b'), id, name: 'A' });
+    expect(selectedRows.value).toEqual(['r1']);
+  });
+
+  it('brings a tick back when undo brings its row back', () => {
+    const id = addDataset(list('a', 'b'), 'A');
+    selectRows(['r1', 'r2']);
+    applyStep(id, step, { ...list('a'), id, name: 'A' });
+    expect(selectedRows.value).toEqual(['r1']);
+    undo(id);
+    expect(selectedRows.value).toEqual(['r1']);
+  });
+
+  it('clears the ticks when the active list changes', () => {
+    const first = addDataset(list('a'), 'A');
+    addDataset(list('b'), 'B');
+    toggleRow('r1');
+    setActive(first);
+    expect(selectedRows.value).toEqual([]);
+  });
+
+  it('clears the ticks when a new list is imported', () => {
+    addDataset(list('a'), 'A');
+    toggleRow('r1');
+    addDataset(list('b'), 'B');
+    expect(selectedRows.value).toEqual([]);
   });
 });
 

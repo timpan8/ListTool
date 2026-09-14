@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'preact/hooks';
 import { bestParser } from '../core/detect';
-import { PARSE_STEP_ID } from '../core/history';
 import type { Dataset } from '../core/model';
 import { carryOptions, defaultOptions, type Options } from '../core/registry';
 import { withSettings } from '../core/settings';
-import { addDataset, applyStep, nextDatasetNumberForName, settings } from '../core/store';
+import { activeDataset, nextDatasetNumberForName, settings } from '../core/store';
 import { defaultParser, parserById, parsers } from '../parsers';
 import { en } from '../i18n/en';
-import { format, plural } from '../i18n/format';
+import { format } from '../i18n/format';
 import { Dialog } from './Dialog';
 import { ImportPreview } from './ImportPreview';
+import { importInto } from './importInto';
 import { ImportSource } from './ImportSource';
+import { ImportTarget } from './ImportTarget';
 import { OptionsPanel } from './OptionsPanel';
 
 interface Props {
@@ -35,6 +36,9 @@ export function ImportDialog({ initialText, target, forceParserId, onClose }: Pr
   const [name, setName] = useState(
     target?.name ?? format(en.tabs.untitled, { n: nextDatasetNumberForName() }),
   );
+  // Where the parsed rows go: a new list, or the end of the one already open.
+  const [append, setAppend] = useState(false);
+  const openList = reparsing ? null : activeDataset.value;
 
   // Detection is advisory: it follows the text until the user picks a parser themselves.
   useEffect(() => {
@@ -70,21 +74,11 @@ export function ImportDialog({ initialText, target, forceParserId, onClose }: Pr
   }
 
   function submit(): void {
-    const rows = plural(preview.rows.length, en.status.rows);
-    if (target === null) {
-      addDataset(preview, name);
-    } else {
-      applyStep(
-        target.id,
-        {
-          toolId: PARSE_STEP_ID,
-          options: { parserId: parser.id, ...options },
-          summary: format(en.steps.parse, { parser: parser.name, rows }),
-          at: Date.now(),
-        },
-        preview,
-      );
-    }
+    importInto(preview, parser, options, {
+      reparse: target,
+      appendTo: append ? openList : null,
+      name,
+    });
     onClose();
   }
 
@@ -120,19 +114,14 @@ export function ImportDialog({ initialText, target, forceParserId, onClose }: Pr
         onChange={(key, value) => setOptions({ ...options, [key]: value })}
       />
 
-      {reparsing ? null : (
-        <div class="field">
-          <label class="field__label" for="import-name">
-            {en.import.nameLabel}
-          </label>
-          <input
-            id="import-name"
-            type="text"
-            value={name}
-            onInput={(event) => setName(event.currentTarget.value)}
-          />
-        </div>
-      )}
+      <ImportTarget
+        openList={openList}
+        append={append}
+        onAppend={setAppend}
+        showName={!reparsing && !append}
+        name={name}
+        onName={setName}
+      />
 
       <div class="dialog__actions">
         <button type="button" class="button" onClick={onClose}>
@@ -144,7 +133,7 @@ export function ImportDialog({ initialText, target, forceParserId, onClose }: Pr
           disabled={!hasText}
           onClick={submit}
         >
-          {reparsing ? en.import.resubmit : en.import.submit}
+          {reparsing ? en.import.resubmit : append ? en.import.append : en.import.submit}
         </button>
       </div>
     </Dialog>
