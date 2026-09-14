@@ -16,6 +16,27 @@ const PRESETS: Record<string, { source: string; columnName: string; capture?: nu
     columnName: en.columns.domain,
     capture: 1,
   },
+  url: {
+    source: 'https?://[^\\s<>"\'\\]]+',
+    columnName: en.columns.url,
+  },
+  ipv4: {
+    source: '\\b(?:(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)\\b',
+    columnName: en.columns.ipv4,
+  },
+  ipv6: {
+    // Hex groups joined by at least two colons, so a clock time is not an address.
+    source: '(?:[0-9A-Fa-f]{1,4})?(?::(?:[0-9A-Fa-f]{1,4})?){2,7}',
+    columnName: en.columns.ipv6,
+  },
+  guid: {
+    source: '\\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\\b',
+    columnName: en.columns.guid,
+  },
+  number: {
+    source: '-?\\d+(?:[.,]\\d+)?',
+    columnName: en.columns.number,
+  },
 };
 
 export const extractPatternTool: Tool = {
@@ -35,6 +56,11 @@ export const extractPatternTool: Tool = {
       choices: [
         { value: 'email', label: strings.presetEmail },
         { value: 'domain', label: strings.presetDomain },
+        { value: 'url', label: strings.presetUrl },
+        { value: 'ipv4', label: strings.presetIpv4 },
+        { value: 'ipv6', label: strings.presetIpv6 },
+        { value: 'guid', label: strings.presetGuid },
+        { value: 'number', label: strings.presetNumber },
         { value: 'regex', label: strings.presetRegex },
       ],
     },

@@ -502,6 +502,11 @@ textarea {
   font-weight: 600;
 }
 
+/* A button in a field column sizes to its label rather than stretching across it. */
+.field > .button {
+  align-self: flex-start;
+}
+
 .field__help {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
@@ -805,6 +810,71 @@ kbd {
   border: var(--border-width) solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   white-space: nowrap;
+}
+
+/* ---------- recipes ---------- */
+
+.recipes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.recipes__save {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.recipes__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.recipes__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.recipes__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.recipes__steps {
+  list-style: decimal inside;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.recipes__steps li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.recipes__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
 }
 
 /* ---------- compare mode ---------- */

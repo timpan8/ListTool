@@ -79,3 +79,60 @@ describe('extract pattern', () => {
     ).toBe('Extracted 1 value into Email');
   });
 });
+
+describe('the rest of the presets', () => {
+  function first(value: string, preset: string, columnId: string): string {
+    const output = extractPatternTool.run(listOf(value), { preset }).output;
+    return cell(output.rows[0]!, columnId);
+  }
+
+  it('extracts a URL', () => {
+    expect(first('see https://example.com/a?b=1 now', 'url', 'url')).toBe(
+      'https://example.com/a?b=1',
+    );
+  });
+
+  it('extracts an IPv4 address and rejects an impossible one', () => {
+    expect(first('host 192.168.1.20 up', 'ipv4', 'ipv4')).toBe('192.168.1.20');
+    expect(first('999.1.1.1', 'ipv4', 'ipv4')).not.toBe('999.1.1.1');
+  });
+
+  it('extracts an IPv6 address', () => {
+    expect(first('addr 2001:db8::1 end', 'ipv6', 'ipv6')).toBe('2001:db8::1');
+  });
+
+  it('extracts a GUID', () => {
+    expect(first('id 3f2504e0-4f89-11d3-9a0c-0305e82c3301!', 'guid', 'guid')).toBe(
+      '3f2504e0-4f89-11d3-9a0c-0305e82c3301',
+    );
+  });
+
+  it('extracts a number, including a negative and a decimal', () => {
+    expect(first('order -12.5 shipped', 'number', 'number')).toBe('-12.5');
+  });
+});
+
+describe('the IPv6 preset', () => {
+  function first(value: string): string {
+    const output = extractPatternTool.run(listOf(value), { preset: 'ipv6' }).output;
+    return cell(output.rows[0]!, 'ipv6');
+  }
+
+  it('takes the whole compressed address, not just the prefix', () => {
+    expect(first('2001:db8::1')).toBe('2001:db8::1');
+  });
+
+  it('takes a fully written address', () => {
+    expect(first('2001:0db8:85a3:0000:0000:8a2e:0370:7334')).toBe(
+      '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
+    );
+  });
+
+  it('takes a leading-compressed address', () => {
+    expect(first('::1')).toBe('::1');
+  });
+
+  it('does not mistake a clock time for an address', () => {
+    expect(first('meeting at 12:30')).toBe('');
+  });
+});

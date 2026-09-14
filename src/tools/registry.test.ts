@@ -78,8 +78,20 @@ describe('tool registry', () => {
     }
   });
 
-  it('only offers column tools where they fit', () => {
-    const singleColumn = tools.filter((tool) => tool.appliesTo?.(listOf('a')) === false);
-    expect(singleColumn.map((tool) => tool.id)).toEqual(['swap-columns']);
+  it('hides every tool that needs two columns from a one-column list', () => {
+    const hidden = tools.filter((tool) => tool.appliesTo?.(listOf('a')) === false);
+    expect(hidden.map((tool) => tool.id).sort()).toEqual([
+      'build-display-name',
+      'generate-email',
+      'merge-columns',
+      'move-column',
+      'remove-column',
+      'swap-columns',
+    ]);
+  });
+
+  it('offers all of them again on a table', () => {
+    const hidden = tools.filter((tool) => tool.appliesTo?.(table) === false);
+    expect(hidden).toEqual([]);
   });
 });

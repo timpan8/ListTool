@@ -1,4 +1,5 @@
 import type { Dataset } from './model';
+import type { Recipe } from './recipes';
 import { DEFAULT_SETTINGS, readSettings, type Settings } from './settings';
 
 /** One key, JSON. Nothing about a list ever goes into the URL. */
@@ -12,6 +13,7 @@ export interface Persisted {
   recents: string[];
   /** Only written when "Keep lists between sessions" is on. */
   datasets: Dataset[];
+  recipes: Recipe[];
 }
 
 export type SaveResult = 'saved' | 'quota' | 'unavailable';
@@ -22,6 +24,7 @@ export const EMPTY_PERSISTED: Persisted = {
   favorites: [],
   recents: [],
   datasets: [],
+  recipes: [],
 };
 
 function storage(): Storage | null {
@@ -35,6 +38,14 @@ function storage(): Storage | null {
 
 function readStrings(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
+
+function readRecipe(value: unknown): Recipe | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const raw = value as Record<string, unknown>;
+  if (typeof raw['id'] !== 'string' || typeof raw['name'] !== 'string') return null;
+  if (!Array.isArray(raw['steps'])) return null;
+  return raw as unknown as Recipe;
 }
 
 function readDataset(value: unknown): Dataset | null {
@@ -65,6 +76,9 @@ export function load(): Persisted {
       recents: readStrings(raw['recents']),
       datasets: Array.isArray(raw['datasets'])
         ? raw['datasets'].map(readDataset).filter((dataset): dataset is Dataset => dataset !== null)
+        : [],
+      recipes: Array.isArray(raw['recipes'])
+        ? raw['recipes'].map(readRecipe).filter((recipe): recipe is Recipe => recipe !== null)
         : [],
     };
   } catch {

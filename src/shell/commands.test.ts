@@ -62,8 +62,10 @@ describe('fuzzyScore', () => {
 describe('searchCommands', () => {
   const commands = buildCommands(listOf('a'), handlers);
 
-  it('puts the closest match first', () => {
-    expect(searchCommands(commands, 'duplicates')[0]?.id).toBe('tool:remove-duplicates');
+  it('puts the earliest match first when several tools share a word', () => {
+    const found = searchCommands(commands, 'duplicates').map((command) => command.id);
+    // "Find duplicates" has it at index 5, "Remove duplicates" at index 7.
+    expect(found.slice(0, 2)).toEqual(['tool:find-duplicates', 'tool:remove-duplicates']);
   });
 
   it('finds a parser by name', () => {

@@ -5,6 +5,7 @@ import type { Tool } from '../core/registry';
 import { en } from '../i18n/en';
 import { HistoryPanel } from './HistoryPanel';
 import { ResultPanel } from './ResultPanel';
+import { RecipesPanel } from './RecipesPanel';
 import { ToolPicker } from './ToolPicker';
 
 interface Props {
@@ -18,7 +19,7 @@ interface Props {
 
 /** The collapsible right-hand panel: tools on one tab, this list's history on the other. */
 export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onClose }: Props) {
-  const [tab, setTab] = useState<'tools' | 'history'>('tools');
+  const [tab, setTab] = useState<'tools' | 'history' | 'recipes'>('tools');
   const [tool, setTool] = useState<Tool | null>(null);
 
   useEffect(() => {
@@ -48,6 +49,14 @@ export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onC
           >
             {en.panel.history}
           </button>
+          <button
+            type="button"
+            class="segmented__button"
+            aria-pressed={tab === 'recipes'}
+            onClick={() => setTab('recipes')}
+          >
+            {en.recipes.title}
+          </button>
         </div>
         <button type="button" class="button button--quiet" onClick={onClose}>
           {en.panel.close}
@@ -55,7 +64,9 @@ export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onC
       </div>
 
       <div class="side__body">
-        {tab === 'history' ? (
+        {tab === 'recipes' ? (
+          <RecipesPanel dataset={dataset} history={history} />
+        ) : tab === 'history' ? (
           <HistoryPanel history={history} />
         ) : tool === null ? (
           <ToolPicker dataset={dataset} onPick={setTool} />

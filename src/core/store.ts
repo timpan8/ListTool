@@ -1,5 +1,13 @@
 import { computed, effect, signal } from '@preact/signals';
 import type { Dataset } from './model';
+import {
+  applyRecipe,
+  createRecipe,
+  withoutStep,
+  type Recipe,
+  type ReplayLookup,
+  type ReplayMessages,
+} from './recipes';
 import { DEFAULT_SETTINGS, type Settings } from './settings';
 import { clear as clearStorage, load, save } from './storage';
 import {
@@ -28,6 +36,7 @@ const noticeSignal = signal<string>('');
 const settingsSignal = signal<Settings>(DEFAULT_SETTINGS);
 const favoritesSignal = signal<string[]>([]);
 const recentsSignal = signal<string[]>([]);
+const recipesSignal = signal<Recipe[]>([]);
 
 let nextDatasetNumber = 1;
 
@@ -74,6 +83,7 @@ export const notice = computed<string>(() => noticeSignal.value);
 export const settings = computed<Settings>(() => settingsSignal.value);
 export const favorites = computed<string[]>(() => favoritesSignal.value);
 export const recents = computed<string[]>(() => recentsSignal.value);
+export const recipes = computed<Recipe[]>(() => recipesSignal.value);
 
 function updateTab(id: string, change: (history: History) => History): void {
   tabs.value = tabs.value.map((tab) =>
@@ -194,6 +204,60 @@ export function noteToolUsed(toolId: string): void {
   recentsSignal.value = [toolId, ...without].slice(0, RECENTS_LIMIT);
 }
 
+// ---------- recipes ----------
+
+let nextRecipeNumber = 1;
+
+/** Save the steps behind what is on screen as a named, replayable recipe. */
+export function saveRecipe(name: string, steps: Step[], at: number): string | null {
+  const trimmed = name.trim();
+  if (trimmed === '' || steps.length === 0) return null;
+
+  const id = `r${nextRecipeNumber}`;
+  nextRecipeNumber += 1;
+  recipesSignal.value = [...recipesSignal.value, createRecipe(id, trimmed, steps, at)];
+  return id;
+}
+
+export function removeRecipe(id: string): void {
+  recipesSignal.value = recipesSignal.value.filter((recipe) => recipe.id !== id);
+}
+
+export function removeRecipeStep(id: string, index: number): void {
+  recipesSignal.value = recipesSignal.value.map((recipe) =>
+    recipe.id === id ? withoutStep(recipe, index) : recipe,
+  );
+}
+
+/**
+ * Replay a recipe on a list. The whole replay is ONE undoable step: a recipe is a single
+ * action to the person using it, however many tools it runs.
+ */
+export function runRecipe(
+  datasetId: string,
+  recipeId: string,
+  lookup: ReplayLookup,
+  messages: ReplayMessages,
+  summaryOf: (recipe: Recipe, applied: Step[]) => string,
+): string[] {
+  const recipe = recipesSignal.value.find((candidate) => candidate.id === recipeId);
+  const tab = tabs.value.find((candidate) => candidate.id === datasetId);
+  if (recipe === undefined || tab === undefined) return [];
+
+  const result = applyRecipe(recipe, current(tab.history), lookup, messages);
+  applyStep(
+    datasetId,
+    {
+      toolId: `recipe:${recipe.id}`,
+      options: { recipeId: recipe.id },
+      summary: summaryOf(recipe, result.applied),
+      at: Date.now(),
+    },
+    result.output,
+  );
+  return result.warnings;
+}
+
 // ---------- persistence ----------
 
 /** Writes are debounced: typing in a tool option should not hit storage per keystroke. */
@@ -208,6 +272,7 @@ function persistNow(onQuota: () => void): void {
     favorites: favoritesSignal.value,
     recents: recentsSignal.value,
     datasets: keep ? tabs.value.map((tab) => current(tab.history)) : [],
+    recipes: recipesSignal.value,
   });
 
   if (result === 'quota' && !quotaWarned) {
@@ -225,6 +290,12 @@ export function hydrate(): void {
   settingsSignal.value = stored.settings;
   favoritesSignal.value = stored.favorites;
   recentsSignal.value = stored.recents;
+  recipesSignal.value = stored.recipes;
+  nextRecipeNumber =
+    stored.recipes.reduce((top, recipe) => {
+      const parsed = Number.parseInt(recipe.id.replace(/^r/, ''), 10);
+      return Number.isFinite(parsed) ? Math.max(top, parsed) : top;
+    }, 0) + 1;
 
   if (stored.datasets.length > 0) {
     tabs.value = stored.datasets.map((dataset) => ({
@@ -249,6 +320,7 @@ export function startPersistence(onQuota: () => void): () => void {
     void settingsSignal.value;
     void favoritesSignal.value;
     void recentsSignal.value;
+    void recipesSignal.value;
 
     if (saveTimer !== undefined) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
@@ -275,6 +347,8 @@ export function resetWorkspace(): void {
   settingsSignal.value = DEFAULT_SETTINGS;
   favoritesSignal.value = [];
   recentsSignal.value = [];
+  recipesSignal.value = [];
   setNotice('');
   nextDatasetNumber = 1;
+  nextRecipeNumber = 1;
 }

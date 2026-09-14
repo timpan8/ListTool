@@ -33,6 +33,7 @@ const state = {
   favorites: ['sort'],
   recents: ['trim-whitespace'],
   datasets: [listOf('a', 'b')],
+  recipes: [{ id: 'r1', name: 'Cleanup', steps: [], at: 0 }],
 };
 
 describe('storage', () => {
@@ -43,6 +44,12 @@ describe('storage', () => {
     expect(loaded.recents).toEqual(['trim-whitespace']);
     expect(loaded.datasets[0]?.rows).toHaveLength(2);
     expect(loaded.settings).toEqual(DEFAULT_SETTINGS);
+    expect(loaded.recipes[0]?.name).toBe('Cleanup');
+  });
+
+  it('drops a stored recipe that is missing its shape', () => {
+    memory.setItem(STORAGE_KEY, JSON.stringify({ recipes: [{ id: 'r' }, 'nope'] }));
+    expect(load().recipes).toEqual([]);
   });
 
   it('uses one key', () => {
