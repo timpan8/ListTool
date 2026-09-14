@@ -8,6 +8,7 @@ import { jsonExporter } from './json';
 import { powershellExporter } from './powershell';
 import { sqlInExporter } from './sql-in';
 import { markdownExporter } from './markdown';
+import { recipientsExporter } from './recipients';
 import { templateExporter } from './template';
 
 /**
@@ -24,6 +25,7 @@ export const exporters: Exporter[] = [
   powershellExporter,
   sqlInExporter,
   markdownExporter,
+  recipientsExporter,
   templateExporter,
 ];
 

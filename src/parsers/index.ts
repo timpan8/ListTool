@@ -3,6 +3,7 @@ import { linesParser } from './lines';
 import { delimitedParser } from './delimited';
 import { csvParser } from './csv';
 import { htmlTableParser } from './html-table';
+import { jsonParser } from './json';
 import { recipientsParser } from './recipients';
 import { emailsInTextParser } from './emails-in-text';
 
@@ -15,6 +16,7 @@ export const parsers: Parser[] = [
   delimitedParser,
   csvParser,
   htmlTableParser,
+  jsonParser,
   recipientsParser,
   emailsInTextParser,
 ];

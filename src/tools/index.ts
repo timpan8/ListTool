@@ -39,6 +39,9 @@ import { filterRulesTool } from './transform/filter-rules';
 import { templateColumnTool } from './columns/template-column';
 import { headerRowTool } from './columns/header-row';
 import { unpivotTool } from './columns/unpivot';
+import { parseColumnTool } from './columns/parse-column';
+import { fieldDiffTool } from './compare/field-diff';
+import { coalesceTool } from './compare/coalesce';
 import { sampleTool } from './transform/sample';
 import { splitByValueTool } from './transform/split-by-value';
 import { crossTabTool } from './extract/cross-tab';
@@ -89,6 +92,7 @@ export const tools: Tool[] = [
   unpivotTool,
   headerRowTool,
   templateColumnTool,
+  parseColumnTool,
   buildDisplayNameTool,
   generateEmailTool,
   extractPatternTool,
@@ -99,6 +103,8 @@ export const tools: Tool[] = [
   setOperationTool,
   joinListsTool,
   markMembershipTool,
+  fieldDiffTool,
+  coalesceTool,
 ];
 
 export function toolById(id: string): Tool | undefined {
