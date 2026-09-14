@@ -10,9 +10,23 @@ when the page and its assets are downloaded.)
 
 ## Status
 
-Milestone 1 of 6. The project scaffold, the build and the GitHub Pages deployment are in
-place; the page itself is still a placeholder. See `PLAN.md` for the milestone order,
-`SPEC.md` for what is being built and `CLAUDE.md` for the contracts the code follows.
+Milestone 2 of 6. The workspace works end to end for importing, viewing and exporting
+lists; tools, compare mode, the command palette and persistence are still to come. See
+`PLAN.md` for the milestone order, `SPEC.md` for what is being built and `CLAUDE.md` for
+the contracts the code follows.
+
+What works today:
+
+- **Import** by paste, file picker or drag and drop, with delimiter detection you can
+  override, live preview, and a list name.
+- **Parsers:** Lines, Delimited, CSV / TSV.
+- **View** each list as a table or as its original text, search within the view (which
+  never changes the list), and select a column to count on.
+- **Re-parse** from the Raw view with different options — an undoable step like any other.
+- **Undo / redo** per list, with `Ctrl/Cmd+Z` and `Shift+Ctrl/Cmd+Z`.
+- **Tabs:** several lists at once — rename, duplicate, close.
+- **Export** as lines, a joined line, a quoted list, CSV or TSV: copy to the clipboard, or
+  download CSV and TSV as a file. One-click **Copy** takes the active list as lines.
 
 ## Requirements
 
@@ -38,7 +52,10 @@ Pages at https://timpan8.github.io/ListTool/.
 
 Two things must hold for that to work:
 
-1. **Repo setting, once:** Settings → Pages → Source = **GitHub Actions**.
+1. **Pages must be enabled.** The workflow does that itself — `configure-pages` runs
+   with `enablement: true` — so there is normally nothing to set by hand. If that step
+   ever fails with *Get Pages site failed*, enable it manually: Settings → Pages →
+   Source = **GitHub Actions**.
 2. **`base` matches the repo path.** `vite.config.ts` sets `base: '/ListTool/'`. GitHub
    Pages paths are case-sensitive, so renaming the repository means changing `base` in
    the same commit. A user site or a custom domain would use `base: '/'`.
@@ -49,7 +66,7 @@ Two things must hold for that to work:
 src/
   core/       model, registries, history, store, persistence, compare helpers
   parsers/    raw text  → Dataset        (one module + test + one registry line each)
-  tools/      Dataset   → Dataset
+  tools/      Dataset   → Dataset          (empty until milestone 3)
   exporters/  Dataset   → text
   shell/      generic UI: layout, tabs, dialogs, panels — never edited to add a
               parser, tool or exporter

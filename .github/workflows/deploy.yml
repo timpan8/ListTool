@@ -1,5 +1,6 @@
 # Build with Vite and deploy to GitHub Pages.
-# One-time repo setting BEFORE the first push: Settings → Pages → Source = "GitHub Actions".
+# The configure-pages step below enables Pages itself, so no manual repo setting is
+# needed. Fallback if that ever fails: Settings → Pages → Source = "GitHub Actions".
 # Action majors are pinned to a known-good combination; bump them when Dependabot suggests it.
 name: Deploy to GitHub Pages
 
@@ -30,7 +31,12 @@ jobs:
       - run: npm run typecheck
       - run: npm test -- --run
       - run: npm run build
+      # enablement: true turns Pages on (build type "workflow") the first time this
+      # runs. Without it the step fails with "Get Pages site failed" on a repository
+      # where Pages has never been enabled. It is a no-op once Pages is on.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
