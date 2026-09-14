@@ -38,7 +38,10 @@ Pages at https://timpan8.github.io/ListTool/.
 
 Two things must hold for that to work:
 
-1. **Repo setting, once:** Settings → Pages → Source = **GitHub Actions**.
+1. **Pages must be enabled.** The workflow does that itself — `configure-pages` runs
+   with `enablement: true` — so there is normally nothing to set by hand. If that step
+   ever fails with *Get Pages site failed*, enable it manually: Settings → Pages →
+   Source = **GitHub Actions**.
 2. **`base` matches the repo path.** `vite.config.ts` sets `base: '/ListTool/'`. GitHub
    Pages paths are case-sensitive, so renaming the repository means changing `base` in
    the same commit. A user site or a custom domain would use `base: '/'`.
