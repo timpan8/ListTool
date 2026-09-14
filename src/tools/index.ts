@@ -26,6 +26,19 @@ import { keepColumnsTool } from './columns/keep-columns';
 import { buildDisplayNameTool } from './columns/build-display-name';
 import { generateEmailTool } from './columns/generate-email';
 import { countValuesTool } from './extract/count-values';
+import { fixMojibakeTool } from './clean/fix-mojibake';
+import { cleanInvisibleTool } from './clean/clean-invisible';
+import { normalizePhoneTool } from './clean/normalize-phone';
+import { findSimilarTool } from './clean/find-similar';
+import { splitIntoRowsTool } from './transform/split-into-rows';
+import { chunkListTool } from './transform/chunk-list';
+import { setValueTool } from './transform/set-value';
+import { selectedRowsTool } from './transform/selected-rows';
+import { appendRowsTool } from './transform/append-rows';
+import { transposeTool } from './columns/transpose';
+import { groupByTool } from './extract/group-by';
+import { joinListsTool } from './compare/join-lists';
+import { markMembershipTool } from './compare/mark-membership';
 
 /**
  * The tool registry. Adding a tool means adding one module, its test, and one line
@@ -38,7 +51,11 @@ export const tools: Tool[] = [
   removeDuplicatesTool,
   changeCaseTool,
   findDuplicatesTool,
+  findSimilarTool,
   validateEmailsTool,
+  fixMojibakeTool,
+  cleanInvisibleTool,
+  normalizePhoneTool,
   sortTool,
   filterRowsTool,
   findReplaceTool,
@@ -46,6 +63,11 @@ export const tools: Tool[] = [
   numberRowsTool,
   reorderRowsTool,
   removeRowsInBTool,
+  splitIntoRowsTool,
+  chunkListTool,
+  appendRowsTool,
+  setValueTool,
+  selectedRowsTool,
   splitColumnTool,
   swapColumnsTool,
   mergeColumnsTool,
@@ -53,12 +75,16 @@ export const tools: Tool[] = [
   removeColumnTool,
   moveColumnTool,
   keepColumnsTool,
+  transposeTool,
   buildDisplayNameTool,
   generateEmailTool,
   extractPatternTool,
   countValuesTool,
+  groupByTool,
   compareListsTool,
   setOperationTool,
+  joinListsTool,
+  markMembershipTool,
 ];
 
 export function toolById(id: string): Tool | undefined {

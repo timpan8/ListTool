@@ -78,6 +78,29 @@ describe('tool registry', () => {
     }
   });
 
+  it("only asks about a second list's columns from a tool that has one", () => {
+    for (const tool of tools) {
+      const asksSecond = tool.options.some(
+        (field) =>
+          (field.type === 'column' || field.type === 'columns') && field.from === 'second',
+      );
+      if (asksSecond) expect(tool.arity).toBe('dual');
+    }
+  });
+
+  it('gives every extra list a name and a dataset, for every tool that makes one', () => {
+    for (const tool of tools) {
+      const extras = tool.run(table, defaultOptions(tool.options)).extraLists ?? [];
+      for (const extra of extras) {
+        expect(extra.name.trim()).not.toBe('');
+        expect(extra.dataset.columns.length).toBeGreaterThan(0);
+        expect(new Set(extra.dataset.rows.map((row) => row.id)).size).toBe(
+          extra.dataset.rows.length,
+        );
+      }
+    }
+  });
+
   it('hides every tool that needs two columns from a one-column list', () => {
     const hidden = tools.filter((tool) => tool.appliesTo?.(listOf('a')) === false);
     expect(hidden.map((tool) => tool.id).sort()).toEqual([

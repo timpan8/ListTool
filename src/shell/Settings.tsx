@@ -1,16 +1,25 @@
 import { DELIMITER_PRESETS } from '../core/detect';
-import { clearAllData, settings, updateSettings } from '../core/store';
+import {
+  clearAllData,
+  openWorkspaceFile,
+  settings,
+  updateSettings,
+  workspaceFile,
+} from '../core/store';
 import { en } from '../i18n/en';
 import { Dialog } from './Dialog';
+import { downloadText } from './download';
 
 interface Props {
   onClose: () => void;
   onCleared: () => void;
+  /** Reports what happened with a workspace file, in the status bar. */
+  onNotice: (message: string) => void;
 }
 
 const SHORTCUTS = ['palette', 'apply', 'undo', 'redo', 'copy', 'close', 'paste'] as const;
 
-export function Settings({ onClose, onCleared }: Props) {
+export function Settings({ onClose, onCleared, onNotice }: Props) {
   const current = settings.value;
 
   return (
@@ -87,6 +96,39 @@ export function Settings({ onClose, onCleared }: Props) {
         </label>
         <p class="field__help">{en.settings.keepListsHelp}</p>
       </div>
+
+      <section class="field">
+        <h3 class="field__label">{en.settings.workspace}</h3>
+        <div class="field__row">
+          <button
+            type="button"
+            class="button"
+            onClick={() => {
+              downloadText(`${en.settings.workspaceFilename}.json`, workspaceFile());
+              onNotice(en.settings.saved);
+            }}
+          >
+            {en.settings.saveFile}
+          </button>
+          <label class="button">
+            {en.settings.openFile}
+            <input
+              type="file"
+              accept="application/json,.json"
+              class="visually-hidden"
+              onChange={async (event) => {
+                const file = event.currentTarget.files?.[0];
+                if (file === undefined) return;
+                const opened = openWorkspaceFile(await file.text());
+                onNotice(opened ? en.settings.opened : en.settings.openFailed);
+                if (opened) onClose();
+              }}
+            />
+          </label>
+        </div>
+        <p class="field__help">{en.settings.saveFileHelp}</p>
+        <p class="field__help">{en.settings.openFileHelp}</p>
+      </section>
 
       <section class="field">
         <h3 class="field__label">{en.settings.storage}</h3>

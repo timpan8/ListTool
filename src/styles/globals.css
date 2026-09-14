@@ -84,6 +84,23 @@ figure {
   cursor: not-allowed;
 }
 
+/* A label styled as a button, for a file input that is hidden behind it. */
+label.button {
+  display: inline-flex;
+  align-items: center;
+}
+
+label.button:focus-within {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.field__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
 .button--primary {
   background: var(--color-accent);
   border-color: var(--color-accent);
@@ -370,6 +387,138 @@ textarea {
 
 .table td.is-selected {
   background: var(--color-surface-sunken);
+}
+
+.table__tick {
+  width: 1%;
+  text-align: center;
+}
+
+/* A ticked row and a changed cell are marked; the mark, not the tint, is the signal. */
+.table tr.is-ticked > td {
+  background: var(--color-surface-marked);
+}
+
+.table tr.is-new > td,
+.table td.is-changed,
+.table th.is-new {
+  background: var(--color-surface-marked);
+}
+
+.mark {
+  color: var(--color-accent);
+  margin-right: var(--space-2);
+  font-size: var(--text-xs);
+  vertical-align: 1px;
+}
+
+/* A cell you can edit: a button that fills the cell and looks like the text it shows. */
+.cell {
+  display: block;
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: pre-wrap;
+  cursor: text;
+}
+
+.cell__input {
+  width: 100%;
+  min-width: 6ch;
+  height: var(--control-height);
+  font: inherit;
+}
+
+/* ---------- column profile ---------- */
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.profile__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.profile__name {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.profile__stats {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.facets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.facet {
+  display: flex;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: var(--control-height);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.facet:hover {
+  background: var(--color-surface-sunken);
+}
+
+.facet.is-selected {
+  background: var(--color-surface-marked);
+  border-color: var(--color-border-strong);
+}
+
+.facet__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.facet__count {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.view__selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-marked);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
 }
 
 /* ---------- status bar ---------- */

@@ -10,6 +10,8 @@
   --color-surface: #ffffff;
   --color-surface-sunken: #f4f6f8;
   --color-surface-raised: #ffffff;
+  /* Rows and cells a tool touched, or you ticked. Always paired with a mark or a box. */
+  --color-surface-marked: #eef2fb;
   --color-border: #d3d8de;
   /* Control borders carry meaning, so they meet WCAG 2.2 SC 1.4.11's 3:1. */
   --color-border-strong: #7d8794;
@@ -78,6 +80,7 @@
     --color-surface: #16191e;
     --color-surface-sunken: #0f1216;
     --color-surface-raised: #1c2027;
+    --color-surface-marked: #1b2333;
     --color-border: #2b313a;
     --color-border-strong: #6b7685;
 

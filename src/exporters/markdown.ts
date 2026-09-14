@@ -1,19 +1,12 @@
 import { cell, type Column, type Dataset } from '../core/model';
 import { booleanOption, stringOption, type Exporter } from '../core/registry';
+import { renderHtmlTable } from './html-table';
 import { chosenColumns } from './table-text';
 import { en } from '../i18n/en';
 
 /** A pipe would end the cell, so it is escaped; a newline becomes a break. */
 function markdownCell(value: string): string {
   return value.split('|').join('\\|').replace(/\r?\n/g, '<br>');
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 function renderMarkdown(dataset: Dataset, columns: Column[], header: boolean): string {
@@ -28,28 +21,6 @@ function renderMarkdown(dataset: Dataset, columns: Column[], header: boolean): s
     `| ${names.map(() => '---').join(' | ')} |`,
     ...body,
   ].join('\n');
-}
-
-function renderHtml(dataset: Dataset, columns: Column[], header: boolean): string {
-  const lines = ['<table>'];
-  if (header) {
-    lines.push('  <thead>');
-    lines.push(
-      `    <tr>${columns.map((column) => `<th>${escapeHtml(column.name)}</th>`).join('')}</tr>`,
-    );
-    lines.push('  </thead>');
-  }
-  lines.push('  <tbody>');
-  for (const row of dataset.rows) {
-    lines.push(
-      `    <tr>${columns
-        .map((column) => `<td>${escapeHtml(cell(row, column.id))}</td>`)
-        .join('')}</tr>`,
-    );
-  }
-  lines.push('  </tbody>');
-  lines.push('</table>');
-  return lines.join('\n');
 }
 
 export const markdownExporter: Exporter = {
@@ -74,7 +45,14 @@ export const markdownExporter: Exporter = {
     const header = booleanOption(options, 'header', true);
     const columns = chosenColumns(dataset, options);
     return stringOption(options, 'flavour', 'markdown') === 'html'
-      ? renderHtml(dataset, columns, header)
+      ? renderHtmlTable(dataset, columns, header)
       : renderMarkdown(dataset, columns, header);
+  },
+  html(dataset, options) {
+    return renderHtmlTable(
+      dataset,
+      chosenColumns(dataset, options),
+      booleanOption(options, 'header', true),
+    );
   },
 };

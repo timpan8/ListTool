@@ -50,6 +50,23 @@ export const CSV_CRLF = 'name,email\r\nAnna,anna@example.com\r\nBo,bo@example.co
 export const COMPARE_A = 'anna@example.com\nbob@example.com\nanna@example.com\ncharlie@example.com';
 export const COMPARE_B = 'anna@example.com\nbob@example.com\nbob@example.com\ndavid@example.com';
 
+/**
+ * What a copy out of Excel actually puts on the clipboard: a wrapper, inline styles,
+ * a comment, a non-breaking space, and an entity in a cell.
+ */
+export const EXCEL_HTML = [
+  '<html xmlns:x="urn:schemas-microsoft-com:office:excel">',
+  '<!--StartFragment-->',
+  '<table border=0 cellpadding=0 cellspacing=0 width=192 style="border-collapse: collapse">',
+  ' <tr height=20><th style="height:15.0pt">Namn</th><th>E-post</th></tr>',
+  ' <tr height=20><td style="height:15.0pt">Andersson,&nbsp;Anna</td>',
+  '  <td><a href="mailto:anna@example.com">anna@example.com</a></td></tr>',
+  ' <tr height=20><td>&#197;sa &Ouml;berg</td><td>asa@example.com</td></tr>',
+  '</table>',
+  '<!--EndFragment-->',
+  '</html>',
+].join('\n');
+
 /** The same address written with different case and padding — normalization fodder. */
 export const MESSY_CASE = 'Anna@Example.com \n anna@example.com\nANNA@EXAMPLE.COM';
 

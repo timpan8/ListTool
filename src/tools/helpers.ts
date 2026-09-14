@@ -73,7 +73,7 @@ export function rowsPhrase(count: number): string {
 }
 
 /** A column id that no existing column uses, derived from a wanted base. */
-export function freeColumnId(dataset: Dataset, base: string): string {
+export function freeColumnId(dataset: { columns: Column[] }, base: string): string {
   const taken = new Set(dataset.columns.map((column) => column.id));
   if (!taken.has(base)) return base;
   let suffix = 2;

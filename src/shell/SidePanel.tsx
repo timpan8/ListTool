@@ -4,6 +4,7 @@ import type { History } from '../core/history';
 import type { Tool } from '../core/registry';
 import { en } from '../i18n/en';
 import { HistoryPanel } from './HistoryPanel';
+import { ProfilePanel } from './ProfilePanel';
 import { ResultPanel } from './ResultPanel';
 import { RecipesPanel } from './RecipesPanel';
 import { ToolPicker } from './ToolPicker';
@@ -19,7 +20,7 @@ interface Props {
 
 /** The collapsible right-hand panel: tools on one tab, this list's history on the other. */
 export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onClose }: Props) {
-  const [tab, setTab] = useState<'tools' | 'history' | 'recipes'>('tools');
+  const [tab, setTab] = useState<'tools' | 'columns' | 'history' | 'recipes'>('tools');
   const [tool, setTool] = useState<Tool | null>(null);
 
   useEffect(() => {
@@ -40,6 +41,14 @@ export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onC
             onClick={() => setTab('tools')}
           >
             {en.panel.tools}
+          </button>
+          <button
+            type="button"
+            class="segmented__button"
+            aria-pressed={tab === 'columns'}
+            onClick={() => setTab('columns')}
+          >
+            {en.profile.title}
           </button>
           <button
             type="button"
@@ -66,6 +75,8 @@ export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onC
       <div class="side__body">
         {tab === 'recipes' ? (
           <RecipesPanel dataset={dataset} history={history} />
+        ) : tab === 'columns' ? (
+          <ProfilePanel dataset={dataset} />
         ) : tab === 'history' ? (
           <HistoryPanel history={history} />
         ) : tool === null ? (

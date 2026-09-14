@@ -97,6 +97,18 @@ describe('the columns field', () => {
   });
 });
 
+describe('the rows field', () => {
+  const field: OptionField = { key: 'rows', label: 'Rows', type: 'rows' };
+
+  it('stays unset, because a selection is made in the table and not in the form', () => {
+    expect('rows' in defaultOptions([field])).toBe(false);
+  });
+
+  it('never carries to another tool: a selection belongs to the table it was made in', () => {
+    expect(carryOptions([field], [field], { rows: ['r1'] })).toEqual({});
+  });
+});
+
 describe('stringsOption', () => {
   it('reads an array of strings', () => {
     expect(stringsOption({ a: ['x', 'y'] }, 'a', ['fallback'])).toEqual(['x', 'y']);

@@ -1,5 +1,5 @@
 import { cell, draftDataset, makeRow, type Dataset, type Row } from './model';
-import { normalizeKey, type NormalizeOptions } from './normalize';
+import { joinKeys, normalizeKey, type NormalizeOptions } from './normalize';
 
 export type CompareStatus = 'match' | 'count-differs' | 'only-a' | 'only-b';
 
@@ -28,10 +28,14 @@ export interface CompareResult {
 }
 
 export interface CompareOptions {
-  keyA: string;
-  keyB: string;
+  /** One or more columns. Several make a compound key, for lists with no single id. */
+  keyA: string[];
+  keyB: string[];
   normalize: NormalizeOptions;
 }
+
+/** Joins the parts of a compound key for display. Punctuation, not translatable text. */
+const DISPLAY_SEPARATOR = ' · ';
 
 interface Side {
   first: string;
@@ -39,11 +43,17 @@ interface Side {
 }
 
 /** Group a list's rows by normalized key, keeping order and every duplicate. */
-function group(dataset: Dataset, columnId: string, normalize: NormalizeOptions): Map<string, Side> {
+function group(
+  dataset: Dataset,
+  columnIds: string[],
+  normalize: NormalizeOptions,
+): Map<string, Side> {
+  const ids = columnIds.length === 0 ? [dataset.columns[0]?.id ?? ''] : columnIds;
   const groups = new Map<string, Side>();
+
   for (const row of dataset.rows) {
-    const value = cell(row, columnId);
-    const key = normalizeKey(value, normalize);
+    const value = ids.map((columnId) => cell(row, columnId)).join(DISPLAY_SEPARATOR);
+    const key = joinKeys(ids.map((columnId) => normalizeKey(cell(row, columnId), normalize)));
     const existing = groups.get(key);
     if (existing === undefined) {
       groups.set(key, { first: value, rows: [row] });

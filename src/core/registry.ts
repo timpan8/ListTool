@@ -2,6 +2,9 @@ import type { Dataset } from './model';
 
 export type Options = Record<string, unknown>;
 
+/** Which dataset a column field offers: the one being worked on, or a dual tool's second. */
+export type ColumnSource = 'input' | 'second';
+
 export type OptionField =
   | {
       key: string;
@@ -20,10 +23,11 @@ export type OptionField =
       help?: string;
     }
   /**
-   * Dropdown of the input dataset's columns → column id. `allowAll` adds an
-   * "All columns" choice whose value is '' — half the cleaning tools work either on one
-   * column or on the whole row, and that choice belongs in the generated form rather
-   * than in a second field or a special case in the shell.
+   * Dropdown of a dataset's columns → column id. `allowAll` adds an "All columns" choice
+   * whose value is '' — half the cleaning tools work either on one column or on the whole
+   * row, and that choice belongs in the generated form rather than in a second field or a
+   * special case in the shell. `from: 'second'` offers the SECOND list's columns instead,
+   * which is the only honest way for a dual tool to ask "which column over there?".
    */
   | {
       key: string;
@@ -31,10 +35,17 @@ export type OptionField =
       type: 'column';
       default?: string;
       allowAll?: boolean;
+      from?: ColumnSource;
       help?: string;
     }
   /**
-   * Checkboxes over the input dataset's columns → an array of column ids. Omitting the
+   * The rows the user has ticked in the table → an array of row ids. There is no way to
+   * pick rows from a form, so the panel fills this from the table's own selection; the
+   * tool stays pure and the choice stays serializable.
+   */
+  | { key: string; label: string; type: 'rows'; help?: string }
+  /**
+   * Checkboxes over a dataset's columns → an array of column ids. Omitting the
    * default means every column, which is what a table exporter wants before anyone has
    * touched it. Anything that works on a SET of columns — which columns a CSV writes,
    * which ones a list keeps — needs this; picking them one at a time is not the same
@@ -45,6 +56,7 @@ export type OptionField =
       label: string;
       type: 'columns';
       default?: string[];
+      from?: ColumnSource;
       help?: string;
     }
   /** Presets (newline , ; tab | space) + custom. */
@@ -56,6 +68,12 @@ export interface ToolResult {
   summary: string;
   stats?: Record<string, number>;
   warnings?: string[];
+  /**
+   * Further lists the tool produced, which the shell opens as new tabs. Splitting one
+   * list into batches is a single action to the person doing it, so it stays a single
+   * tool rather than something they repeat by hand.
+   */
+  extraLists?: { name: string; dataset: Dataset }[];
 }
 
 export interface Tool {
@@ -90,13 +108,20 @@ export interface Exporter {
   options: OptionField[];
   /** PURE — the shell does copy/download. */
   render(dataset: Dataset, options: Options): string;
+  /**
+   * The same content as HTML, for exporters whose output is table-shaped. When an
+   * exporter offers this, Copy puts it on the clipboard beside the plain text, and a
+   * paste into Excel or Word lands in cells. PURE, like render.
+   */
+  html?(dataset: Dataset, options: Options): string;
 }
 
 /** The option record a field list describes when nothing has been changed yet. */
 export function defaultOptions(fields: OptionField[]): Options {
   const options: Options = {};
   for (const field of fields) {
-    // A column field with no default means "let the dataset decide", so it stays unset.
+    // A column or row field with no default means "let the dataset decide": unset.
+    if (field.type === 'rows') continue;
     if (field.type === 'column' || field.type === 'columns') {
       if (field.default !== undefined) options[field.key] = field.default;
     } else {
@@ -118,7 +143,9 @@ export function defaultOptions(fields: OptionField[]): Options {
 export function carryOptions(to: OptionField[], from: OptionField[], options: Options): Options {
   const carried: Options = {};
   for (const field of to) {
-    if (field.type === 'select') continue;
+    // A selection belongs to the table it was made in, and a select's choices belong to
+    // the field that declared them. Neither survives a switch.
+    if (field.type === 'select' || field.type === 'rows') continue;
     const before = from.find((candidate) => candidate.key === field.key);
     if (before?.type !== field.type) continue;
     if (field.key in options) carried[field.key] = options[field.key];

@@ -1,6 +1,7 @@
 import type { Column } from '../core/model';
 import type { OptionField, Options } from '../core/registry';
 import { en } from '../i18n/en';
+import { plural } from '../i18n/format';
 import { DelimiterField } from './DelimiterField';
 
 interface Props {
@@ -8,8 +9,10 @@ interface Props {
   idPrefix: string;
   fields: OptionField[];
   options: Options;
-  /** Choices for `column` fields — the input dataset's columns. */
+  /** Choices for a `column` or `columns` field — the input dataset's columns. */
   columns: Column[];
+  /** The same for a field declaring `from: 'second'`. Empty when there is no second list. */
+  secondColumns?: Column[];
   onChange: (key: string, value: string | number | boolean | string[]) => void;
 }
 
@@ -17,7 +20,14 @@ interface Props {
  * The options form is GENERATED from a parser's, tool's or exporter's field list. It is
  * never hand-built, which is why adding one of those needs no shell change.
  */
-export function OptionsPanel({ idPrefix, fields, options, columns, onChange }: Props) {
+export function OptionsPanel({
+  idPrefix,
+  fields,
+  options,
+  columns,
+  secondColumns = [],
+  onChange,
+}: Props) {
   if (fields.length === 0) return null;
 
   return (
@@ -25,6 +35,10 @@ export function OptionsPanel({ idPrefix, fields, options, columns, onChange }: P
       {fields.map((field) => {
         const id = `${idPrefix}-${field.key}`;
         const value = options[field.key];
+        const choosable =
+          (field.type === 'column' || field.type === 'columns') && field.from === 'second'
+            ? secondColumns
+            : columns;
 
         if (field.type === 'delimiter') {
           return (
@@ -39,18 +53,34 @@ export function OptionsPanel({ idPrefix, fields, options, columns, onChange }: P
           );
         }
 
+        if (field.type === 'rows') {
+          // Rows cannot be picked from a form, so this only reports what the table holds.
+          const ticked = Array.isArray(value) ? value.length : 0;
+          return (
+            <div key={field.key} class="field">
+              <span class="field__label">{field.label}</span>
+              <p class="notice" role="status">
+                {ticked === 0
+                  ? en.options.selectionEmpty
+                  : plural(ticked, en.options.selection)}
+              </p>
+              {field.help === undefined ? null : <p class="field__help">{field.help}</p>}
+            </div>
+          );
+        }
+
         if (field.type === 'columns') {
           // No value at all means every column — a table exporter should write the whole
           // table before anyone has touched this.
           const chosen = Array.isArray(value)
             ? value.filter((entry): entry is string => typeof entry === 'string')
-            : columns.map((column) => column.id);
+            : choosable.map((column) => column.id);
 
           return (
             <fieldset key={field.key} class="field field--group">
               <legend class="field__label">{field.label}</legend>
               <div class="field__choices">
-                {columns.map((column) => (
+                {choosable.map((column) => (
                   <label key={column.id} class="choice">
                     <input
                       type="checkbox"
@@ -59,7 +89,7 @@ export function OptionsPanel({ idPrefix, fields, options, columns, onChange }: P
                         onChange(
                           field.key,
                           // Kept in the dataset's own column order, not click order.
-                          columns
+                          choosable
                             .map((candidate) => candidate.id)
                             .filter((candidateId) =>
                               candidateId === column.id
@@ -95,7 +125,7 @@ export function OptionsPanel({ idPrefix, fields, options, columns, onChange }: P
           );
         }
 
-        const columnChoices = columns.map((column) => ({
+        const columnChoices = choosable.map((column) => ({
           value: column.id,
           label: column.name,
         }));

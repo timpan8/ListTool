@@ -6,7 +6,7 @@ import type { NormalizeOptions } from './normalize';
 import { COMPARE_A, COMPARE_B, listOf, tableOf } from '../test/fixtures';
 
 const NORMALIZE: NormalizeOptions = { trim: true, ignoreCase: true };
-const DEFAULTS = { keyA: VALUE_COLUMN, keyB: VALUE_COLUMN, normalize: NORMALIZE };
+const DEFAULTS = { keyA: [VALUE_COLUMN], keyB: [VALUE_COLUMN], normalize: NORMALIZE };
 
 function compare(a: string[], b: string[], normalize: NormalizeOptions = NORMALIZE) {
   return compareDatasets(listOf(...a), listOf(...b), { ...DEFAULTS, normalize });
@@ -87,14 +87,48 @@ describe('compareDatasets', () => {
     const a = tableOf(['name', 'email'], [{ name: 'Anna A', email: 'anna@example.com' }]);
     const b = tableOf(['who', 'email'], [{ who: 'A. Andersson', email: 'ANNA@example.com' }]);
     const result = compareDatasets(a, b, {
-      keyA: 'email',
-      keyB: 'email',
+      keyA: ['email'],
+      keyB: ['email'],
       normalize: { trim: true, ignoreCase: true },
     });
 
     expect(result.rows[0]?.status).toBe('match');
     expect(cell(result.rows[0]!.rowsA[0]!, 'name')).toBe('Anna A');
     expect(cell(result.rows[0]!.rowsB[0]!, 'who')).toBe('A. Andersson');
+  });
+
+  it('matches on several columns at once when no single one identifies a row', () => {
+    const a = tableOf(
+      ['first', 'last'],
+      [
+        { first: 'Anna', last: 'Andersson' },
+        { first: 'Anna', last: 'Berg' },
+      ],
+    );
+    const b = tableOf(
+      ['first', 'last'],
+      [{ first: 'anna', last: 'andersson' }],
+    );
+    const result = compareDatasets(a, b, {
+      keyA: ['first', 'last'],
+      keyB: ['first', 'last'],
+      normalize: NORMALIZE,
+    });
+
+    expect(result.stats).toEqual({ match: 1, 'count-differs': 0, 'only-a': 1, 'only-b': 0 });
+    expect(result.rows[0]?.a).toBe('Anna \u00b7 Andersson');
+  });
+
+  it('cannot be fooled into a match by moving text across the compound key', () => {
+    const a = tableOf(['first', 'last'], [{ first: 'Anna', last: 'Berg' }]);
+    const b = tableOf(['first', 'last'], [{ first: 'Anna Berg', last: '' }]);
+    const result = compareDatasets(a, b, {
+      keyA: ['first', 'last'],
+      keyB: ['first', 'last'],
+      normalize: NORMALIZE,
+    });
+
+    expect(result.rows.map((row) => row.status)).toEqual(['only-a', 'only-b']);
   });
 
   it('never mutates the lists it compares', () => {

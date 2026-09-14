@@ -3,7 +3,7 @@ import { setOperationTool } from './set-operation';
 import { cell, VALUE_COLUMN } from '../../core/model';
 import { listOf, tableOf } from '../../test/fixtures';
 
-const KEYS = { keyA: VALUE_COLUMN, keyB: VALUE_COLUMN };
+const KEYS = { keyA: [VALUE_COLUMN], keyB: [VALUE_COLUMN] };
 
 function run(a: string[], b: string[], mode: string): string[] {
   return setOperationTool
@@ -43,14 +43,14 @@ describe('set operations', () => {
   it('keeps whole rows when both lists have the same columns', () => {
     const a = tableOf(['name', 'email'], [{ name: 'Anna', email: 'x@example.com' }]);
     const b = tableOf(['name', 'email'], [{ name: 'Bo', email: 'y@example.com' }]);
-    const result = setOperationTool.run(a, { keyA: 'email', keyB: 'email', mode: 'union' }, b);
+    const result = setOperationTool.run(a, { keyA: ['email'], keyB: ['email'], mode: 'union' }, b);
     expect(result.output.rows.map((row) => cell(row, 'name'))).toEqual(['Anna', 'Bo']);
   });
 
   it('falls back to the matched values when the two lists have different columns', () => {
     const a = tableOf(['email'], [{ email: 'x@example.com' }]);
     const b = tableOf(['who', 'mail'], [{ who: 'Bo', mail: 'y@example.com' }]);
-    const result = setOperationTool.run(a, { keyA: 'email', keyB: 'mail', mode: 'union' }, b);
+    const result = setOperationTool.run(a, { keyA: ['email'], keyB: ['mail'], mode: 'union' }, b);
     expect(result.output.columns).toHaveLength(1);
     expect(result.warnings?.[0]).toContain('different columns');
   });
@@ -60,10 +60,27 @@ describe('set operations', () => {
     const b = tableOf(['who', 'mail'], [{ who: 'Bo', mail: 'x@example.com' }]);
     const result = setOperationTool.run(
       a,
-      { keyA: 'email', keyB: 'mail', mode: 'intersection' },
+      { keyA: ['email'], keyB: ['mail'], mode: 'intersection' },
       b,
     );
     expect(cell(result.output.rows[0]!, 'name')).toBe('Anna');
+  });
+
+  it('intersects on a compound key when no single column identifies a row', () => {
+    const a = tableOf(
+      ['first', 'last'],
+      [
+        { first: 'Anna', last: 'Berg' },
+        { first: 'Anna', last: 'Ek' },
+      ],
+    );
+    const b = tableOf(['first', 'last'], [{ first: 'anna', last: 'berg' }]);
+    const result = setOperationTool.run(
+      a,
+      { keyA: ['first', 'last'], keyB: ['first', 'last'], mode: 'intersection' },
+      b,
+    );
+    expect(result.output.rows.map((row) => cell(row, 'last'))).toEqual(['Berg']);
   });
 
   it('gives every output row a unique id', () => {

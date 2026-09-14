@@ -3,7 +3,7 @@ import { compareListsTool } from './compare-lists';
 import { cell, VALUE_COLUMN } from '../../core/model';
 import { listOf, tableOf } from '../../test/fixtures';
 
-const KEYS = { keyA: VALUE_COLUMN, keyB: VALUE_COLUMN };
+const KEYS = { keyA: [VALUE_COLUMN], keyB: [VALUE_COLUMN] };
 
 describe('compare lists tool', () => {
   it('produces the aligned table', () => {
@@ -41,8 +41,20 @@ describe('compare lists tool', () => {
   it('matches on the chosen columns', () => {
     const a = tableOf(['name', 'email'], [{ name: 'Anna', email: 'x@example.com' }]);
     const b = tableOf(['who', 'mail'], [{ who: 'Other', mail: 'X@Example.com' }]);
-    const result = compareListsTool.run(a, { keyA: 'email', keyB: 'mail' }, b);
+    const result = compareListsTool.run(a, { keyA: ['email'], keyB: ['mail'] }, b);
     expect(cell(result.output.rows[0]!, 'status')).toContain('Match');
+  });
+
+  it('matches on several columns at once', () => {
+    const a = tableOf(['first', 'last'], [{ first: 'Anna', last: 'Berg' }]);
+    const b = tableOf(['first', 'last'], [{ first: 'anna', last: 'BERG' }]);
+    const result = compareListsTool.run(
+      a,
+      { keyA: ['first', 'last'], keyB: ['first', 'last'] },
+      b,
+    );
+    expect(cell(result.output.rows[0]!, 'status')).toContain('Match');
+    expect(cell(result.output.rows[0]!, 'a')).toBe('Anna \u00b7 Berg');
   });
 
   it('warns and changes nothing without a second list', () => {

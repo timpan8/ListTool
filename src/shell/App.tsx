@@ -13,13 +13,15 @@ import {
 } from '../core/store';
 import { defaultOptions, type Tool } from '../core/registry';
 import { exporterById, DEFAULT_EXPORTER_ID } from '../exporters';
+import { htmlTableParser } from '../parsers/html-table';
 import { en } from '../i18n/en';
 import { CommandPalette } from './CommandPalette';
 import { ExportDialog } from './ExportDialog';
 import { ImportDialog } from './ImportDialog';
 import { Layout } from './Layout';
 import { Settings } from './Settings';
-import { copyText } from './clipboard';
+import { htmlFromPaste } from './clipboard';
+import { copyExported } from './copyOut';
 
 type DialogState =
   | { kind: 'none' }
@@ -27,6 +29,11 @@ type DialogState =
   | { kind: 'export' }
   | { kind: 'palette' }
   | { kind: 'settings' };
+
+/** True when a paste carries a real table, and not just styled text. */
+function hasTable(html: string): boolean {
+  return html !== '' && htmlTableParser.detect(html) !== null;
+}
 
 /** True when the keystroke belongs to whatever the user is typing in. */
 function isTyping(target: EventTarget | null): boolean {
@@ -54,8 +61,8 @@ export function App() {
   async function copyAs(exporterId: string): Promise<void> {
     const exporter = exporterById(exporterId);
     if (exporter === undefined || dataset === null) return;
-    const text = exporter.render(dataset, defaultOptions(exporter.options));
-    setNotice((await copyText(text)) ? en.toolbar.copied : en.toolbar.copyFailed);
+    const copied = await copyExported(exporter, dataset, defaultOptions(exporter.options));
+    setNotice(copied ? en.toolbar.copied : en.toolbar.copyFailed);
   }
 
   useEffect(() => {
@@ -89,13 +96,17 @@ export function App() {
       }
     }
 
-    // Ctrl/Cmd+V outside a field opens the import dialog with what was pasted.
+    // Ctrl/Cmd+V outside a field opens the import dialog with what was pasted. A copy
+    // out of Excel or a web page carries the table as HTML beside the text, and the
+    // table is the better of the two — detection picks the parser for it as usual.
     function onPaste(event: ClipboardEvent): void {
       if (open || isTyping(event.target)) return;
       const text = event.clipboardData?.getData('text') ?? '';
-      if (text.trim() === '') return;
+      const html = htmlFromPaste(event.clipboardData);
+      const pasted = hasTable(html) ? html : text;
+      if (pasted.trim() === '') return;
       event.preventDefault();
-      setDialog({ kind: 'import', text, reparse: false });
+      setDialog({ kind: 'import', text: pasted, reparse: false });
     }
 
     document.addEventListener('keydown', onKeyDown);
@@ -148,6 +159,7 @@ export function App() {
         <Settings
           onClose={() => setDialog({ kind: 'none' })}
           onCleared={() => setNotice(en.settings.cleared)}
+          onNotice={setNotice}
         />
       ) : null}
 

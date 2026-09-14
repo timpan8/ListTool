@@ -1,0 +1,87 @@
+import type { Dataset } from '../core/model';
+import { profileColumns, type ColumnProfile } from '../core/profile';
+import { setViewFilter, viewFilter } from '../core/store';
+import { en } from '../i18n/en';
+import { format } from '../i18n/format';
+
+interface Props {
+  dataset: Dataset;
+}
+
+/** One value and its count, as a button that narrows the view to its rows. */
+function Value({
+  profile,
+  value,
+  count,
+}: {
+  profile: ColumnProfile;
+  value: string;
+  count: number;
+}) {
+  const active =
+    viewFilter.value?.columnId === profile.column.id && viewFilter.value.value === value;
+  const blank = value === '';
+  const label = format(blank ? en.profile.onlyBlank : en.profile.onlyRows, {
+    column: profile.column.name,
+    value,
+  });
+
+  return (
+    <li>
+      <button
+        type="button"
+        class={active ? 'facet is-selected' : 'facet'}
+        aria-pressed={active}
+        title={label}
+        onClick={() =>
+          setViewFilter(active ? null : { columnId: profile.column.id, value })
+        }
+      >
+        <span class="facet__value">{blank ? en.profile.blankValue : value}</span>
+        <span class="facet__count">{count}</span>
+      </button>
+    </li>
+  );
+}
+
+/** What is in each column, and a way to look at one value of it. */
+export function ProfilePanel({ dataset }: Props) {
+  if (dataset.rows.length === 0) return <p class="field__help">{en.profile.empty}</p>;
+
+  return (
+    <div class="profile">
+      <p class="field__help">{en.profile.intro}</p>
+
+      {profileColumns(dataset).map((profile) => (
+        <section key={profile.column.id} class="profile__column">
+          <h4 class="profile__name">{profile.column.name}</h4>
+          <p class="profile__stats">
+            {[
+              format(en.profile.filled, { n: profile.filled }),
+              format(en.profile.blank, { n: profile.empty }),
+              format(en.profile.unique, { n: profile.unique }),
+              format(en.profile.length, {
+                shortest: profile.shortest,
+                longest: profile.longest,
+              }),
+            ].join(en.status.separator)}
+          </p>
+
+          <ul class="facets">
+            {profile.top.map((entry) => (
+              <Value
+                key={entry.value}
+                profile={profile}
+                value={entry.value}
+                count={entry.count}
+              />
+            ))}
+            {profile.empty === 0 ? null : (
+              <Value profile={profile} value="" count={profile.empty} />
+            )}
+          </ul>
+        </section>
+      ))}
+    </div>
+  );
+}
