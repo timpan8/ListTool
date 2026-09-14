@@ -14,6 +14,8 @@ import { copyText } from './clipboard';
 
 interface Props {
   onImport: () => void;
+  onTools: () => void;
+  onCompare: () => void;
   onExport: () => void;
 }
 
@@ -21,7 +23,7 @@ interface Props {
  * The primary toolbar. Individual tools never appear here — they live in the picker and
  * the palette, so this bar stays the same size however many tools exist.
  */
-export function Toolbar({ onImport, onExport }: Props) {
+export function Toolbar({ onImport, onTools, onCompare, onExport }: Props) {
   const dataset = activeDataset.value;
   const id = activeId.value;
 
@@ -40,6 +42,12 @@ export function Toolbar({ onImport, onExport }: Props) {
       </button>
       {id === null ? null : (
         <>
+          <button type="button" class="button" title={en.panel.toolsHint} onClick={onTools}>
+            {en.toolbar.tools}
+          </button>
+          <button type="button" class="button" onClick={onCompare}>
+            {en.compare.open}
+          </button>
           <button
             type="button"
             class="button"

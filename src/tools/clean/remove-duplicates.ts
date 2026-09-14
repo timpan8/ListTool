@@ -1,0 +1,68 @@
+import { cell } from '../../core/model';
+import { joinKeys, normalizeKey } from '../../core/normalize';
+import { booleanOption, type Tool } from '../../core/registry';
+import { en } from '../../i18n/en';
+import { format, plural } from '../../i18n/format';
+import { rowsPhrase, targetColumns, withRows } from '../helpers';
+
+const strings = en.tools.dedupe;
+
+export const removeDuplicatesTool: Tool = {
+  id: 'remove-duplicates',
+  name: strings.name,
+  category: 'clean',
+  description: strings.description,
+  keywords: ['duplicate', 'dedupe', 'unique', 'distinct', 'repeat'],
+  arity: 'single',
+  options: [
+    {
+      key: 'column',
+      label: en.tools.shared.keyColumn,
+      type: 'column',
+      default: '',
+      allowAll: true,
+    },
+    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
+    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
+    {
+      key: 'ignoreDiacritics',
+      label: en.tools.shared.ignoreDiacritics,
+      type: 'boolean',
+      default: false,
+      help: en.tools.shared.diacriticsHelp,
+    },
+  ],
+  run(input, options) {
+    const columns = targetColumns(input, options);
+    const normalize = {
+      trim: booleanOption(options, 'trim', true),
+      ignoreCase: booleanOption(options, 'ignoreCase', true),
+      ignoreDiacritics: booleanOption(options, 'ignoreDiacritics', false),
+    };
+
+    // The first occurrence is the one that stays.
+    const seen = new Set<string>();
+    const kept = input.rows.filter((row) => {
+      const key = joinKeys(
+        columns.map((column) => normalizeKey(cell(row, column.id), normalize)),
+      );
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    const removed = input.rows.length - kept.length;
+
+    return {
+      output: withRows(input, kept),
+      summary:
+        removed === 0
+          ? en.tools.nothingChanged
+          : format(strings.summary, {
+              removed: plural(removed, strings.duplicates),
+              before: rowsPhrase(input.rows.length),
+              after: rowsPhrase(kept.length),
+            }),
+      stats: { removed, kept: kept.length },
+    };
+  },
+};

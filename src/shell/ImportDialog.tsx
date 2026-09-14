@@ -3,7 +3,8 @@ import { bestParser } from '../core/detect';
 import { PARSE_STEP_ID } from '../core/history';
 import type { Dataset } from '../core/model';
 import { defaultOptions, type Options } from '../core/registry';
-import { addDataset, applyStep, nextDatasetNumberForName } from '../core/store';
+import { withSettings } from '../core/settings';
+import { addDataset, applyStep, nextDatasetNumberForName, settings } from '../core/store';
 import { defaultParser, parserById, parsers } from '../parsers';
 import { en } from '../i18n/en';
 import { format, plural } from '../i18n/format';
@@ -16,15 +17,21 @@ interface Props {
   initialText: string;
   /** Set when re-parsing an open list instead of importing a new one. */
   target: Dataset | null;
+  /** Set when the command palette already chose the parser ("Re-parse as CSV"). */
+  forceParserId: string | null;
   onClose: () => void;
 }
 
-export function ImportDialog({ initialText, target, onClose }: Props) {
+export function ImportDialog({ initialText, target, forceParserId, onClose }: Props) {
   const reparsing = target !== null;
   const [text, setText] = useState(initialText);
-  const [manual, setManual] = useState(reparsing);
-  const [parserId, setParserId] = useState(target?.parse?.parserId ?? defaultParser.id);
-  const [options, setOptions] = useState<Options>(target?.parse?.options ?? {});
+  const [manual, setManual] = useState(reparsing || forceParserId !== null);
+  const [parserId, setParserId] = useState(
+    forceParserId ?? target?.parse?.parserId ?? defaultParser.id,
+  );
+  const [options, setOptions] = useState<Options>(
+    forceParserId === null ? (target?.parse?.options ?? {}) : {},
+  );
   const [name, setName] = useState(
     target?.name ?? format(en.tabs.untitled, { n: nextDatasetNumberForName() }),
   );
@@ -39,7 +46,12 @@ export function ImportDialog({ initialText, target, onClose }: Props) {
   }, [text, manual]);
 
   const parser = parserById(parserId) ?? defaultParser;
-  const preview = parser.parse(text, { ...defaultOptions(parser.options), ...options });
+  const base = withSettings(
+    defaultOptions(parser.options),
+    parser.options.map((field) => field.key),
+    settings.value,
+  );
+  const preview = parser.parse(text, { ...base, ...options });
   const hasText = text.trim() !== '';
 
   function chooseParser(id: string): void {
@@ -47,7 +59,13 @@ export function ImportDialog({ initialText, target, onClose }: Props) {
     if (chosen === undefined) return;
     setManual(true);
     setParserId(id);
-    setOptions(defaultOptions(chosen.options));
+    setOptions(
+      withSettings(
+        defaultOptions(chosen.options),
+        chosen.options.map((field) => field.key),
+        settings.value,
+      ),
+    );
   }
 
   function submit(): void {

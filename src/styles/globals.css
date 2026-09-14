@@ -134,6 +134,17 @@ textarea {
   background: var(--color-surface);
 }
 
+.app__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app__body.has-panel {
+  grid-template-columns: 1fr minmax(20rem, 28rem);
+}
+
 .app__header {
   display: flex;
   align-items: center;
@@ -491,6 +502,11 @@ textarea {
   font-weight: 600;
 }
 
+/* A button in a field column sizes to its label rather than stretching across it. */
+.field > .button {
+  align-self: flex-start;
+}
+
 .field__help {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
@@ -575,7 +591,382 @@ textarea {
   color: var(--color-danger);
 }
 
+/* ---------- side panel ---------- */
+
+.side {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.side__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.side__body {
+  overflow: auto;
+  padding: var(--space-4);
+  min-height: 0;
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.picker__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.picker__title {
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.picker__tool {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.picker__tool:hover {
+  background: var(--color-surface-sunken);
+  border-color: var(--color-border);
+}
+
+.picker__name {
+  font-weight: 600;
+}
+
+.picker__description {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.result__back {
+  align-self: flex-start;
+}
+
+.result__title {
+  font-size: var(--text-lg);
+}
+
+.result__actions {
+  position: sticky;
+  bottom: calc(-1 * var(--space-4));
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  margin-bottom: calc(-1 * var(--space-4));
+  border-top: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.notice--warning {
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+}
+
+.history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.history__step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.history__current {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* ---------- command palette ---------- */
+
+.palette__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.palette__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.palette__item.is-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.palette__group {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.palette__item.is-active .palette__group {
+  color: var(--color-accent-text);
+}
+
+/* ---------- favourites ---------- */
+
+.picker__row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-1);
+}
+
+.picker__row .picker__tool {
+  flex: 1;
+}
+
+.picker__star {
+  padding: 0 var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.picker__star[aria-pressed='true'] {
+  color: var(--color-accent);
+}
+
+.picker__star:hover {
+  background: var(--color-surface-sunken);
+  border-color: var(--color-border);
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+/* ---------- recipes ---------- */
+
+.recipes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.recipes__save {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.recipes__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.recipes__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.recipes__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.recipes__steps {
+  list-style: decimal inside;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.recipes__steps li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.recipes__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* ---------- compare mode ---------- */
+
+.compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.compare__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.compare__title {
+  font-size: var(--text-lg);
+}
+
+.compare__panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.compare__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.compare__panel-title {
+  font-size: var(--text-md);
+}
+
+.compare__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.compare__create {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+@media (max-width: 60rem) {
+  .app__body.has-panel {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  .side {
+    border-left: 0;
+    border-top: var(--border-width) solid var(--color-border);
+    max-height: 60vh;
+  }
+}
+
 @media (max-width: 40rem) {
+  .compare__panels {
+    grid-template-columns: 1fr;
+  }
+
   .app__header {
     flex-direction: column;
     align-items: stretch;

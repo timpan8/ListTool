@@ -12,11 +12,17 @@ import {
   rename,
   resetWorkspace,
   selectColumn,
+  favorites,
+  noteToolUsed,
   notice,
+  recents,
+  settings,
   selectedColumn,
   setActive,
   setNotice,
+  toggleFavorite,
   undo,
+  updateSettings,
 } from './store';
 import { cell, valuesDataset, VALUE_COLUMN } from './model';
 import type { Step } from './history';
@@ -218,5 +224,38 @@ describe('status messages', () => {
     vi.advanceTimersByTime(1000);
     expect(notice.value).toBe('');
     vi.useRealTimers();
+  });
+});
+
+describe('settings, favorites and recents', () => {
+  it('starts on the defaults', () => {
+    expect(settings.value.sortLocale).toBe('sv');
+    expect(favorites.value).toEqual([]);
+    expect(recents.value).toEqual([]);
+  });
+
+  it('updates one setting without touching the others', () => {
+    updateSettings({ sortLocale: 'en' });
+    expect(settings.value.sortLocale).toBe('en');
+    expect(settings.value.naturalSort).toBe(true);
+  });
+
+  it('toggles a favorite on and off', () => {
+    toggleFavorite('sort');
+    expect(favorites.value).toEqual(['sort']);
+    toggleFavorite('sort');
+    expect(favorites.value).toEqual([]);
+  });
+
+  it('puts the most recent tool first and never repeats one', () => {
+    noteToolUsed('trim-whitespace');
+    noteToolUsed('sort');
+    noteToolUsed('trim-whitespace');
+    expect(recents.value).toEqual(['trim-whitespace', 'sort']);
+  });
+
+  it('remembers only the last five tools', () => {
+    for (const id of ['a', 'b', 'c', 'd', 'e', 'f']) noteToolUsed(id);
+    expect(recents.value).toEqual(['f', 'e', 'd', 'c', 'b']);
   });
 });

@@ -1,5 +1,15 @@
-import { computed, signal } from '@preact/signals';
+import { computed, effect, signal } from '@preact/signals';
 import type { Dataset } from './model';
+import {
+  applyRecipe,
+  createRecipe,
+  withoutStep,
+  type Recipe,
+  type ReplayLookup,
+  type ReplayMessages,
+} from './recipes';
+import { DEFAULT_SETTINGS, type Settings } from './settings';
+import { clear as clearStorage, load, save } from './storage';
 import {
   canRedo,
   canUndo,
@@ -23,6 +33,10 @@ const tabs = signal<Tab[]>([]);
 const activeIdSignal = signal<string | null>(null);
 const selectedColumnSignal = signal<string | null>(null);
 const noticeSignal = signal<string>('');
+const settingsSignal = signal<Settings>(DEFAULT_SETTINGS);
+const favoritesSignal = signal<string[]>([]);
+const recentsSignal = signal<string[]>([]);
+const recipesSignal = signal<Recipe[]>([]);
 
 let nextDatasetNumber = 1;
 
@@ -65,6 +79,11 @@ export const selectedColumn = computed<string | null>(() => selectedColumnSignal
 
 /** Transient message for the status region: "Copied to clipboard". */
 export const notice = computed<string>(() => noticeSignal.value);
+
+export const settings = computed<Settings>(() => settingsSignal.value);
+export const favorites = computed<string[]>(() => favoritesSignal.value);
+export const recents = computed<string[]>(() => recentsSignal.value);
+export const recipes = computed<Recipe[]>(() => recipesSignal.value);
 
 function updateTab(id: string, change: (history: History) => History): void {
   tabs.value = tabs.value.map((tab) =>
@@ -163,11 +182,173 @@ export function setNotice(message: string): void {
   }, NOTICE_MS);
 }
 
+
+// ---------- settings, favorites, recents ----------
+
+export function updateSettings(change: Partial<Settings>): void {
+  settingsSignal.value = { ...settingsSignal.value, ...change };
+}
+
+export function toggleFavorite(toolId: string): void {
+  const current = favoritesSignal.value;
+  favoritesSignal.value = current.includes(toolId)
+    ? current.filter((id) => id !== toolId)
+    : [...current, toolId];
+}
+
+/** How many recently used tools to remember. */
+const RECENTS_LIMIT = 5;
+
+export function noteToolUsed(toolId: string): void {
+  const without = recentsSignal.value.filter((id) => id !== toolId);
+  recentsSignal.value = [toolId, ...without].slice(0, RECENTS_LIMIT);
+}
+
+// ---------- recipes ----------
+
+let nextRecipeNumber = 1;
+
+/** Save the steps behind what is on screen as a named, replayable recipe. */
+export function saveRecipe(name: string, steps: Step[], at: number): string | null {
+  const trimmed = name.trim();
+  if (trimmed === '' || steps.length === 0) return null;
+
+  const id = `r${nextRecipeNumber}`;
+  nextRecipeNumber += 1;
+  recipesSignal.value = [...recipesSignal.value, createRecipe(id, trimmed, steps, at)];
+  return id;
+}
+
+export function removeRecipe(id: string): void {
+  recipesSignal.value = recipesSignal.value.filter((recipe) => recipe.id !== id);
+}
+
+export function removeRecipeStep(id: string, index: number): void {
+  recipesSignal.value = recipesSignal.value.map((recipe) =>
+    recipe.id === id ? withoutStep(recipe, index) : recipe,
+  );
+}
+
+/**
+ * Replay a recipe on a list. The whole replay is ONE undoable step: a recipe is a single
+ * action to the person using it, however many tools it runs.
+ */
+export function runRecipe(
+  datasetId: string,
+  recipeId: string,
+  lookup: ReplayLookup,
+  messages: ReplayMessages,
+  summaryOf: (recipe: Recipe, applied: Step[]) => string,
+): string[] {
+  const recipe = recipesSignal.value.find((candidate) => candidate.id === recipeId);
+  const tab = tabs.value.find((candidate) => candidate.id === datasetId);
+  if (recipe === undefined || tab === undefined) return [];
+
+  const result = applyRecipe(recipe, current(tab.history), lookup, messages);
+  applyStep(
+    datasetId,
+    {
+      toolId: `recipe:${recipe.id}`,
+      options: { recipeId: recipe.id },
+      summary: summaryOf(recipe, result.applied),
+      at: Date.now(),
+    },
+    result.output,
+  );
+  return result.warnings;
+}
+
+// ---------- persistence ----------
+
+/** Writes are debounced: typing in a tool option should not hit storage per keystroke. */
+const SAVE_DELAY_MS = 400;
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
+let quotaWarned = false;
+
+function persistNow(onQuota: () => void): void {
+  const keep = settingsSignal.value.keepLists;
+  const result = save({
+    settings: settingsSignal.value,
+    favorites: favoritesSignal.value,
+    recents: recentsSignal.value,
+    datasets: keep ? tabs.value.map((tab) => current(tab.history)) : [],
+    recipes: recipesSignal.value,
+  });
+
+  if (result === 'quota' && !quotaWarned) {
+    quotaWarned = true;
+    onQuota();
+  }
+}
+
+/**
+ * Restore the workspace from storage. Ids are never reused, so the counter continues
+ * past whatever was stored.
+ */
+export function hydrate(): void {
+  const stored = load();
+  settingsSignal.value = stored.settings;
+  favoritesSignal.value = stored.favorites;
+  recentsSignal.value = stored.recents;
+  recipesSignal.value = stored.recipes;
+  nextRecipeNumber =
+    stored.recipes.reduce((top, recipe) => {
+      const parsed = Number.parseInt(recipe.id.replace(/^r/, ''), 10);
+      return Number.isFinite(parsed) ? Math.max(top, parsed) : top;
+    }, 0) + 1;
+
+  if (stored.datasets.length > 0) {
+    tabs.value = stored.datasets.map((dataset) => ({
+      id: dataset.id,
+      history: createHistory(dataset),
+    }));
+    activeIdSignal.value = stored.datasets[0]?.id ?? null;
+  }
+
+  const highest = stored.datasets.reduce((top, dataset) => {
+    const parsed = Number.parseInt(dataset.id.replace(/^d/, ''), 10);
+    return Number.isFinite(parsed) ? Math.max(top, parsed) : top;
+  }, 0);
+  nextDatasetNumber = highest + 1;
+}
+
+/** Start saving on every change. Returns a stop function. */
+export function startPersistence(onQuota: () => void): () => void {
+  return effect(() => {
+    // Touch everything that is persisted so the effect re-runs when any of it changes.
+    void tabs.value;
+    void settingsSignal.value;
+    void favoritesSignal.value;
+    void recentsSignal.value;
+    void recipesSignal.value;
+
+    if (saveTimer !== undefined) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      persistNow(onQuota);
+      saveTimer = undefined;
+    }, SAVE_DELAY_MS);
+  });
+}
+
+/** Settings → Clear all data: wipe the key and empty the workspace immediately. */
+export function clearAllData(): void {
+  if (saveTimer !== undefined) clearTimeout(saveTimer);
+  saveTimer = undefined;
+  clearStorage();
+  resetWorkspace();
+  quotaWarned = false;
+}
+
 /** Test seam: drop everything and start over. */
 export function resetWorkspace(): void {
   tabs.value = [];
   activeIdSignal.value = null;
   selectedColumnSignal.value = null;
+  settingsSignal.value = DEFAULT_SETTINGS;
+  favoritesSignal.value = [];
+  recentsSignal.value = [];
+  recipesSignal.value = [];
   setNotice('');
   nextDatasetNumber = 1;
+  nextRecipeNumber = 1;
 }

@@ -19,8 +19,20 @@ export type OptionField =
       choices: { value: string; label: string }[];
       help?: string;
     }
-  /** Dropdown of the input dataset's columns → column id. */
-  | { key: string; label: string; type: 'column'; default?: string; help?: string }
+  /**
+   * Dropdown of the input dataset's columns → column id. `allowAll` adds an
+   * "All columns" choice whose value is '' — half the cleaning tools work either on one
+   * column or on the whole row, and that choice belongs in the generated form rather
+   * than in a second field or a special case in the shell.
+   */
+  | {
+      key: string;
+      label: string;
+      type: 'column';
+      default?: string;
+      allowAll?: boolean;
+      help?: string;
+    }
   /** Presets (newline , ; tab | space) + custom. */
   | { key: string; label: string; type: 'delimiter'; default: string; help?: string };
 
