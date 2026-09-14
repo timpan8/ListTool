@@ -64,3 +64,28 @@ Done when:
 - "Recipients → Trim → Lowercase email → Dedupe by email → Sort by last" saved and replayed
   end-to-end on fresh input.
 - Later items (§13) remain unbuilt — no placeholders in the UI.
+
+## M7 — Working in the table, and the twenty gaps
+Scope: the twenty improvements asked for after M6. Contract additions first (`rows` option
+field, `from: 'second'` on column fields, `extraLists` on `ToolResult`, optional `html()`
+on `Exporter`), then the modules that need them.
+
+Tools: Fix mojibake, Clean invisible characters, Normalise phone numbers, Find
+near-duplicates, Split into rows, Split into batches, Add another list to the end, Set
+value, Selected rows, Transpose, Group and summarise, Join lists, Mark what is in another
+list. Parser: HTML table. Exporter: Template. Core: similarity, profile, diff, view.
+Shell: editable cells, row ticks, import into an open list, extra lists as tabs, the
+Columns tab and its facet filter, changed-cell marks in the preview, both clipboard
+flavours, save and open a workspace file.
+
+Done when:
+- Every one of the twenty is reachable from the ordinary UI, with no shell special case
+  for any individual tool, parser or exporter.
+- A cell edit, a row selection acted on, and an import into an open list are each one
+  undoable step.
+- A table copied out of Excel pastes back as a table; a list copied from here pastes into
+  Excel as cells.
+- Compare matches on several columns at once, and three lists can be compared by running
+  Mark what is in another list once per list.
+- A saved workspace file restores the lists, recipes, favourites and settings, and a file
+  that is not one is refused without emptying the screen.

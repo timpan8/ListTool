@@ -10,29 +10,40 @@ when the page and its assets are downloaded.)
 
 ## Status
 
-All six milestones in `PLAN.md` are built. See `SPEC.md` for what the app is meant to be
-and `CLAUDE.md` for the contracts the code follows. The items under SPEC §13 (Web Workers,
-table virtualization, PWA caching, JSON import, XLSX export, a Swedish UI) are deliberately
-not built, and nothing in the UI pretends otherwise.
+All six milestones in `PLAN.md` are built, plus the M7 round of improvements it lists.
+See `SPEC.md` for what the app is meant to be and `CLAUDE.md` for the contracts the code
+follows. The items under SPEC §13 (Web Workers, table virtualization, PWA caching, XLSX
+export, a Swedish UI) are deliberately not built, and nothing in the UI pretends
+otherwise.
 
 What the app does:
 
 - **Import** by paste, file picker or drag and drop, with delimiter detection you can
   override, a live preview, and a list name. `Ctrl/Cmd+V` anywhere opens the import dialog
   with what is on the clipboard.
-- **Parsers:** Lines · Delimited · CSV/TSV · Recipients (`Name <email>` lists, as copied
+- **Parsers:** Lines · Delimited · CSV/TSV · HTML table (what a copy out of Excel, Word or
+  a web page actually puts on the clipboard) · Recipients (`Name <email>` lists, as copied
   out of Outlook) · Emails in text.
 - **Tools** in five categories, each with the same flow: pick it, configure it, watch the
-  live preview and its summary, then Apply or Apply to new list. Undo is always there.
-- **Compare** two lists on a column of each, with normalization you control, duplicate
-  counts kept, filter chips, and "Create list from…" to turn any part of the result into a
-  new list.
+  live preview and its summary, then Apply or Apply to new list. Undo is always there. The
+  preview marks the cells, rows and columns the tool would change.
+- **Edit in the table:** click a cell to change it, tick rows to work on just those. Both
+  go through ordinary tools, so both undo.
+- **Columns tab:** what is actually in each column — filled, empty, distinct, lengths and
+  the commonest values. Click a value to show only its rows. Like the search box it
+  narrows the view and never the list.
+- **Compare** two lists on one or several columns of each, with normalization you control,
+  duplicate counts kept, filter chips, and "Create list from…" to turn any part of the
+  result into a new list. Join lists brings columns across; Mark what is in another list
+  answers the same question for three lists or thirty.
 - **Export** as lines, a joined line, a quoted list, CSV, TSV, JSON, a PowerShell array, a
-  SQL `IN` list, or a Markdown/HTML table, choosing which columns go in. Copy is one click;
-  CSV, TSV, JSON and Markdown can be downloaded.
+  SQL `IN` list, a Markdown/HTML table, or your own template, choosing which columns go in.
+  Copy is one click, and puts a real table on the clipboard beside the text, so a paste
+  into Excel or Word lands in cells.
 - **Recipes:** save the steps behind a list as a named recipe and replay it on any other
   list. Recipes, settings, favourites and (optionally) the lists themselves are kept in
-  this browser between sessions.
+  this browser between sessions, and the whole workspace can be saved to a file and opened
+  again — on another computer, or as a backup.
 - **Keyboard:** `Ctrl/Cmd+K` command palette, `Enter` applies, `Ctrl/Cmd+Z` /
   `Shift+Ctrl/Cmd+Z` undo and redo, `Ctrl/Cmd+C` copies the active list, `Esc` closes.
   The full list is in Settings, not just in this file.
@@ -115,7 +126,15 @@ Things the contract expects:
   `stringOption` / `booleanOption` / `numberOption`, which narrow and fall back.
 - A `column` option with `allowAll: true` offers "All columns" as an empty value; a
   `columns` option renders a checkbox per column and reads back an array of ids, with no
-  value meaning "every column".
+  value meaning "every column". Either can add `from: 'second'`, and a dual tool then gets
+  the SECOND list's columns to choose from instead of its own.
+- A `rows` option is filled from the ticks in the table — there is no way to pick rows in a
+  form — and reads back an array of row ids. Declare one and the selection arrives; the
+  shell never learns the tool's name.
+- A tool can return `extraLists`, and the shell opens each as a further tab. Splitting one
+  list into batches is a single action to the person doing it, so it stays a single tool.
+- An exporter can add `html(dataset, options)` when its output is table-shaped. Copy then
+  puts that on the clipboard beside the text, and a paste into Excel lands in cells.
 - Switching parser, tool or exporter keeps the options the new one declares under the same
   key and type, so a column selection survives a change of format.
 - Settings reach options **by key**: a field named `locale`, `numeric`, `nameOrder` or
