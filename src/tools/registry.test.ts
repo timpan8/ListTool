@@ -105,12 +105,14 @@ describe('tool registry', () => {
     const hidden = tools.filter((tool) => tool.appliesTo?.(listOf('a')) === false);
     expect(hidden.map((tool) => tool.id).sort()).toEqual([
       'build-display-name',
+      'cross-tab',
       'generate-email',
       'keep-columns',
       'merge-columns',
       'move-column',
       'remove-column',
       'swap-columns',
+      'unpivot',
     ]);
   });
 

@@ -38,6 +38,10 @@ import { appendRowsTool } from './transform/append-rows';
 import { filterRulesTool } from './transform/filter-rules';
 import { templateColumnTool } from './columns/template-column';
 import { headerRowTool } from './columns/header-row';
+import { unpivotTool } from './columns/unpivot';
+import { sampleTool } from './transform/sample';
+import { splitByValueTool } from './transform/split-by-value';
+import { crossTabTool } from './extract/cross-tab';
 import { transposeTool } from './columns/transpose';
 import { groupByTool } from './extract/group-by';
 import { joinListsTool } from './compare/join-lists';
@@ -69,6 +73,8 @@ export const tools: Tool[] = [
   removeRowsInBTool,
   splitIntoRowsTool,
   chunkListTool,
+  splitByValueTool,
+  sampleTool,
   appendRowsTool,
   setValueTool,
   selectedRowsTool,
@@ -80,6 +86,7 @@ export const tools: Tool[] = [
   moveColumnTool,
   keepColumnsTool,
   transposeTool,
+  unpivotTool,
   headerRowTool,
   templateColumnTool,
   buildDisplayNameTool,
@@ -87,6 +94,7 @@ export const tools: Tool[] = [
   extractPatternTool,
   countValuesTool,
   groupByTool,
+  crossTabTool,
   compareListsTool,
   setOperationTool,
   joinListsTool,
