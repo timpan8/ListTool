@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
 import { defaultOptions, type Options, type Tool } from '../core/registry';
-import { addDataset, applyStep } from '../core/store';
+import { addDataset, applyStep, openDatasets } from '../core/store';
 import { en } from '../i18n/en';
 import { format } from '../i18n/format';
 import { DataTable } from './DataTable';
@@ -23,15 +23,28 @@ interface Props {
  */
 export function ResultPanel({ dataset, tool, onBack, onApplied }: Props) {
   const [options, setOptions] = useState<Options>(defaultOptions(tool.options));
+  const [secondId, setSecondId] = useState('');
 
   useEffect(() => {
     setOptions(defaultOptions(tool.options));
   }, [tool]);
 
-  const result = tool.run(dataset, options);
+  // A dual tool needs a second list; anything but the one being worked on will do.
+  const others = openDatasets.value.filter((candidate) => candidate.id !== dataset.id);
+  const second =
+    tool.arity === 'dual'
+      ? (others.find((candidate) => candidate.id === secondId) ?? others[0])
+      : undefined;
+
+  const result = tool.run(dataset, options, second);
 
   function apply(toNewList: boolean): void {
-    const step = { toolId: tool.id, options, summary: result.summary, at: Date.now() };
+    const step = {
+      toolId: tool.id,
+      options: second === undefined ? options : { ...options, secondListId: second.id },
+      summary: result.summary,
+      at: Date.now(),
+    };
     if (toNewList) {
       addDataset(result.output, format(en.panel.copySuffix, { name: dataset.name, tool: tool.name }));
     } else {
@@ -58,6 +71,28 @@ export function ResultPanel({ dataset, tool, onBack, onApplied }: Props) {
         <h3 class="result__title">{tool.name}</h3>
         <p class="field__help">{tool.description}</p>
       </div>
+
+      {tool.arity === 'dual' ? (
+        <div class="field">
+          <label class="field__label" for="tool-second">
+            {en.tools.shared.secondList}
+          </label>
+          <select
+            id="tool-second"
+            value={second?.id ?? ''}
+            onChange={(event) => setSecondId(event.currentTarget.value)}
+          >
+            {others.map((candidate) => (
+              <option key={candidate.id} value={candidate.id}>
+                {candidate.name}
+              </option>
+            ))}
+          </select>
+          {others.length === 0 ? (
+            <p class="field__help">{en.tools.shared.secondListMissing}</p>
+          ) : null}
+        </div>
+      ) : null}
 
       <OptionsPanel
         idPrefix={`tool-${tool.id}`}

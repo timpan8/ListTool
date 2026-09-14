@@ -722,6 +722,78 @@ textarea {
   font-size: var(--text-sm);
 }
 
+/* ---------- compare mode ---------- */
+
+.compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.compare__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.compare__title {
+  font-size: var(--text-lg);
+}
+
+.compare__panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.compare__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.compare__panel-title {
+  font-size: var(--text-md);
+}
+
+.compare__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.compare__create {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
 @media (max-width: 60rem) {
   .app__body.has-panel {
     grid-template-columns: 1fr;
@@ -736,6 +808,10 @@ textarea {
 }
 
 @media (max-width: 40rem) {
+  .compare__panels {
+    grid-template-columns: 1fr;
+  }
+
   .app__header {
     flex-direction: column;
     align-items: stretch;

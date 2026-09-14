@@ -11,6 +11,8 @@ import { prefixSuffixTool } from './transform/prefix-suffix';
 import { splitColumnTool } from './columns/split-column';
 import { swapColumnsTool } from './columns/swap-columns';
 import { extractPatternTool } from './extract/extract-pattern';
+import { compareListsTool } from './compare/compare-lists';
+import { setOperationTool } from './compare/set-operation';
 
 /**
  * The tool registry. Adding a tool means adding one module, its test, and one line
@@ -29,6 +31,8 @@ export const tools: Tool[] = [
   splitColumnTool,
   swapColumnsTool,
   extractPatternTool,
+  compareListsTool,
+  setOperationTool,
 ];
 
 export function toolById(id: string): Tool | undefined {

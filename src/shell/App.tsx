@@ -30,6 +30,7 @@ function isTyping(target: EventTarget | null): boolean {
 export function App() {
   const [dialog, setDialog] = useState<DialogState>({ kind: 'none' });
   const [panelOpen, setPanelOpen] = useState(false);
+  const [comparing, setComparing] = useState(false);
   const dataset = activeDataset.value;
   const id = activeId.value;
   const open = dialog.kind !== 'none';
@@ -77,8 +78,11 @@ export function App() {
         dataset={dataset}
         history={activeHistory.value}
         panelOpen={panelOpen}
+        comparing={comparing}
         onTools={() => setPanelOpen(true)}
         onClosePanel={() => setPanelOpen(false)}
+        onCompare={() => setComparing(true)}
+        onCloseCompare={() => setComparing(false)}
         onImport={() => setDialog({ kind: 'import', text: '', reparse: false })}
         onReparse={() =>
           setDialog({ kind: 'import', text: dataset?.rawInput ?? '', reparse: true })

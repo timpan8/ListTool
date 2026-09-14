@@ -1,6 +1,7 @@
 import type { Dataset } from '../core/model';
 import type { History } from '../core/history';
 import { en } from '../i18n/en';
+import { CompareMode } from './CompareMode';
 import { DatasetTabs } from './DatasetTabs';
 import { DatasetView } from './DatasetView';
 import { EmptyState } from './EmptyState';
@@ -12,10 +13,13 @@ interface Props {
   dataset: Dataset | null;
   history: History | null;
   panelOpen: boolean;
+  comparing: boolean;
   onImport: () => void;
   onReparse: () => void;
   onExport: () => void;
   onTools: () => void;
+  onCompare: () => void;
+  onCloseCompare: () => void;
   onClosePanel: () => void;
 }
 
@@ -24,10 +28,13 @@ export function Layout({
   dataset,
   history,
   panelOpen,
+  comparing,
   onImport,
   onReparse,
   onExport,
   onTools,
+  onCompare,
+  onCloseCompare,
   onClosePanel,
 }: Props) {
   return (
@@ -37,17 +44,24 @@ export function Layout({
         <DatasetTabs onAdd={onImport} />
       </header>
 
-      <Toolbar onImport={onImport} onTools={onTools} onExport={onExport} />
+      <Toolbar
+        onImport={onImport}
+        onTools={onTools}
+        onCompare={onCompare}
+        onExport={onExport}
+      />
 
       <div class={panelOpen ? 'app__body has-panel' : 'app__body'}>
         <main id="content" class="app__main">
-          {dataset === null ? (
+          {comparing ? (
+            <CompareMode onImport={onImport} onClose={onCloseCompare} />
+          ) : dataset === null ? (
             <EmptyState onImport={onImport} />
           ) : (
             <DatasetView dataset={dataset} onReparse={onReparse} />
           )}
         </main>
-        {panelOpen && dataset !== null && history !== null ? (
+        {panelOpen && !comparing && dataset !== null && history !== null ? (
           <SidePanel dataset={dataset} history={history} onClose={onClosePanel} />
         ) : null}
       </div>
