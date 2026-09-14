@@ -442,6 +442,12 @@ textarea {
   background: rgb(0 0 0 / 35%);
 }
 
+@media (prefers-color-scheme: dark) {
+  .dialog::backdrop {
+    background: rgb(0 0 0 / 60%);
+  }
+}
+
 .dialog__head {
   display: flex;
   align-items: center;

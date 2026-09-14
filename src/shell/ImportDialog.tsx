@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { bestParser } from '../core/detect';
 import { PARSE_STEP_ID } from '../core/history';
 import type { Dataset } from '../core/model';
-import { defaultOptions, type Options } from '../core/registry';
+import { carryOptions, defaultOptions, type Options } from '../core/registry';
 import { withSettings } from '../core/settings';
 import { addDataset, applyStep, nextDatasetNumberForName, settings } from '../core/store';
 import { defaultParser, parserById, parsers } from '../parsers';
@@ -59,13 +59,14 @@ export function ImportDialog({ initialText, target, forceParserId, onClose }: Pr
     if (chosen === undefined) return;
     setManual(true);
     setParserId(id);
-    setOptions(
-      withSettings(
+    setOptions({
+      ...withSettings(
         defaultOptions(chosen.options),
         chosen.options.map((field) => field.key),
         settings.value,
       ),
-    );
+      ...carryOptions(chosen.options, parser.options, options),
+    });
   }
 
   function submit(): void {

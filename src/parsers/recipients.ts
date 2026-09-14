@@ -8,6 +8,13 @@ const strings = en.parsers.recipients;
 const EMAIL = /[^\s<>,;"]+@[^\s<>,;"]+\.[^\s<>,;"]+/;
 const EMAIL_ALL = new RegExp(EMAIL.source, 'g');
 
+/**
+ * An entry that IS an address, rather than one that merely contains one. Anchoring
+ * matters: `Anna,Andersson,anna@example.com` is a CSV row, not a recipient, and a
+ * contains-check would claim every comma-separated file with an email column.
+ */
+const EMAIL_ONLY = new RegExp(`^${EMAIL.source}$`);
+
 export type NameOrder = 'last-first' | 'first-last';
 
 export interface Recipient {
@@ -104,7 +111,7 @@ export function parseEntry(entry: string, order: NameOrder): Recipient {
     return { first, last, email: (angle[2] ?? '').trim(), original };
   }
 
-  if (EMAIL.test(original) && !/\s/.test(original)) {
+  if (EMAIL_ONLY.test(original)) {
     return { first: '', last: '', email: original, original };
   }
 
@@ -114,8 +121,8 @@ export function parseEntry(entry: string, order: NameOrder): Recipient {
 
 /** An entry that looks like a recipient rather than merely containing an address. */
 function looksLikeRecipient(entry: string): boolean {
-  if (/<[^<>]*@[^<>]*>\s*$/.test(entry.trim())) return true;
-  return EMAIL.test(entry.trim()) && !/\s/.test(entry.trim());
+  const trimmed = entry.trim();
+  return /<[^<>]*@[^<>]*>$/.test(trimmed) || EMAIL_ONLY.test(trimmed);
 }
 
 const COLUMNS: Column[] = [

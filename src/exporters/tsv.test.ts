@@ -39,3 +39,11 @@ describe('tsv exporter', () => {
     expect(tsvExporter.extension).toBe('tsv');
   });
 });
+
+describe('tsv column selection', () => {
+  it('writes only the chosen columns', () => {
+    expect(tsvExporter.render(table, { columns: ['c2'], header: false })).toBe(
+      'anna@example.com',
+    );
+  });
+});

@@ -46,3 +46,15 @@ describe('markdown exporter', () => {
     expect(markdownExporter.render(listOf(), { header: false })).toBe('');
   });
 });
+
+describe('markdown column selection', () => {
+  it('writes only the chosen columns', () => {
+    expect(markdownExporter.render(table, { columns: ['first'] }).split('\n')[0]).toBe('| first |');
+  });
+
+  it('narrows the HTML table too', () => {
+    const html = markdownExporter.render(table, { columns: ['first'], flavour: 'html' });
+    expect(html).toContain('<th>first</th>');
+    expect(html).not.toContain('<th>email</th>');
+  });
+});
