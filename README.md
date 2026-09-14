@@ -28,14 +28,16 @@ What the app does:
   counts kept, filter chips, and "Create list from…" to turn any part of the result into a
   new list.
 - **Export** as lines, a joined line, a quoted list, CSV, TSV, JSON, a PowerShell array, a
-  SQL `IN` list, or a Markdown/HTML table. Copy is one click; CSV, TSV, JSON and Markdown
-  can be downloaded.
+  SQL `IN` list, or a Markdown/HTML table, choosing which columns go in. Copy is one click;
+  CSV, TSV, JSON and Markdown can be downloaded.
 - **Recipes:** save the steps behind a list as a named recipe and replay it on any other
   list. Recipes, settings, favourites and (optionally) the lists themselves are kept in
   this browser between sessions.
 - **Keyboard:** `Ctrl/Cmd+K` command palette, `Enter` applies, `Ctrl/Cmd+Z` /
   `Shift+Ctrl/Cmd+Z` undo and redo, `Ctrl/Cmd+C` copies the active list, `Esc` closes.
   The full list is in Settings, not just in this file.
+- **Light and dark** following the operating system. Both palettes meet WCAG 2.2 AA, and
+  `src/styles/tokens.test.ts` reads the real stylesheet to keep it that way.
 
 ## Requirements
 
@@ -111,7 +113,11 @@ Things the contract expects:
 - Every tool returns a `summary`; the panel and the history show it verbatim.
 - Option values arrive as `unknown` (they are serialized into recipes), so read them with
   `stringOption` / `booleanOption` / `numberOption`, which narrow and fall back.
-- A `column` option with `allowAll: true` offers "All columns" as an empty value.
+- A `column` option with `allowAll: true` offers "All columns" as an empty value; a
+  `columns` option renders a checkbox per column and reads back an array of ids, with no
+  value meaning "every column".
+- Switching parser, tool or exporter keeps the options the new one declares under the same
+  key and type, so a column selection survives a change of format.
 - Settings reach options **by key**: a field named `locale`, `numeric`, `nameOrder` or
   `delimiter` is pre-filled from the user's settings without any mapping to maintain.
 - Row identity is `row.id`, never the array index. `cell(row, columnId)` returns `''`

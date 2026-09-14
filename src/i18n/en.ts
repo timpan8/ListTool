@@ -111,6 +111,8 @@ export const en = {
   options: {
     custom: 'Custom',
     allColumns: 'All columns',
+    everyColumn: 'Every column',
+    noColumns: 'None',
     customDelimiter: 'Custom delimiter',
     customDelimiterHint: 'Type \\t for tab and \\n for newline.',
     delimiters: {
@@ -368,6 +370,14 @@ export const en = {
       into: 'New column name',
       summary: 'Merged {a} and {b} into {name}',
     },
+    keepColumns: {
+      name: 'Keep columns',
+      description: 'Choose which columns the list keeps, and in which order.',
+      columns: 'Keep',
+      summary: 'Kept {kept} of {before}',
+      columnCount: { one: '{n} column', other: '{n} columns' },
+      needOne: 'Keep at least one column.',
+    },
     renameColumn: {
       name: 'Rename column',
       description: 'Give a column a different name.',
@@ -599,6 +609,7 @@ export const en = {
       separator: 'Separator',
       help: 'For SQL IN lists and PowerShell arrays.',
     },
+    shared: { columns: 'Columns' },
     csv: { name: 'CSV', header: 'Include header row' },
     tsv: { name: 'TSV', header: 'Include header row' },
     json: {

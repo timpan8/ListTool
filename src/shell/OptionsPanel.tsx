@@ -10,7 +10,7 @@ interface Props {
   options: Options;
   /** Choices for `column` fields — the input dataset's columns. */
   columns: Column[];
-  onChange: (key: string, value: string | number | boolean) => void;
+  onChange: (key: string, value: string | number | boolean | string[]) => void;
 }
 
 /**
@@ -36,6 +36,45 @@ export function OptionsPanel({ idPrefix, fields, options, columns, onChange }: P
               {...(field.help === undefined ? {} : { help: field.help })}
               onChange={(next) => onChange(field.key, next)}
             />
+          );
+        }
+
+        if (field.type === 'columns') {
+          // No value at all means every column — a table exporter should write the whole
+          // table before anyone has touched this.
+          const chosen = Array.isArray(value)
+            ? value.filter((entry): entry is string => typeof entry === 'string')
+            : columns.map((column) => column.id);
+
+          return (
+            <fieldset key={field.key} class="field field--group">
+              <legend class="field__label">{field.label}</legend>
+              <div class="field__choices">
+                {columns.map((column) => (
+                  <label key={column.id} class="choice">
+                    <input
+                      type="checkbox"
+                      checked={chosen.includes(column.id)}
+                      onChange={(event) =>
+                        onChange(
+                          field.key,
+                          // Kept in the dataset's own column order, not click order.
+                          columns
+                            .map((candidate) => candidate.id)
+                            .filter((candidateId) =>
+                              candidateId === column.id
+                                ? event.currentTarget.checked
+                                : chosen.includes(candidateId),
+                            ),
+                        )
+                      }
+                    />
+                    {column.name}
+                  </label>
+                ))}
+              </div>
+              {field.help === undefined ? null : <p class="field__help">{field.help}</p>}
+            </fieldset>
           );
         }
 

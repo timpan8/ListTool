@@ -60,3 +60,37 @@ describe('csv exporter', () => {
     expect(csvExporter.render(empty, { header: true })).toBe('name');
   });
 });
+
+describe('csv column selection', () => {
+  it('writes every column until a choice is made', () => {
+    expect(csvExporter.render(table, {}).split('\n')[0]).toBe('name,email');
+  });
+
+  it('writes only the chosen columns', () => {
+    const text = csvExporter.render(table, { columns: ['c2'] });
+    expect(text.split('\n')[0]).toBe('email');
+    expect(text).not.toContain('Andersson');
+  });
+
+  it('keeps the dataset order, not the order they were chosen', () => {
+    expect(csvExporter.render(table, { columns: ['c2', 'c1'] }).split('\n')[0]).toBe('name,email');
+  });
+
+  it('ignores a column id that is no longer there', () => {
+    expect(csvExporter.render(table, { columns: ['c1', 'gone'] }).split('\n')[0]).toBe('name');
+  });
+
+  it('writes the whole table rather than nothing when every chosen id is stale', () => {
+    expect(csvExporter.render(table, { columns: ['gone', 'also-gone'] }).split('\n')[0]).toBe(
+      'name,email',
+    );
+  });
+
+  it('writes the whole table when nothing is ticked', () => {
+    expect(csvExporter.render(table, { columns: [] }).split('\n')[0]).toBe('name,email');
+  });
+
+  it('falls back to every column when the option is not an array of ids', () => {
+    expect(csvExporter.render(table, { columns: 'c1' }).split('\n')[0]).toBe('name,email');
+  });
+});

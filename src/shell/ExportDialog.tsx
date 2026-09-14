@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
-import { defaultOptions, type Options } from '../core/registry';
+import { carryOptions, defaultOptions, type Options } from '../core/registry';
 import { setNotice } from '../core/store';
 import { defaultExporter, exporterById, exporters } from '../exporters';
 import { en } from '../i18n/en';
@@ -30,7 +30,10 @@ export function ExportDialog({ dataset, onClose }: Props) {
     const chosen = exporterById(id);
     if (chosen === undefined) return;
     setExporterId(id);
-    setOptions(defaultOptions(chosen.options));
+    setOptions({
+      ...defaultOptions(chosen.options),
+      ...carryOptions(chosen.options, exporter.options, options),
+    });
   }
 
   async function copy(): Promise<void> {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { parseEntry, recipientsParser, splitEntries, splitTopLevel } from './recipients';
 import { cell } from '../core/model';
+import { bestParser } from '../core/detect';
+import { parsers } from './index';
 import {
   CRLF_TRAILING_SEMICOLON,
   CSV_WITH_HEADER,
@@ -198,5 +200,26 @@ describe('recipients detection', () => {
 
   it('declines when fewer than 60 % of the entries are recipients', () => {
     expect(recipientsParser.detect('a@example.com; plain text; more text; and more')).toBeNull();
+  });
+});
+
+describe('a CSV is not a recipient list', () => {
+  const TIGHT_CSV = 'first,last,email\nAnna,Andersson,anna@example.com\nBo,Berg,bo@example.com';
+
+  it('declines a comma-separated file whose rows have no spaces', () => {
+    // Each row contains an address but is not one; a contains-check would claim it.
+    expect(recipientsParser.detect(TIGHT_CSV)).toBeNull();
+  });
+
+  it('leaves such a file to the CSV parser', () => {
+    expect(bestParser(parsers, TIGHT_CSV)?.parser.id).toBe('csv');
+  });
+
+  it('still claims a bare address on its own line', () => {
+    expect(recipientsParser.detect('anna@example.com\nbo@example.com')).not.toBeNull();
+  });
+
+  it('does not read a whole CSV row as one address', () => {
+    expect(parseEntry('Anna,Andersson,anna@example.com', 'last-first').email).toBe('');
   });
 });

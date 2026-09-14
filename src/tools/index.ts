@@ -22,6 +22,7 @@ import { mergeColumnsTool } from './columns/merge-columns';
 import { renameColumnTool } from './columns/rename-column';
 import { removeColumnTool } from './columns/remove-column';
 import { moveColumnTool } from './columns/move-column';
+import { keepColumnsTool } from './columns/keep-columns';
 import { buildDisplayNameTool } from './columns/build-display-name';
 import { generateEmailTool } from './columns/generate-email';
 import { countValuesTool } from './extract/count-values';
@@ -51,6 +52,7 @@ export const tools: Tool[] = [
   renameColumnTool,
   removeColumnTool,
   moveColumnTool,
+  keepColumnsTool,
   buildDisplayNameTool,
   generateEmailTool,
   extractPatternTool,

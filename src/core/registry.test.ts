@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   booleanOption,
+  carryOptions,
   defaultOptions,
   numberOption,
   stringOption,
+  stringsOption,
   type OptionField,
 } from './registry';
 
@@ -80,5 +82,72 @@ describe('option readers', () => {
 
   it('keeps an empty string as a real value', () => {
     expect(stringOption({ a: '' }, 'a', 'fallback')).toBe('');
+  });
+});
+
+describe('the columns field', () => {
+  const field: OptionField = { key: 'columns', label: 'Columns', type: 'columns' };
+
+  it('stays unset with no default, so a consumer can mean "every column"', () => {
+    expect('columns' in defaultOptions([field])).toBe(false);
+  });
+
+  it('keeps an explicit default', () => {
+    expect(defaultOptions([{ ...field, default: ['a', 'b'] }])).toEqual({ columns: ['a', 'b'] });
+  });
+});
+
+describe('stringsOption', () => {
+  it('reads an array of strings', () => {
+    expect(stringsOption({ a: ['x', 'y'] }, 'a', ['fallback'])).toEqual(['x', 'y']);
+  });
+
+  it('reads an empty array as an empty array', () => {
+    expect(stringsOption({ a: [] }, 'a', ['fallback'])).toEqual([]);
+  });
+
+  it('falls back when the key is missing', () => {
+    expect(stringsOption({}, 'a', ['fallback'])).toEqual(['fallback']);
+  });
+
+  it('falls back when a serialized recipe carries something else', () => {
+    expect(stringsOption({ a: 'x' }, 'a', ['fallback'])).toEqual(['fallback']);
+    expect(stringsOption({ a: ['x', 7] }, 'a', ['fallback'])).toEqual(['fallback']);
+  });
+});
+
+describe('carryOptions', () => {
+  const csv: OptionField[] = [
+    { key: 'columns', label: 'Columns', type: 'columns' },
+    { key: 'header', label: 'Header', type: 'boolean', default: true },
+  ];
+  const markdown: OptionField[] = [
+    { key: 'columns', label: 'Columns', type: 'columns' },
+    { key: 'header', label: 'Header', type: 'boolean', default: true },
+    { key: 'flavour', label: 'Markup', type: 'select', default: 'markdown', choices: [] },
+  ];
+  const lines: OptionField[] = [{ key: 'column', label: 'Column', type: 'column' }];
+
+  const chosen = { columns: ['c2'], header: false, flavour: 'html' };
+
+  it('carries a value the new field list declares the same way', () => {
+    expect(carryOptions(markdown, csv, chosen)).toEqual({ columns: ['c2'], header: false });
+  });
+
+  it('drops a value the new field list has no field for', () => {
+    expect(carryOptions(lines, csv, chosen)).toEqual({});
+  });
+
+  it('never carries a select, whose choices belong to the field that declared them', () => {
+    expect('flavour' in carryOptions(markdown, markdown, chosen)).toBe(false);
+  });
+
+  it('drops a key whose type changed between the two', () => {
+    const retyped: OptionField[] = [{ key: 'columns', label: 'Column', type: 'column' }];
+    expect(carryOptions(retyped, csv, chosen)).toEqual({});
+  });
+
+  it('carries nothing when nothing was set', () => {
+    expect(carryOptions(markdown, csv, {})).toEqual({});
   });
 });

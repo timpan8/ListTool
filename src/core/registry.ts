@@ -33,6 +33,20 @@ export type OptionField =
       allowAll?: boolean;
       help?: string;
     }
+  /**
+   * Checkboxes over the input dataset's columns → an array of column ids. Omitting the
+   * default means every column, which is what a table exporter wants before anyone has
+   * touched it. Anything that works on a SET of columns — which columns a CSV writes,
+   * which ones a list keeps — needs this; picking them one at a time is not the same
+   * feature.
+   */
+  | {
+      key: string;
+      label: string;
+      type: 'columns';
+      default?: string[];
+      help?: string;
+    }
   /** Presets (newline , ; tab | space) + custom. */
   | { key: string; label: string; type: 'delimiter'; default: string; help?: string };
 
@@ -82,13 +96,34 @@ export interface Exporter {
 export function defaultOptions(fields: OptionField[]): Options {
   const options: Options = {};
   for (const field of fields) {
-    if (field.type === 'column') {
+    // A column field with no default means "let the dataset decide", so it stays unset.
+    if (field.type === 'column' || field.type === 'columns') {
       if (field.default !== undefined) options[field.key] = field.default;
     } else {
       options[field.key] = field.default;
     }
   }
   return options;
+}
+
+/**
+ * The options worth keeping when the user switches to a different parser, tool or
+ * exporter: those the new field list declares under the same key AND the same type.
+ * Choosing "only the email column" and then switching CSV to Markdown is still about
+ * the same columns; the format changed, not the intent.
+ *
+ * A `select` never carries — its choices belong to the field that declared them, so the
+ * old value may not be one of the new ones.
+ */
+export function carryOptions(to: OptionField[], from: OptionField[], options: Options): Options {
+  const carried: Options = {};
+  for (const field of to) {
+    if (field.type === 'select') continue;
+    const before = from.find((candidate) => candidate.key === field.key);
+    if (before?.type !== field.type) continue;
+    if (field.key in options) carried[field.key] = options[field.key];
+  }
+  return carried;
 }
 
 /**
@@ -103,6 +138,17 @@ export function stringOption(options: Options, key: string, fallback: string): s
 export function booleanOption(options: Options, key: string, fallback: boolean): boolean {
   const value = options[key];
   return typeof value === 'boolean' ? value : fallback;
+}
+
+/** Read a `columns` option. Anything that is not an array of strings falls back. */
+export function stringsOption(
+  options: Options,
+  key: string,
+  fallback: string[],
+): string[] {
+  const value = options[key];
+  if (!Array.isArray(value)) return fallback;
+  return value.every((entry): entry is string => typeof entry === 'string') ? value : fallback;
 }
 
 export function numberOption(options: Options, key: string, fallback: number): number {

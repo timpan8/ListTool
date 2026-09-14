@@ -83,6 +83,7 @@ describe('tool registry', () => {
     expect(hidden.map((tool) => tool.id).sort()).toEqual([
       'build-display-name',
       'generate-email',
+      'keep-columns',
       'merge-columns',
       'move-column',
       'remove-column',
