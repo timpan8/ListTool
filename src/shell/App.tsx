@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'preact/hooks';
-import { activeDataset, activeId, canRedoActive, canUndoActive, redo, undo } from '../core/store';
+import {
+  activeDataset,
+  activeHistory,
+  activeId,
+  canRedoActive,
+  canUndoActive,
+  redo,
+  undo,
+} from '../core/store';
 import { en } from '../i18n/en';
 import { ExportDialog } from './ExportDialog';
 import { ImportDialog } from './ImportDialog';
@@ -21,6 +29,7 @@ function isTyping(target: EventTarget | null): boolean {
 
 export function App() {
   const [dialog, setDialog] = useState<DialogState>({ kind: 'none' });
+  const [panelOpen, setPanelOpen] = useState(false);
   const dataset = activeDataset.value;
   const id = activeId.value;
   const open = dialog.kind !== 'none';
@@ -66,6 +75,10 @@ export function App() {
 
       <Layout
         dataset={dataset}
+        history={activeHistory.value}
+        panelOpen={panelOpen}
+        onTools={() => setPanelOpen(true)}
+        onClosePanel={() => setPanelOpen(false)}
         onImport={() => setDialog({ kind: 'import', text: '', reparse: false })}
         onReparse={() =>
           setDialog({ kind: 'import', text: dataset?.rawInput ?? '', reparse: true })

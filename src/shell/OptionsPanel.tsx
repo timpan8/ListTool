@@ -1,5 +1,6 @@
 import type { Column } from '../core/model';
 import type { OptionField, Options } from '../core/registry';
+import { en } from '../i18n/en';
 import { DelimiterField } from './DelimiterField';
 
 interface Props {
@@ -55,11 +56,18 @@ export function OptionsPanel({ idPrefix, fields, options, columns, onChange }: P
           );
         }
 
+        const columnChoices = columns.map((column) => ({
+          value: column.id,
+          label: column.name,
+        }));
+
         const choices =
           field.type === 'select'
             ? field.choices
             : field.type === 'column'
-              ? columns.map((column) => ({ value: column.id, label: column.name }))
+              ? field.allowAll === true
+                ? [{ value: '', label: en.options.allColumns }, ...columnChoices]
+                : columnChoices
               : null;
 
         return (

@@ -7,6 +7,8 @@
  * as written there.
  */
 
+import { draftDataset, makeRow, valuesDataset, type Dataset } from '../core/model';
+
 /** SPEC §4, verbatim. Expected with "Last First": (first1, last1, …), (first2, last2, …). */
 export const OUTLOOK_RECIPIENTS =
   'last1 first1 <last1.first1@exempel.com>; last2 first2 <first2.last2@exempel.com>; last3 first3 <first3.last3@exempel.com>';
@@ -50,3 +52,25 @@ export const COMPARE_B = 'anna@example.com\nbob@example.com\nbob@example.com\nda
 
 /** The same address written with different case and padding — normalization fodder. */
 export const MESSY_CASE = 'Anna@Example.com \n anna@example.com\nANNA@EXAMPLE.COM';
+
+// --- builders, so a tool test can say what it means in one line ---
+
+
+const PARSE_REF = { parserId: 'lines', options: {} };
+
+/** A one-column list. */
+export function listOf(...values: string[]): Dataset {
+  return { ...valuesDataset(values, 'Value', values.join('\n'), PARSE_REF), id: 'd1', name: 'A' };
+}
+
+/** A table: column ids in order, then one record per row. */
+export function tableOf(ids: string[], records: Record<string, string>[]): Dataset {
+  return {
+    ...draftDataset({
+      columns: ids.map((id) => ({ id, name: id })),
+      rows: records.map((record, index) => makeRow(index, record)),
+    }),
+    id: 'd1',
+    name: 'A',
+  };
+}

@@ -1,0 +1,91 @@
+import { cell, type Column, type Dataset, type Row } from '../core/model';
+import { stringOption, type Options } from '../core/registry';
+import { en } from '../i18n/en';
+import { plural } from '../i18n/format';
+
+/**
+ * The columns a tool should work on: the chosen one, or every column when the option is
+ * empty (the "All columns" choice a `column` field with `allowAll` offers).
+ */
+export function targetColumns(dataset: Dataset, options: Options, key = 'column'): Column[] {
+  const id = stringOption(options, key, '');
+  if (id === '') return dataset.columns;
+  const chosen = dataset.columns.find((column) => column.id === id);
+  return chosen === undefined ? dataset.columns : [chosen];
+}
+
+/** The one column a tool needs. Falls back to the first, so it always has something. */
+export function targetColumn(
+  dataset: Dataset,
+  options: Options,
+  key = 'column',
+): Column | undefined {
+  const id = stringOption(options, key, '');
+  return dataset.columns.find((column) => column.id === id) ?? dataset.columns[0];
+}
+
+export interface CellChange {
+  rows: Row[];
+  /** How many cells the transform actually changed. */
+  changed: number;
+}
+
+/** Apply a per-cell transform to the given columns, counting real changes only. */
+export function mapCells(
+  dataset: Dataset,
+  columns: Column[],
+  transform: (value: string, column: Column, row: Row) => string,
+): CellChange {
+  const ids = new Set(columns.map((column) => column.id));
+  let changed = 0;
+
+  const rows = dataset.rows.map((row) => {
+    const cells: Record<string, string> = { ...row.cells };
+    for (const column of dataset.columns) {
+      if (!ids.has(column.id)) continue;
+      const before = cell(row, column.id);
+      const after = transform(before, column, row);
+      if (after !== before) changed += 1;
+      cells[column.id] = after;
+    }
+    return { id: row.id, cells };
+  });
+
+  return { rows, changed };
+}
+
+/** Same dataset, different rows. rawInput and the parse options survive. */
+export function withRows(dataset: Dataset, rows: Row[]): Dataset {
+  return { ...dataset, rows };
+}
+
+/** Same dataset, different shape. */
+export function withColumns(dataset: Dataset, columns: Column[], rows: Row[]): Dataset {
+  return { ...dataset, columns, rows };
+}
+
+export function cellsPhrase(count: number): string {
+  return plural(count, en.tools.cells);
+}
+
+export function rowsPhrase(count: number): string {
+  return plural(count, en.tools.rows);
+}
+
+/** A column id that no existing column uses, derived from a wanted base. */
+export function freeColumnId(dataset: Dataset, base: string): string {
+  const taken = new Set(dataset.columns.map((column) => column.id));
+  if (!taken.has(base)) return base;
+  let suffix = 2;
+  while (taken.has(`${base}${suffix}`)) suffix += 1;
+  return `${base}${suffix}`;
+}
+
+/** Compile a user-supplied pattern, or null when it does not compile. */
+export function safeRegExp(pattern: string, flags: string): RegExp | null {
+  try {
+    return new RegExp(pattern, flags);
+  } catch {
+    return null;
+  }
+}
