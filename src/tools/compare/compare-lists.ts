@@ -26,7 +26,7 @@ export const compareListsTool: Tool = {
   arity: 'dual',
   options: [
     { key: 'keyA', label: en.compare.listA, type: 'columns' },
-    { key: 'keyB', label: en.compare.listB, type: 'columns' },
+    { key: 'keyB', label: en.compare.listB, type: 'columns', from: 'second' },
     { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
     { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
     {

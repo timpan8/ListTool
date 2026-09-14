@@ -110,6 +110,7 @@ export function ResultPanel({ dataset, tool, onBack, onApplied }: Props) {
         fields={tool.options}
         options={options}
         columns={dataset.columns}
+        secondColumns={second?.columns ?? []}
         onChange={(key, value) => setOptions({ ...options, [key]: value })}
       />
 

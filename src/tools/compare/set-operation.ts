@@ -58,7 +58,7 @@ export const setOperationTool: Tool = {
   arity: 'dual',
   options: [
     { key: 'keyA', label: en.compare.listA, type: 'columns' },
-    { key: 'keyB', label: en.compare.listB, type: 'columns' },
+    { key: 'keyB', label: en.compare.listB, type: 'columns', from: 'second' },
     {
       key: 'mode',
       label: strings.mode,

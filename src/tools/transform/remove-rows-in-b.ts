@@ -16,7 +16,7 @@ export const removeRowsInBTool: Tool = {
   arity: 'dual',
   options: [
     { key: 'keyA', label: en.compare.listA, type: 'column' },
-    { key: 'keyB', label: en.compare.listB, type: 'column' },
+    { key: 'keyB', label: en.compare.listB, type: 'column', from: 'second' },
     { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
     { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
     {

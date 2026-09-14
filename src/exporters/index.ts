@@ -8,6 +8,7 @@ import { jsonExporter } from './json';
 import { powershellExporter } from './powershell';
 import { sqlInExporter } from './sql-in';
 import { markdownExporter } from './markdown';
+import { templateExporter } from './template';
 
 /**
  * The exporter registry. Adding an exporter means adding one module, its test, and one
@@ -23,6 +24,7 @@ export const exporters: Exporter[] = [
   powershellExporter,
   sqlInExporter,
   markdownExporter,
+  templateExporter,
 ];
 
 export function exporterById(id: string): Exporter | undefined {

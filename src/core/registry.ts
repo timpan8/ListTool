@@ -2,6 +2,9 @@ import type { Dataset } from './model';
 
 export type Options = Record<string, unknown>;
 
+/** Which dataset a column field offers: the one being worked on, or a dual tool's second. */
+export type ColumnSource = 'input' | 'second';
+
 export type OptionField =
   | {
       key: string;
@@ -20,10 +23,11 @@ export type OptionField =
       help?: string;
     }
   /**
-   * Dropdown of the input dataset's columns → column id. `allowAll` adds an
-   * "All columns" choice whose value is '' — half the cleaning tools work either on one
-   * column or on the whole row, and that choice belongs in the generated form rather
-   * than in a second field or a special case in the shell.
+   * Dropdown of a dataset's columns → column id. `allowAll` adds an "All columns" choice
+   * whose value is '' — half the cleaning tools work either on one column or on the whole
+   * row, and that choice belongs in the generated form rather than in a second field or a
+   * special case in the shell. `from: 'second'` offers the SECOND list's columns instead,
+   * which is the only honest way for a dual tool to ask "which column over there?".
    */
   | {
       key: string;
@@ -31,6 +35,7 @@ export type OptionField =
       type: 'column';
       default?: string;
       allowAll?: boolean;
+      from?: ColumnSource;
       help?: string;
     }
   /**
@@ -40,7 +45,7 @@ export type OptionField =
    */
   | { key: string; label: string; type: 'rows'; help?: string }
   /**
-   * Checkboxes over the input dataset's columns → an array of column ids. Omitting the
+   * Checkboxes over a dataset's columns → an array of column ids. Omitting the
    * default means every column, which is what a table exporter wants before anyone has
    * touched it. Anything that works on a SET of columns — which columns a CSV writes,
    * which ones a list keeps — needs this; picking them one at a time is not the same
@@ -51,6 +56,7 @@ export type OptionField =
       label: string;
       type: 'columns';
       default?: string[];
+      from?: ColumnSource;
       help?: string;
     }
   /** Presets (newline , ; tab | space) + custom. */
