@@ -236,17 +236,20 @@ export const en = {
       name: 'Trim whitespace',
       description: 'Remove leading and trailing whitespace.',
       summary: 'Trimmed {cells}',
+      found: { one: '{n} cell has space around it', other: '{n} cells have space around them' },
     },
     collapse: {
       name: 'Collapse whitespace',
       description: 'Turn runs of whitespace into a single space.',
       summary: 'Collapsed whitespace in {cells}',
+      found: { one: '{n} cell has a double space', other: '{n} cells have double spaces' },
     },
     removeBlank: {
       name: 'Remove blank rows',
       description: 'Drop rows that are empty.',
       summary: 'Removed {removed} ({before} → {after})',
       blankRows: { one: '{n} blank row', other: '{n} blank rows' },
+      found: { one: '{n} blank row', other: '{n} blank rows' },
     },
     dedupe: {
       name: 'Remove duplicates',
@@ -377,6 +380,7 @@ export const en = {
       yes: 'yes',
       no: 'no',
       summary: '{bad} of {total} look malformed',
+      found: { one: '{n} address looks malformed', other: '{n} addresses look malformed' },
     },
     numberRows: {
       name: 'Number rows',
@@ -635,6 +639,7 @@ export const en = {
       description: 'Repair Ã¤ Ã¶ Ã¥ back into ä ö å.',
       summary: 'Repaired {cells}',
       nothing: 'Nothing looks mis-decoded in this list.',
+      foundCheck: { one: '{n} cell looks mis-decoded', other: '{n} cells look mis-decoded' },
     },
     cleanInvisible: {
       name: 'Clean invisible characters',
@@ -644,6 +649,10 @@ export const en = {
       controls: 'Remove control characters',
       summary: 'Cleaned {cells}',
       found: '{n} invisible characters were removed.',
+      foundCheck: {
+        one: '{n} cell holds an invisible character',
+        other: '{n} cells hold invisible characters',
+      },
       nothing: 'No invisible characters found.',
     },
     phone: {
@@ -768,6 +777,13 @@ export const en = {
     cells: { one: '{n} cell', other: '{n} cells' },
     rows: { one: '{n} row', other: '{n} rows' },
     nothingChanged: 'Nothing changed.',
+  },
+
+  checkup: {
+    title: 'Worth a look',
+    intro: 'What the tools would find in this list as it stands. Nothing has been changed.',
+    clean: 'Nothing worth flagging in this list.',
+    open: 'Open {tool}',
   },
 
   profile: {

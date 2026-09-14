@@ -22,11 +22,14 @@ What the app does:
   override, a live preview, and a list name. `Ctrl/Cmd+V` anywhere opens the import dialog
   with what is on the clipboard.
 - **Parsers:** Lines · Delimited · CSV/TSV · HTML table (what a copy out of Excel, Word or
-  a web page actually puts on the clipboard) · Recipients (`Name <email>` lists, as copied
-  out of Outlook) · Emails in text.
+  a web page actually puts on the clipboard) · JSON · Recipients (`Name <email>` lists, as
+  copied out of Outlook) · Emails in text.
 - **Tools** in five categories, each with the same flow: pick it, configure it, watch the
   live preview and its summary, then Apply or Apply to new list. Undo is always there. The
   preview marks the cells, rows and columns the tool would change.
+- **Worth a look:** the tool picker leads with what the tools would find in the list as it
+  stands — "27 duplicates", "3 addresses look malformed" — with the tool that fixes each
+  one already configured behind it. Nothing is changed by asking.
 - **Edit in the table:** click a cell to change it, tick rows to work on just those. Both
   go through ordinary tools, so both undo.
 - **Columns tab:** what is actually in each column — filled, empty, distinct, lengths and
@@ -39,7 +42,7 @@ What the app does:
 - **Export** as lines, a joined line, a quoted list, CSV, TSV, JSON, a PowerShell array, a
   SQL `IN` list, a Markdown/HTML table, or your own template, choosing which columns go in.
   Copy is one click, and puts a real table on the clipboard beside the text, so a paste
-  into Excel or Word lands in cells.
+  into Excel or Word lands in cells. The Recipients exporter is the way back into Outlook.
 - **Recipes:** save the steps behind a list as a named recipe and replay it on any other
   list. Recipes, settings, favourites and (optionally) the lists themselves are kept in
   this browser between sessions, and the whole workspace can be saved to a file and opened
@@ -128,6 +131,12 @@ Things the contract expects:
   `columns` option renders a checkbox per column and reads back an array of ids, with no
   value meaning "every column". Either can add `from: 'second'`, and a dual tool then gets
   the SECOND list's columns to choose from instead of its own.
+- A `column` option with `allowNone: true` offers "None", for a field that is genuinely
+  optional — a second sort key, a tie-breaker.
+- A tool can add `check(input)`: what it would find in the list as it stands, as a count
+  and a line of text, plus the options to open it with. It turns up under "Worth a look"
+  in the picker. Return `null` when there is nothing to report, and keep it as pure and as
+  cheap as `run` — it is called for every tool on every render of the picker.
 - A `rows` option is filled from the ticks in the table — there is no way to pick rows in a
   form — and reads back an array of row ids. Declare one and the selection arrives; the
   shell never learns the tool's name.

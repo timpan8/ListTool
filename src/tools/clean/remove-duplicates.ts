@@ -127,4 +127,23 @@ export const removeDuplicatesTool: Tool = {
       stats: { removed, kept: kept.length },
     };
   },
+  check(input) {
+    const seen = new Set<string>();
+    let duplicates = 0;
+    for (const row of input.rows) {
+      const key = joinKeys(
+        input.columns.map((column) =>
+          normalizeKey(cell(row, column.id), { trim: true, ignoreCase: true }),
+        ),
+      );
+      if (seen.has(key)) duplicates += 1;
+      else seen.add(key);
+    }
+    if (duplicates === 0) return null;
+    return {
+      summary: format(strings.found, { n: duplicates }),
+      count: duplicates,
+      options: { column: '', keep: 'first' },
+    };
+  },
 };

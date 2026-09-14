@@ -1,6 +1,7 @@
+import { cell } from '../../core/model';
 import type { Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
-import { format } from '../../i18n/format';
+import { format, plural } from '../../i18n/format';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
 const strings = en.tools.collapse;
@@ -29,5 +30,17 @@ export const collapseWhitespaceTool: Tool = {
           : format(strings.summary, { cells: cellsPhrase(changed) }),
       stats: { changed },
     };
+  },
+  check(input) {
+    // Only a run of whitespace INSIDE the value is reported. Space around it is what
+    // Trim finds, and one cell should not turn up twice in the same list of findings.
+    const cells = input.rows.reduce(
+      (count, row) =>
+        count +
+        input.columns.filter((column) => /\s\s|\t/.test(cell(row, column.id).trim())).length,
+      0,
+    );
+    if (cells === 0) return null;
+    return { summary: plural(cells, strings.found), count: cells, options: { column: '' } };
   },
 };

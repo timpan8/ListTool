@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
 import type { History } from '../core/history';
-import type { Tool } from '../core/registry';
+import type { Options, Tool } from '../core/registry';
 import { en } from '../i18n/en';
 import { HistoryPanel } from './HistoryPanel';
 import { ProfilePanel } from './ProfilePanel';
@@ -22,11 +22,14 @@ interface Props {
 export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onClose }: Props) {
   const [tab, setTab] = useState<'tools' | 'columns' | 'history' | 'recipes'>('tools');
   const [tool, setTool] = useState<Tool | null>(null);
+  // Options a finding handed over, so the tool opens on what was found.
+  const [opening, setOpening] = useState<Options | undefined>(undefined);
 
   useEffect(() => {
     if (pendingTool === null) return;
     setTab('tools');
     setTool(pendingTool);
+    setOpening(undefined);
     onPendingHandled();
   }, [pendingTool, onPendingHandled]);
 
@@ -80,11 +83,18 @@ export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onC
         ) : tab === 'history' ? (
           <HistoryPanel history={history} />
         ) : tool === null ? (
-          <ToolPicker dataset={dataset} onPick={setTool} />
+          <ToolPicker
+            dataset={dataset}
+            onPick={(picked, options) => {
+              setTool(picked);
+              setOpening(options);
+            }}
+          />
         ) : (
           <ResultPanel
             dataset={dataset}
             tool={tool}
+            {...(opening === undefined ? {} : { initialOptions: opening })}
             onBack={() => setTool(null)}
             onApplied={() => setTool(null)}
           />

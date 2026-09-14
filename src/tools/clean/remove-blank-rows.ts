@@ -38,4 +38,9 @@ export const removeBlankRowsTool: Tool = {
       stats: { removed },
     };
   },
+  check(input) {
+    const blank = input.rows.filter((row) => isBlankRow(row, input.columns)).length;
+    if (blank === 0) return null;
+    return { summary: plural(blank, strings.found), count: blank, options: { column: '' } };
+  },
 };

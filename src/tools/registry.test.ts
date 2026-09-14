@@ -101,6 +101,38 @@ describe('tool registry', () => {
     }
   });
 
+  it('answers a check with a real finding or with nothing, for every tool', () => {
+    for (const tool of tools) {
+      const finding = tool.check?.(list) ?? null;
+      if (finding === null) continue;
+      expect(finding.count).toBeGreaterThan(0);
+      expect(finding.summary.trim()).not.toBe('');
+    }
+  });
+
+  it('never changes the list it checks, for every tool', () => {
+    for (const tool of tools) {
+      const before = JSON.stringify(table);
+      tool.check?.(table);
+      expect(JSON.stringify(table)).toBe(before);
+    }
+  });
+
+  it('gives the same check answer twice, for every tool', () => {
+    for (const tool of tools) {
+      expect(tool.check?.(list) ?? null).toEqual(tool.check?.(list) ?? null);
+    }
+  });
+
+  it('hands over options its own run accepts, for every tool that checks', () => {
+    for (const tool of tools) {
+      const finding = tool.check?.(list) ?? null;
+      if (finding?.options === undefined) continue;
+      const result = tool.run(list, { ...defaultOptions(tool.options), ...finding.options });
+      expect(result.summary.trim()).not.toBe('');
+    }
+  });
+
   it('hides every tool that needs two columns from a one-column list', () => {
     const hidden = tools.filter((tool) => tool.appliesTo?.(listOf('a')) === false);
     expect(hidden.map((tool) => tool.id).sort()).toEqual([

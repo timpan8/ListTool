@@ -1,0 +1,43 @@
+import type { Dataset } from '../core/model';
+import { checkup } from '../core/checkup';
+import type { Options, Tool } from '../core/registry';
+import { tools } from '../tools';
+import { en } from '../i18n/en';
+import { format } from '../i18n/format';
+
+interface Props {
+  dataset: Dataset;
+  onPick: (tool: Tool, options?: Options) => void;
+}
+
+/**
+ * What the tools would find, above the list of tools. No new tab and no new concept:
+ * each finding is a way into the ordinary tool with its options already set, and the
+ * ordinary preview still has the last word before anything changes.
+ */
+export function CheckupList({ dataset, onPick }: Props) {
+  const found = checkup(dataset, tools);
+  if (found.length === 0) return null;
+
+  return (
+    <section class="picker__group">
+      <h3 class="picker__title">{en.checkup.title}</h3>
+      <p class="field__help">{en.checkup.intro}</p>
+      <ul class="picker__list">
+        {found.map(({ tool, finding }) => (
+          <li key={tool.id} class="picker__row">
+            <button
+              type="button"
+              class="picker__tool finding"
+              title={format(en.checkup.open, { tool: tool.name })}
+              onClick={() => onPick(tool, finding.options)}
+            >
+              <span class="picker__name">{finding.summary}</span>
+              <span class="picker__description">{tool.name}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}

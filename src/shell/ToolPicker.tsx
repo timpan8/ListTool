@@ -1,14 +1,16 @@
 import { useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
-import type { Tool } from '../core/registry';
+import type { Options, Tool } from '../core/registry';
 import { TOOL_CATEGORIES, toolById, tools } from '../tools';
 import { favorites, recents, toggleFavorite } from '../core/store';
 import { en } from '../i18n/en';
 import { format } from '../i18n/format';
+import { CheckupList } from './CheckupList';
 
 interface Props {
   dataset: Dataset;
-  onPick: (tool: Tool) => void;
+  /** Options come with a finding from the checkup, so the fix opens ready to preview. */
+  onPick: (tool: Tool, options?: Options) => void;
 }
 
 function matches(tool: Tool, query: string): boolean {
@@ -68,6 +70,8 @@ export function ToolPicker({ dataset, onPick }: Props) {
           onInput={(event) => setQuery(event.currentTarget.value)}
         />
       </label>
+
+      {searching ? null : <CheckupList dataset={dataset} onPick={onPick} />}
 
       {!searching && starred.length > 0 ? (
         <section class="picker__group">

@@ -1,7 +1,7 @@
 import { cell, makeRow } from '../../core/model';
 import type { Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
-import { format } from '../../i18n/format';
+import { format, plural } from '../../i18n/format';
 import { freeColumnId, targetColumn, withColumns } from '../helpers';
 
 const strings = en.tools.validateEmails;
@@ -43,5 +43,21 @@ export const validateEmailsTool: Tool = {
       summary: format(strings.summary, { bad, total: input.rows.length }),
       stats: { invalid: bad },
     };
+  },
+  check(input) {
+    // Only where a column actually holds addresses: flagging "3 of 3 names are malformed
+    // email" would be noise, not a finding.
+    const column = input.columns.find(
+      (candidate) => candidate.id === 'email' || /mail|post/i.test(candidate.name),
+    );
+    if (column === undefined) return null;
+
+    const bad = input.rows.filter((row) => {
+      const value = cell(row, column.id).trim();
+      return value !== '' && !isValidEmail(value);
+    }).length;
+    if (bad === 0) return null;
+
+    return { summary: plural(bad, strings.found), count: bad, options: { column: column.id } };
   },
 };
