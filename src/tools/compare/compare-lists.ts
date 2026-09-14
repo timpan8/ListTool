@@ -1,5 +1,5 @@
 import { compareDatasets, toAlignedDataset } from '../../core/compare';
-import { booleanOption, stringOption, type Tool } from '../../core/registry';
+import { booleanOption, stringsOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
 import { rowsPhrase } from '../helpers';
@@ -25,8 +25,8 @@ export const compareListsTool: Tool = {
   keywords: ['compare', 'diff', 'match', 'against', 'two', 'both'],
   arity: 'dual',
   options: [
-    { key: 'keyA', label: en.compare.listA, type: 'column' },
-    { key: 'keyB', label: en.compare.listB, type: 'column' },
+    { key: 'keyA', label: en.compare.listA, type: 'columns' },
+    { key: 'keyB', label: en.compare.listB, type: 'columns' },
     { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
     { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
     {
@@ -47,8 +47,8 @@ export const compareListsTool: Tool = {
     }
 
     const result = compareDatasets(input, second, {
-      keyA: stringOption(options, 'keyA', input.columns[0]?.id ?? ''),
-      keyB: stringOption(options, 'keyB', second.columns[0]?.id ?? ''),
+      keyA: stringsOption(options, 'keyA', [input.columns[0]?.id ?? '']),
+      keyB: stringsOption(options, 'keyB', [second.columns[0]?.id ?? '']),
       normalize: {
         trim: booleanOption(options, 'trim', true),
         ignoreCase: booleanOption(options, 'ignoreCase', true),

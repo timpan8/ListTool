@@ -113,6 +113,8 @@ export const en = {
     allColumns: 'All columns',
     everyColumn: 'Every column',
     noColumns: 'None',
+    selection: { one: '{n} row ticked in the table', other: '{n} rows ticked in the table' },
+    selectionEmpty: 'Tick the rows you mean in the table.',
     customDelimiter: 'Custom delimiter',
     customDelimiterHint: 'Type \\t for tab and \\n for newline.',
     delimiters: {

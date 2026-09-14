@@ -34,6 +34,12 @@ export type OptionField =
       help?: string;
     }
   /**
+   * The rows the user has ticked in the table → an array of row ids. There is no way to
+   * pick rows from a form, so the panel fills this from the table's own selection; the
+   * tool stays pure and the choice stays serializable.
+   */
+  | { key: string; label: string; type: 'rows'; help?: string }
+  /**
    * Checkboxes over the input dataset's columns → an array of column ids. Omitting the
    * default means every column, which is what a table exporter wants before anyone has
    * touched it. Anything that works on a SET of columns — which columns a CSV writes,
@@ -56,6 +62,12 @@ export interface ToolResult {
   summary: string;
   stats?: Record<string, number>;
   warnings?: string[];
+  /**
+   * Further lists the tool produced, which the shell opens as new tabs. Splitting one
+   * list into batches is a single action to the person doing it, so it stays a single
+   * tool rather than something they repeat by hand.
+   */
+  extraLists?: { name: string; dataset: Dataset }[];
 }
 
 export interface Tool {
@@ -96,7 +108,8 @@ export interface Exporter {
 export function defaultOptions(fields: OptionField[]): Options {
   const options: Options = {};
   for (const field of fields) {
-    // A column field with no default means "let the dataset decide", so it stays unset.
+    // A column or row field with no default means "let the dataset decide": unset.
+    if (field.type === 'rows') continue;
     if (field.type === 'column' || field.type === 'columns') {
       if (field.default !== undefined) options[field.key] = field.default;
     } else {
@@ -118,7 +131,9 @@ export function defaultOptions(fields: OptionField[]): Options {
 export function carryOptions(to: OptionField[], from: OptionField[], options: Options): Options {
   const carried: Options = {};
   for (const field of to) {
-    if (field.type === 'select') continue;
+    // A selection belongs to the table it was made in, and a select's choices belong to
+    // the field that declared them. Neither survives a switch.
+    if (field.type === 'select' || field.type === 'rows') continue;
     const before = from.find((candidate) => candidate.key === field.key);
     if (before?.type !== field.type) continue;
     if (field.key in options) carried[field.key] = options[field.key];

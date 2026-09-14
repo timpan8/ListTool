@@ -1,6 +1,7 @@
 import type { Column } from '../core/model';
 import type { OptionField, Options } from '../core/registry';
 import { en } from '../i18n/en';
+import { plural } from '../i18n/format';
 import { DelimiterField } from './DelimiterField';
 
 interface Props {
@@ -36,6 +37,22 @@ export function OptionsPanel({ idPrefix, fields, options, columns, onChange }: P
               {...(field.help === undefined ? {} : { help: field.help })}
               onChange={(next) => onChange(field.key, next)}
             />
+          );
+        }
+
+        if (field.type === 'rows') {
+          // Rows cannot be picked from a form, so this only reports what the table holds.
+          const ticked = Array.isArray(value) ? value.length : 0;
+          return (
+            <div key={field.key} class="field">
+              <span class="field__label">{field.label}</span>
+              <p class="notice" role="status">
+                {ticked === 0
+                  ? en.options.selectionEmpty
+                  : plural(ticked, en.options.selection)}
+              </p>
+              {field.help === undefined ? null : <p class="field__help">{field.help}</p>}
+            </div>
           );
         }
 

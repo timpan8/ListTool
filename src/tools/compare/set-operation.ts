@@ -1,6 +1,6 @@
 import { compareDatasets, type CompareRow } from '../../core/compare';
 import { makeRow, valuesDataset, type Dataset, type Row } from '../../core/model';
-import { booleanOption, stringOption, type Tool } from '../../core/registry';
+import { booleanOption, stringOption, stringsOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
 import { rowsPhrase, withColumns } from '../helpers';
@@ -57,8 +57,8 @@ export const setOperationTool: Tool = {
   keywords: ['set', 'intersection', 'union', 'difference', 'minus', 'both', 'except'],
   arity: 'dual',
   options: [
-    { key: 'keyA', label: en.compare.listA, type: 'column' },
-    { key: 'keyB', label: en.compare.listB, type: 'column' },
+    { key: 'keyA', label: en.compare.listA, type: 'columns' },
+    { key: 'keyB', label: en.compare.listB, type: 'columns' },
     {
       key: 'mode',
       label: strings.mode,
@@ -91,10 +91,10 @@ export const setOperationTool: Tool = {
       };
     }
 
-    const keyA = stringOption(options, 'keyA', input.columns[0]?.id ?? '');
+    const keyA = stringsOption(options, 'keyA', [input.columns[0]?.id ?? '']);
     const result = compareDatasets(input, second, {
       keyA,
-      keyB: stringOption(options, 'keyB', second.columns[0]?.id ?? ''),
+      keyB: stringsOption(options, 'keyB', [second.columns[0]?.id ?? '']),
       normalize: {
         trim: booleanOption(options, 'trim', true),
         ignoreCase: booleanOption(options, 'ignoreCase', true),
@@ -109,7 +109,7 @@ export const setOperationTool: Tool = {
     // Whole rows survive when both lists have the same shape. When they do not, keeping
     // A's columns would silently drop B's values, so the result is the matched values.
     if (needsB && !sameShape(input, second)) {
-      const column = input.columns.find((candidate) => candidate.id === keyA);
+      const column = input.columns.find((candidate) => keyA.includes(candidate.id));
       return {
         output: valuesDataset(
           picked.keys,

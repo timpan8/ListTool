@@ -66,8 +66,8 @@ export function CompareMode({ onImport, onClose }: Props) {
   const listB = b;
 
   const result = compareDatasets(listA, listB, {
-    keyA: listA.columns.some((column) => column.id === keyA) ? keyA : firstKey(listA),
-    keyB: listB.columns.some((column) => column.id === keyB) ? keyB : firstKey(listB),
+    keyA: [listA.columns.some((column) => column.id === keyA) ? keyA : firstKey(listA)],
+    keyB: [listB.columns.some((column) => column.id === keyB) ? keyB : firstKey(listB)],
     normalize,
   });
 
