@@ -1,5 +1,5 @@
 import type { Options } from './registry';
-import { DEFAULT_LOCALE } from './sort';
+import { DEFAULT_LOCALE, type SortOptions } from './sort';
 
 export interface Settings {
   /** Pre-selected delimiter in the import dialog and in delimiter options. */
@@ -9,6 +9,8 @@ export interface Settings {
   /** Recipients parser default — Outlook and Swedish convention put the surname first. */
   defaultNameOrder: 'last-first' | 'first-last';
   keepLists: boolean;
+  /** The format the export dialog opens on: the one used last. '' = let the list decide. */
+  lastExporterId: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -17,6 +19,7 @@ export const DEFAULT_SETTINGS: Settings = {
   naturalSort: true,
   defaultNameOrder: 'last-first',
   keepLists: true,
+  lastExporterId: '',
 };
 
 /**
@@ -31,6 +34,11 @@ export function settingsOptions(settings: Settings): Options {
     nameOrder: settings.defaultNameOrder,
     delimiter: settings.defaultDelimiter,
   };
+}
+
+/** The sort rules the settings describe, for the view and for anything else that orders. */
+export function sortOptionsOf(settings: Settings): SortOptions {
+  return { locale: settings.sortLocale, numeric: settings.naturalSort };
 }
 
 /** Apply the settings to a field list's defaults, touching only keys that exist. */
@@ -63,5 +71,9 @@ export function readSettings(value: unknown): Settings {
       raw['defaultNameOrder'] === 'first-last' ? 'first-last' : DEFAULT_SETTINGS.defaultNameOrder,
     keepLists:
       typeof raw['keepLists'] === 'boolean' ? raw['keepLists'] : DEFAULT_SETTINGS.keepLists,
+    lastExporterId:
+      typeof raw['lastExporterId'] === 'string'
+        ? raw['lastExporterId']
+        : DEFAULT_SETTINGS.lastExporterId,
   };
 }

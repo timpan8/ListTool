@@ -1,16 +1,16 @@
 import {
   activeDataset,
   activeId,
+  activeView,
   canRedoActive,
   canUndoActive,
   redo,
   setNotice,
+  settings,
   undo,
 } from '../core/store';
-import { DEFAULT_EXPORTER_ID, exporterById } from '../exporters';
-import { defaultOptions } from '../core/registry';
 import { en } from '../i18n/en';
-import { copyExported } from './copyOut';
+import { copyView } from './copyOut';
 
 interface Props {
   onImport: () => void;
@@ -27,12 +27,10 @@ export function Toolbar({ onImport, onTools, onCompare, onExport }: Props) {
   const dataset = activeDataset.value;
   const id = activeId.value;
 
+  // Copy takes what is on screen: the ticked rows if any, else the rows shown.
   async function copy(): Promise<void> {
     if (dataset === null) return;
-    const exporter = exporterById(DEFAULT_EXPORTER_ID);
-    if (exporter === undefined) return;
-    const copied = await copyExported(exporter, dataset, defaultOptions(exporter.options));
-    setNotice(copied ? en.toolbar.copied : en.toolbar.copyFailed);
+    setNotice(await copyView(dataset, activeView.value, settings.value));
   }
 
   return (
@@ -67,7 +65,12 @@ export function Toolbar({ onImport, onTools, onCompare, onExport }: Props) {
             {en.toolbar.redo}
           </button>
           <span class="toolbar__gap" />
-          <button type="button" class="button" onClick={() => void copy()}>
+          <button
+            type="button"
+            class="button"
+            title={en.toolbar.copyHint}
+            onClick={() => void copy()}
+          >
             {en.toolbar.copy}
           </button>
           <button type="button" class="button" onClick={onExport}>

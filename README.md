@@ -42,8 +42,10 @@ What the app does:
   answers the same question for three lists or thirty.
 - **Export** as lines, a joined line, a quoted list, CSV, TSV, JSON, a PowerShell array, a
   SQL `IN` list, a Markdown/HTML table, or your own template, choosing which columns go in.
-  Copy is one click, and puts a real table on the clipboard beside the text, so a paste
-  into Excel or Word lands in cells. The Recipients exporter is the way back into Outlook.
+  Copy is one click and takes what is on screen — the ticked rows if any, else the rows
+  the search shows — with every column, as a real table beside the text, so a paste into
+  Excel or Word lands in cells. The export dialog offers the shown, ticked or all rows and
+  remembers the last format. The Recipients exporter is the way back into Outlook.
 - **Recipes:** save the steps behind a list as a named recipe and replay it on any other
   list. Recipes, settings, favourites and (optionally) the lists themselves are kept in
   this browser between sessions, and the whole workspace can be saved to a file and opened

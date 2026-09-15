@@ -1,6 +1,6 @@
 import { computed, effect, signal } from '@preact/signals';
 import type { Dataset } from './model';
-import type { ViewFilter } from './view';
+import { EMPTY_VIEW, type ViewFilter, type ViewSort, type ViewState } from './view';
 import {
   applyRecipe,
   createRecipe,
@@ -10,7 +10,7 @@ import {
   type ReplayMessages,
 } from './recipes';
 import { DEFAULT_SETTINGS, type Settings } from './settings';
-export type { ViewFilter } from './view';
+export type { ViewFilter, ViewSort, ViewState } from './view';
 import {
   clear as clearStorage,
   deserialize,
@@ -43,6 +43,8 @@ const activeIdSignal = signal<string | null>(null);
 const selectedColumnSignal = signal<string | null>(null);
 const selectedRowsSignal = signal<string[]>([]);
 const viewFilterSignal = signal<ViewFilter | null>(null);
+const viewQuerySignal = signal<string>('');
+const viewSortSignal = signal<ViewSort | null>(null);
 const noticeSignal = signal<string>('');
 const settingsSignal = signal<Settings>(DEFAULT_SETTINGS);
 const favoritesSignal = signal<string[]>([]);
@@ -97,6 +99,23 @@ export const selectedRows = computed<string[]>(() => selectedRowsSignal.value);
 /** The value picked in the column profile, or null when the whole list is shown. */
 export const viewFilter = computed<ViewFilter | null>(() => viewFilterSignal.value);
 
+/** What is typed in the search box. It narrows the view and never the list. */
+export const viewQuery = computed<string>(() => viewQuerySignal.value);
+
+/** The order the table shows rows in, or null for the list's own order. */
+export const viewSort = computed<ViewSort | null>(() => viewSortSignal.value);
+
+/**
+ * The whole view in one value: what Copy, the export dialog and anything else that
+ * takes "what is on screen" reads, so they can never disagree about what that is.
+ */
+export const activeView = computed<ViewState>(() => ({
+  query: viewQuerySignal.value,
+  filter: viewFilterSignal.value,
+  sort: viewSortSignal.value,
+  ticked: selectedRowsSignal.value,
+}));
+
 /** Transient message for the status region: "Copied to clipboard". */
 export const notice = computed<string>(() => noticeSignal.value);
 
@@ -112,6 +131,19 @@ function updateTab(id: string, change: (history: History) => History): void {
 }
 
 /**
+ * The view belongs to the list on screen. Whenever another list takes its place —
+ * a new one, a switched tab, a closed one, a restored workspace — the search, the
+ * filter, the sort, the ticks and the counted column all start over.
+ */
+function resetView(): void {
+  selectedColumnSignal.value = null;
+  selectedRowsSignal.value = EMPTY_VIEW.ticked;
+  viewFilterSignal.value = EMPTY_VIEW.filter;
+  viewQuerySignal.value = EMPTY_VIEW.query;
+  viewSortSignal.value = EMPTY_VIEW.sort;
+}
+
+/**
  * Put a parsed dataset into the workspace. Parsers produce drafts with no identity;
  * this is where a list gets its id and its tab.
  */
@@ -121,9 +153,7 @@ export function addDataset(draft: Dataset, name: string): string {
   const dataset: Dataset = { ...draft, id, name };
   tabs.value = [...tabs.value, { id, history: createHistory(dataset) }];
   activeIdSignal.value = id;
-  selectedColumnSignal.value = null;
-  selectedRowsSignal.value = [];
-  viewFilterSignal.value = null;
+  resetView();
   return id;
 }
 
@@ -175,9 +205,7 @@ export function rename(id: string, name: string): void {
 export function setActive(id: string): void {
   if (!tabs.value.some((tab) => tab.id === id)) return;
   activeIdSignal.value = id;
-  selectedColumnSignal.value = null;
-  selectedRowsSignal.value = [];
-  viewFilterSignal.value = null;
+  resetView();
 }
 
 /** A duplicate starts a fresh history: it is a new list, not a branch of the old one. */
@@ -197,9 +225,7 @@ export function close(id: string): void {
   if (activeIdSignal.value === id) {
     const neighbour = remaining[Math.min(closedAt, remaining.length - 1)];
     activeIdSignal.value = neighbour?.id ?? null;
-    selectedColumnSignal.value = null;
-    selectedRowsSignal.value = [];
-    viewFilterSignal.value = null;
+    resetView();
   }
 }
 
@@ -225,6 +251,16 @@ export function selectRows(rowIds: string[]): void {
 /** Show only the rows whose column holds this value. null shows everything again. */
 export function setViewFilter(filter: ViewFilter | null): void {
   viewFilterSignal.value = filter;
+}
+
+/** Narrow the view to the rows matching the search box. '' shows everything again. */
+export function setViewQuery(query: string): void {
+  viewQuerySignal.value = query;
+}
+
+/** Order the view by a column. null returns to the list's own order. */
+export function setViewSort(sort: ViewSort | null): void {
+  viewSortSignal.value = sort;
 }
 
 /** How long a status message stays before the status bar goes quiet again. */
@@ -369,9 +405,7 @@ export function restoreWorkspace(stored: Persisted): void {
     history: createHistory(dataset),
   }));
   activeIdSignal.value = stored.datasets[0]?.id ?? null;
-  selectedColumnSignal.value = null;
-  selectedRowsSignal.value = [];
-  viewFilterSignal.value = null;
+  resetView();
 
   nextDatasetNumber = highestNumber(stored.datasets.map((dataset) => dataset.id), 'd') + 1;
 }
@@ -434,9 +468,7 @@ export function clearAllData(): void {
 export function resetWorkspace(): void {
   tabs.value = [];
   activeIdSignal.value = null;
-  selectedColumnSignal.value = null;
-  selectedRowsSignal.value = [];
-  viewFilterSignal.value = null;
+  resetView();
   settingsSignal.value = DEFAULT_SETTINGS;
   favoritesSignal.value = [];
   recentsSignal.value = [];

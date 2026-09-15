@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, readSettings, settingsOptions, withSettings } from './settings';
+import {
+  DEFAULT_SETTINGS,
+  readSettings,
+  settingsOptions,
+  sortOptionsOf,
+  withSettings,
+} from './settings';
+
+describe('sortOptionsOf', () => {
+  it('turns the sort settings into the options the sort helpers take', () => {
+    expect(sortOptionsOf({ ...DEFAULT_SETTINGS, sortLocale: 'en', naturalSort: false })).toEqual({
+      locale: 'en',
+      numeric: false,
+    });
+  });
+});
 
 describe('settings defaults', () => {
   it('sorts Swedish with natural number order', () => {
@@ -73,5 +88,11 @@ describe('readSettings', () => {
 
   it('rejects an unknown name order', () => {
     expect(readSettings({ defaultNameOrder: 'sideways' }).defaultNameOrder).toBe('last-first');
+  });
+
+  it('remembers the last export format, and lets the list decide when there is none', () => {
+    expect(readSettings({ lastExporterId: 'csv' }).lastExporterId).toBe('csv');
+    expect(readSettings({ lastExporterId: 7 }).lastExporterId).toBe('');
+    expect(DEFAULT_SETTINGS.lastExporterId).toBe('');
   });
 });

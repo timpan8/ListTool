@@ -1,13 +1,18 @@
 import { useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
+import { sortOptionsOf } from '../core/settings';
 import {
   selectColumn,
   selectedColumn,
   selectedRows,
   selectRows,
+  settings,
   setViewFilter,
+  setViewQuery,
   toggleRow,
   viewFilter,
+  viewQuery,
+  viewSort,
 } from '../core/store';
 import { visibleRows } from '../core/view';
 import { en } from '../i18n/en';
@@ -23,9 +28,10 @@ interface Props {
 /** Raw | Table, plus a search box that filters the VIEW and never the list. */
 export function DatasetView({ dataset, onReparse }: Props) {
   const [mode, setMode] = useState<'table' | 'raw'>('table');
-  const [query, setQuery] = useState('');
+  // The search lives in the store, so Copy and Export see the same rows this table does.
+  const query = viewQuery.value;
   const filter = viewFilter.value;
-  const rows = visibleRows(dataset, query, filter);
+  const rows = visibleRows(dataset, query, filter, viewSort.value, sortOptionsOf(settings.value));
   const ticked = selectedRows.value;
   const filtered = dataset.columns.find((column) => column.id === filter?.columnId);
 
@@ -58,7 +64,7 @@ export function DatasetView({ dataset, onReparse }: Props) {
               type="search"
               placeholder={en.view.search}
               value={query}
-              onInput={(event) => setQuery(event.currentTarget.value)}
+              onInput={(event) => setViewQuery(event.currentTarget.value)}
             />
           </label>
         ) : (

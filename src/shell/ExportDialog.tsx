@@ -1,14 +1,18 @@
 import { useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
 import { carryOptions, defaultOptions, type Options } from '../core/registry';
-import { setNotice } from '../core/store';
-import { defaultExporter, exporterById, exporters } from '../exporters';
+import { sortOptionsOf } from '../core/settings';
+import { activeView, setNotice, settings, updateSettings } from '../core/store';
+import { copyScope, scopeRows, withVisible, type RowScope } from '../core/view';
+import { copyExporter, exporterById, exporters, isTableExporter } from '../exporters';
 import { en } from '../i18n/en';
 import { format } from '../i18n/format';
 import { Dialog } from './Dialog';
 import { OptionsPanel } from './OptionsPanel';
-import { copyExported } from './copyOut';
+import { RowScopeField } from './RowScopeField';
+import { copyExported, copyNotice } from './copyOut';
 import { downloadText, filenameFor } from './download';
+import { withColumnDefaults } from './toolOptions';
 
 const PREVIEW_LINES = 10;
 
@@ -18,32 +22,64 @@ interface Props {
 }
 
 export function ExportDialog({ dataset, onClose }: Props) {
-  const [exporterId, setExporterId] = useState(defaultExporter.id);
-  const [options, setOptions] = useState<Options>(defaultOptions(defaultExporter.options));
+  const view = activeView.value;
+  const prefs = settings.value;
+  // The dialog opens on the format used last, or on the one the list's shape calls for.
+  const opening = exporterById(prefs.lastExporterId) ?? copyExporter(dataset);
+  const [exporterId, setExporterId] = useState(opening.id);
+  const [options, setOptions] = useState<Options>(defaultOptions(opening.options));
+  const [scope, setScope] = useState<RowScope>(copyScope(view));
 
-  const exporter = exporterById(exporterId) ?? defaultExporter;
-  // Rendered from the dataset, never from the visible table.
-  const text = exporter.render(dataset, { ...defaultOptions(exporter.options), ...options });
+  const exporter = exporterById(exporterId) ?? opening;
+  const counts: Record<RowScope, number> = {
+    shown: scopeRows(dataset, 'shown', view).length,
+    ticked: view.ticked.length,
+    all: dataset.rows.length,
+  };
+  // Rendered from the dataset narrowed to the chosen rows — never from the visible table.
+  const scoped = withVisible(dataset, scopeRows(dataset, scope, view, sortOptionsOf(prefs)));
+  const chosen = withColumnDefaults(
+    exporter.options,
+    { ...defaultOptions(exporter.options), ...options },
+    scoped.columns,
+  );
+  const text = exporter.render(scoped, chosen);
   const previewLines = text.split('\n');
+  const groups = [
+    { label: en.export.groups.table, members: exporters.filter(isTableExporter) },
+    { label: en.export.groups.other, members: exporters.filter((e) => !isTableExporter(e)) },
+  ];
 
   function chooseExporter(id: string): void {
-    const chosen = exporterById(id);
-    if (chosen === undefined) return;
+    const next = exporterById(id);
+    if (next === undefined) return;
     setExporterId(id);
     setOptions({
-      ...defaultOptions(chosen.options),
-      ...carryOptions(chosen.options, exporter.options, options),
+      ...defaultOptions(next.options),
+      ...carryOptions(next.options, exporter.options, options),
     });
   }
 
+  function remember(): void {
+    updateSettings({ lastExporterId: exporter.id });
+  }
+
   async function copy(): Promise<void> {
-    const copied = await copyExported(exporter, dataset, options);
-    setNotice(copied ? en.toolbar.copied : en.toolbar.copyFailed);
+    remember();
+    const copied = await copyExported(exporter, scoped, chosen);
+    setNotice(copyNotice(copied, scoped, scope, exporter));
     onClose();
+  }
+
+  function download(): void {
+    remember();
+    downloadText(filenameFor(dataset.name, exporter.extension ?? 'txt'), text);
   }
 
   return (
     <Dialog title={en.export.title} onClose={onClose}>
+      <RowScopeField id="export-rows" value={scope} counts={counts} onChange={setScope} />
+
       <div class="field">
         <label class="field__label" for="export-format">
           {en.export.format}
@@ -53,10 +89,14 @@ export function ExportDialog({ dataset, onClose }: Props) {
           value={exporter.id}
           onChange={(event) => chooseExporter(event.currentTarget.value)}
         >
-          {exporters.map((candidate) => (
-            <option key={candidate.id} value={candidate.id}>
-              {candidate.name}
-            </option>
+          {groups.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.members.map((candidate) => (
+                <option key={candidate.id} value={candidate.id}>
+                  {candidate.name}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
       </div>
@@ -64,14 +104,14 @@ export function ExportDialog({ dataset, onClose }: Props) {
       <OptionsPanel
         idPrefix="export"
         fields={exporter.options}
-        options={options}
-        columns={dataset.columns}
+        options={chosen}
+        columns={scoped.columns}
         onChange={(key, value) => setOptions({ ...options, [key]: value })}
       />
 
       <section class="preview">
         <h3 class="preview__title">{en.export.preview}</h3>
-        {dataset.rows.length === 0 ? (
+        {scoped.rows.length === 0 ? (
           <p class="field__help">{en.export.empty}</p>
         ) : (
           <>
@@ -86,13 +126,7 @@ export function ExportDialog({ dataset, onClose }: Props) {
           {en.export.close}
         </button>
         {exporter.extension === undefined ? null : (
-          <button
-            type="button"
-            class="button"
-            onClick={() =>
-              downloadText(filenameFor(dataset.name, exporter.extension ?? 'txt'), text)
-            }
-          >
+          <button type="button" class="button" onClick={download}>
             {en.export.download}
           </button>
         )}

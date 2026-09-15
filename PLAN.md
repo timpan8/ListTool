@@ -22,7 +22,8 @@ Done when:
 - Paste `data1, data2, data3` → detection says comma, 3 items → import → 3 rows.
 - Paste 3 lines → one row each. Import a CSV with a header → columns named from header.
 - Raw → Re-parse with a different delimiter changes the table; undo restores it.
-- Copy and every MVP exporter produce correct text; export reflects the dataset, not the view.
+- Copy and every MVP exporter produce correct text; export renders from the dataset, never
+  from the DOM (since M9 the dataset is first narrowed to the shown, ticked or all rows).
 - Adding a parser or exporter required zero shell edits (demonstrate with the last one added).
 
 ## M3 — First tools + recipients parser
