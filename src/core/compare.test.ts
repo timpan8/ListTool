@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { compareDatasets, selectRows, toAlignedDataset } from './compare';
+import { compareDatasets, pairColumns, selectRows, sideBySide, type CompareLabels } from './compare';
 import { cell, VALUE_COLUMN } from './model';
+import { cellKey } from './diff';
 import { linesParser } from '../parsers/lines';
 import type { NormalizeOptions } from './normalize';
 import { COMPARE_A, COMPARE_B, listOf, tableOf } from '../test/fixtures';
@@ -139,51 +140,129 @@ describe('compareDatasets', () => {
   });
 });
 
-const LABELS = {
-  a: 'A',
-  b: 'B',
+const LABELS: CompareLabels = {
   status: 'Status',
-  countA: '#A',
-  countB: '#B',
+  countA: 'Count in Kunder',
+  countB: 'Count in Leads',
   missing: '—',
-  statuses: {
-    match: 'Match',
-    'count-differs': 'Count differs',
-    'only-a': 'Only in A',
-    'only-b': 'Only in B',
-  },
+  statusText: (row) =>
+    row.status === 'count-differs' ? `${row.countA} vs ${row.countB}` : row.status,
 };
 
-describe('toAlignedDataset', () => {
-  it('renders the aligned table SPEC §6 describes', () => {
-    const rows = compare(['a', 'c'], ['a', 'd']).rows;
-    const dataset = toAlignedDataset(rows, LABELS);
+function named(name: string, ...values: string[]) {
+  return { ...listOf(...values), name };
+}
 
-    expect(dataset.columns.map((column) => column.id)).toEqual([
-      'a',
-      'b',
+describe('pairColumns', () => {
+  it('pairs columns by name, whatever their ids and case', () => {
+    const a = tableOf(['c1', 'c2'], [{ c1: 'x', c2: 'y' }]);
+    const b = tableOf(['c9', 'c8'], [{ c9: 'x', c8: 'y' }]);
+    a.columns[0]!.name = 'Name';
+    a.columns[1]!.name = 'City';
+    b.columns[0]!.name = 'city';
+    b.columns[1]!.name = 'name';
+    expect(pairColumns(a, b).map(([left, right]) => [left.id, right.id])).toEqual([
+      ['c1', 'c8'],
+      ['c2', 'c9'],
+    ]);
+  });
+
+  it('falls back to the id for columns whose names do not pair', () => {
+    const a = tableOf(['email', 'note'], [{ email: 'x', note: 'y' }]);
+    const b = tableOf(['email', 'other'], [{ email: 'x', other: 'y' }]);
+    a.columns[0]!.name = 'E-mail';
+    b.columns[0]!.name = 'Address';
+    expect(pairColumns(a, b).map(([left, right]) => [left.id, right.id])).toEqual([
+      ['email', 'email'],
+    ]);
+  });
+
+  it('never pairs one column twice', () => {
+    const a = tableOf(['x', 'y'], [{ x: '1', y: '2' }]);
+    const b = tableOf(['z'], [{ z: '1' }]);
+    a.columns[0]!.name = 'Same';
+    a.columns[1]!.name = 'Same';
+    b.columns[0]!.name = 'same';
+    expect(pairColumns(a, b)).toHaveLength(1);
+  });
+});
+
+describe('sideBySide', () => {
+  it('lays the status, then every column of each list, side by side', () => {
+    const a = { ...tableOf(['name', 'city'], [{ name: 'Anna', city: 'Göteborg' }]), name: 'Kunder' };
+    const b = { ...tableOf(['name', 'city'], [{ name: 'Anna', city: 'Borås' }]), name: 'Leads' };
+    const result = compareDatasets(a, b, { keyA: ['name'], keyB: ['name'], normalize: NORMALIZE });
+    const side = sideBySide(result, a, b, LABELS, NORMALIZE);
+
+    expect(side.dataset.columns.map((column) => column.id)).toEqual([
       'status',
-      'countA',
-      'countB',
+      'a_name',
+      'a_city',
+      'b_name',
+      'b_city',
     ]);
-    expect(dataset.rows.map((row) => cell(row, 'status'))).toEqual([
-      'Match',
-      'Only in A',
-      'Only in B',
+    expect(side.dataset.columns.map((column) => column.name)).toEqual([
+      'Status',
+      'name',
+      'city',
+      'name',
+      'city',
     ]);
+    expect(side.groups).toEqual([
+      { name: 'Kunder', columnIds: ['a_name', 'a_city'] },
+      { name: 'Leads', columnIds: ['b_name', 'b_city'] },
+    ]);
+    const row = side.dataset.rows[0]!;
+    expect(cell(row, 'status')).toBe('match');
+    expect(cell(row, 'a_city')).toBe('Göteborg');
+    expect(cell(row, 'b_city')).toBe('Borås');
   });
 
-  it('marks a missing side with a dash rather than an empty cell', () => {
-    const dataset = toAlignedDataset(compare(['a'], []).rows, LABELS);
-    expect(cell(dataset.rows[0]!, 'b')).toBe('—');
+  it('marks both cells of a paired column that differs, and nothing else', () => {
+    const a = { ...tableOf(['name', 'city'], [{ name: 'Anna', city: 'Göteborg' }]), name: 'A' };
+    const b = { ...tableOf(['name', 'city'], [{ name: 'anna', city: 'Borås' }]), name: 'B' };
+    const result = compareDatasets(a, b, { keyA: ['name'], keyB: ['name'], normalize: NORMALIZE });
+    const side = sideBySide(result, a, b, LABELS, NORMALIZE);
+    const id = side.dataset.rows[0]!.id;
+    expect([...side.changedCells].sort()).toEqual(
+      [cellKey(id, 'a_city'), cellKey(id, 'b_city')].sort(),
+    );
   });
 
-  it('writes the counts as text so the ordinary exporters can copy them', () => {
-    const dataset = toAlignedDataset(compare(['a', 'a'], ['a']).rows, LABELS);
-    expect([cell(dataset.rows[0]!, 'countA'), cell(dataset.rows[0]!, 'countB')]).toEqual([
-      '2',
-      '1',
+  it('compares with the same rules the keys matched on', () => {
+    const a = { ...tableOf(['k', 'v'], [{ k: '1', v: 'Anna' }]), name: 'A' };
+    const b = { ...tableOf(['k', 'v'], [{ k: '1', v: 'ANNA ' }]), name: 'B' };
+    const result = compareDatasets(a, b, { keyA: ['k'], keyB: ['k'], normalize: NORMALIZE });
+    expect(sideBySide(result, a, b, LABELS, NORMALIZE).changedCells.size).toBe(0);
+    expect(sideBySide(result, a, b, LABELS, {}).changedCells.size).toBe(2);
+  });
+
+  it('shows a dash on the side that has no row, and marks nothing there', () => {
+    const a = named('Kunder', 'a');
+    const b = named('Leads', 'b');
+    const result = compareDatasets(a, b, DEFAULTS);
+    const side = sideBySide(result, a, b, LABELS, NORMALIZE);
+    expect(cell(side.dataset.rows[0]!, 'b_value')).toBe('—');
+    expect(cell(side.dataset.rows[1]!, 'a_value')).toBe('—');
+    expect(side.changedCells.size).toBe(0);
+    expect([...side.statusOf.values()]).toEqual(['only-a', 'only-b']);
+  });
+
+  it('adds count columns only when some key repeats', () => {
+    const plain = sideBySide(compare(['a'], ['a']), named('A', 'a'), named('B', 'a'), LABELS, NORMALIZE);
+    expect(plain.dataset.columns.map((column) => column.id)).not.toContain('a_#');
+
+    const doubled = sideBySide(compare(['a', 'a'], ['a']), named('A', 'a', 'a'), named('B', 'a'), LABELS, NORMALIZE);
+    expect(doubled.dataset.columns.map((column) => column.id)).toEqual([
+      'status',
+      'a_value',
+      'a_#',
+      'b_value',
+      'b_#',
     ]);
+    expect(cell(doubled.dataset.rows[0]!, 'a_#')).toBe('2');
+    expect(cell(doubled.dataset.rows[0]!, 'status')).toBe('2 vs 1');
+    expect(doubled.groups[0]?.columnIds).toEqual(['a_value', 'a_#']);
   });
 });
 

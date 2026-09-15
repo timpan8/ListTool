@@ -1,42 +1,25 @@
-import { compareDatasets, toAlignedDataset } from '../../core/compare';
-import { booleanOption, stringsOption, type Tool } from '../../core/registry';
+import { compareDatasets, sideBySide } from '../../core/compare';
+import type { Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
 import { rowsPhrase } from '../helpers';
+import { compareLabels, KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
 const strings = en.tools.compareLists;
 
-/** Labels for the aligned table, kept here so core/compare stays free of i18n. */
-export const ALIGNED_LABELS = {
-  a: en.compare.columnA,
-  b: en.compare.columnB,
-  status: en.compare.statusColumn,
-  countA: en.compare.countA,
-  countB: en.compare.countB,
-  missing: en.compare.missing,
-  statuses: en.compare.statuses,
-};
-
+/**
+ * The comparison as a table: one row per key, the status first, then every column of
+ * each list side by side, the lists called by their names. Compare mode is this tool's
+ * form and this tool's result; they cannot drift apart.
+ */
 export const compareListsTool: Tool = {
   id: 'compare-lists',
   name: strings.name,
   category: 'compare',
   description: strings.description,
-  keywords: ['compare', 'diff', 'match', 'against', 'two', 'both'],
+  keywords: ['compare', 'diff', 'match', 'against', 'two', 'both', 'side by side'],
   arity: 'dual',
-  options: [
-    { key: 'keyA', label: en.compare.listA, type: 'columns' },
-    { key: 'keyB', label: en.compare.listB, type: 'columns', from: 'second' },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
-    {
-      key: 'ignoreDiacritics',
-      label: en.tools.shared.ignoreDiacritics,
-      type: 'boolean',
-      default: false,
-      help: en.tools.shared.diacriticsHelp,
-    },
-  ],
+  options: [...KEY_FIELDS, ...NORMALIZE_FIELDS],
   run(input, options, second) {
     if (second === undefined) {
       return {
@@ -46,27 +29,20 @@ export const compareListsTool: Tool = {
       };
     }
 
-    const result = compareDatasets(input, second, {
-      keyA: stringsOption(options, 'keyA', [input.columns[0]?.id ?? '']),
-      keyB: stringsOption(options, 'keyB', [second.columns[0]?.id ?? '']),
-      normalize: {
-        trim: booleanOption(options, 'trim', true),
-        ignoreCase: booleanOption(options, 'ignoreCase', true),
-        ignoreDiacritics: booleanOption(options, 'ignoreDiacritics', false),
-      },
-    });
-
+    const compare = readCompareOptions(options, input, second);
+    const result = compareDatasets(input, second, compare);
+    const side = sideBySide(result, input, second, compareLabels(input, second), compare.normalize);
     const differences =
       result.stats['count-differs'] + result.stats['only-a'] + result.stats['only-b'];
 
     return {
-      output: toAlignedDataset(result.rows, ALIGNED_LABELS),
+      output: side.dataset,
       summary: format(strings.summary, {
         rows: rowsPhrase(result.rows.length),
         matches: result.stats.match,
         differences,
       }),
-      stats: { ...result.stats },
+      stats: { ...result.stats, differing: side.changedCells.size / 2 },
     };
   },
 };

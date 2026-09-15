@@ -203,3 +203,27 @@ describe('row identity', () => {
     }
   });
 });
+
+describe('dual tools', () => {
+  // Appending matches nothing, so it has no keys and no rules; every other dual tool matches.
+  const dual = tools.filter((tool) => tool.arity === 'dual' && tool.id !== 'append-rows');
+
+  it('all ask what to match on, on each list, before anything else', () => {
+    for (const tool of dual) {
+      expect(tool.options.slice(0, 2).map((field) => field.key), tool.id).toEqual(['keyA', 'keyB']);
+      expect(tool.options[1]?.type === 'columns' && tool.options[1].from, tool.id).toBe('second');
+      for (const field of tool.options.slice(0, 2)) expect(field.label, tool.id).toBe('Match on');
+    }
+  });
+
+  it('all offer the same four matching rules, in the same order, last', () => {
+    for (const tool of dual) {
+      expect(tool.options.slice(-4).map((field) => field.key), tool.id).toEqual([
+        'trim',
+        'ignoreCase',
+        'collapseWhitespace',
+        'ignoreDiacritics',
+      ]);
+    }
+  });
+});

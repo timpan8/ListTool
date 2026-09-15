@@ -1,6 +1,27 @@
 import type { Column } from '../core/model';
 import { defaultOptions, type OptionField, type Options, type Tool } from '../core/registry';
 import { withSettings, type Settings } from '../core/settings';
+import { en } from '../i18n/en';
+import { format } from '../i18n/format';
+
+/** The names of the lists a form is about, so a column field can say which it means. */
+export interface ListNames {
+  input: string;
+  second?: string;
+}
+
+/**
+ * "Match on · Kunder": a column field's label carries the name of the list it draws from
+ * whenever two lists are in play. Declaration order is kept, and a field with no list to
+ * name — a text box, a switch — is left alone.
+ */
+export function labelFor(field: OptionField, names?: ListNames): string {
+  if (names === undefined || (field.type !== 'column' && field.type !== 'columns')) {
+    return field.label;
+  }
+  const list = field.from === 'second' ? names.second : names.input;
+  return list === undefined ? field.label : format(en.options.forList, { label: field.label, list });
+}
 
 /** A tool's own defaults, with the user's settings applied by option key. */
 export function startingOptions(tool: Tool, settings: Settings): Options {

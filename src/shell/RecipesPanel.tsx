@@ -23,7 +23,7 @@ interface Props {
 const LOOKUP = { tool: toolById, parser: parserById };
 const MESSAGES = {
   unknownTool: en.recipes.skippedUnknown,
-  needsSecondList: en.recipes.skippedDual,
+  needsSecondList: (name: string) => format(en.recipes.skippedDual, { name }),
   noRawInput: en.recipes.skippedNoRaw,
 };
 

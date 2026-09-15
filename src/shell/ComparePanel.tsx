@@ -2,30 +2,19 @@ import type { Dataset } from '../core/model';
 import { en } from '../i18n/en';
 
 interface Props {
-  label: string;
+  /** Which side this is, for the control ids only: the heading is the list's own name. */
   idPrefix: string;
   datasets: Dataset[];
-  selected: Dataset | null;
-  keyColumn: string;
+  selected: Dataset;
   onSelect: (id: string) => void;
-  onKeyColumn: (id: string) => void;
   onPaste: () => void;
 }
 
-/** One side of the comparison: which list, and which column to match on. */
-export function ComparePanel({
-  label,
-  idPrefix,
-  datasets,
-  selected,
-  keyColumn,
-  onSelect,
-  onKeyColumn,
-  onPaste,
-}: Props) {
+/** One side of the comparison: the list, called by its name. */
+export function ComparePanel({ idPrefix, datasets, selected, onSelect, onPaste }: Props) {
   return (
-    <section class="compare__panel">
-      <h3 class="compare__panel-title">{label}</h3>
+    <section class="compare__panel" aria-label={selected.name}>
+      <h3 class="compare__panel-title">{selected.name}</h3>
 
       <div class="field">
         <label class="field__label" for={`${idPrefix}-list`}>
@@ -33,29 +22,12 @@ export function ComparePanel({
         </label>
         <select
           id={`${idPrefix}-list`}
-          value={selected?.id ?? ''}
+          value={selected.id}
           onChange={(event) => onSelect(event.currentTarget.value)}
         >
           {datasets.map((dataset) => (
             <option key={dataset.id} value={dataset.id}>
               {dataset.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div class="field">
-        <label class="field__label" for={`${idPrefix}-key`}>
-          {en.compare.keyColumn}
-        </label>
-        <select
-          id={`${idPrefix}-key`}
-          value={keyColumn}
-          onChange={(event) => onKeyColumn(event.currentTarget.value)}
-        >
-          {(selected?.columns ?? []).map((column) => (
-            <option key={column.id} value={column.id}>
-              {column.name}
             </option>
           ))}
         </select>

@@ -1,9 +1,10 @@
 import { cell, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
-import { booleanOption, stringOption, stringsOption, type Tool } from '../../core/registry';
+import { stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
 import { freeColumnId, rowsPhrase, withColumns } from '../helpers';
+import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
 const strings = en.tools.markMembership;
 
@@ -15,20 +16,11 @@ export const markMembershipTool: Tool = {
   keywords: ['mark', 'flag', 'membership', 'in list', 'three', 'several', 'exists', 'present'],
   arity: 'dual',
   options: [
-    { key: 'keyA', label: en.compare.listA, type: 'columns' },
-    { key: 'keyB', label: en.compare.listB, type: 'columns', from: 'second' },
+    ...KEY_FIELDS,
     { key: 'columnName', label: strings.columnName, type: 'text', default: '' },
     { key: 'yes', label: strings.yes, type: 'text', default: 'yes' },
     { key: 'no', label: strings.no, type: 'text', default: '' },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
-    {
-      key: 'ignoreDiacritics',
-      label: en.tools.shared.ignoreDiacritics,
-      type: 'boolean',
-      default: false,
-      help: en.tools.shared.diacriticsHelp,
-    },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options, second) {
     if (second === undefined) {
@@ -39,13 +31,7 @@ export const markMembershipTool: Tool = {
       };
     }
 
-    const keyA = stringsOption(options, 'keyA', [input.columns[0]?.id ?? '']);
-    const keyB = stringsOption(options, 'keyB', [second.columns[0]?.id ?? '']);
-    const normalize = {
-      trim: booleanOption(options, 'trim', true),
-      ignoreCase: booleanOption(options, 'ignoreCase', true),
-      ignoreDiacritics: booleanOption(options, 'ignoreDiacritics', false),
-    };
+    const { keyA, keyB, normalize } = readCompareOptions(options, input, second);
     const keyOf = (row: Row, ids: string[]): string =>
       joinKeys(ids.map((id) => normalizeKey(cell(row, id), normalize)));
 

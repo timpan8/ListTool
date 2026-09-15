@@ -1,6 +1,6 @@
 import { PARSE_STEP_ID, type Step } from './history';
 import type { Dataset } from './model';
-import type { Parser, Tool } from './registry';
+import { stringOption, type Parser, type Tool } from './registry';
 
 export interface Recipe {
   id: string;
@@ -12,11 +12,16 @@ export interface Recipe {
 export interface ReplayLookup {
   tool: (id: string) => Tool | undefined;
   parser: (id: string) => Parser | undefined;
+  /**
+   * The list a dual step compared with, by the id it had and then by its name — the id
+   * survives a session, the name survives a re-import. Never the list being worked on.
+   */
+  dataset?: (id: string, name: string) => Dataset | undefined;
 }
 
 export interface ReplayMessages {
   unknownTool: string;
-  needsSecondList: string;
+  needsSecondList: (name: string) => string;
   noRawInput: string;
 }
 
@@ -95,13 +100,18 @@ export function applyRecipe(
       warnings.push(messages.unknownTool);
       continue;
     }
+    let second: Dataset | undefined;
     if (tool.arity === 'dual') {
-      // A recipe cannot know which list to compare against on a fresh run.
-      warnings.push(messages.needsSecondList);
-      continue;
+      // The list it compared with has to be open, under the same id or the same name.
+      const name = stringOption(step.options, 'secondListName', '');
+      second = lookup.dataset?.(stringOption(step.options, 'secondListId', ''), name);
+      if (second === undefined) {
+        warnings.push(messages.needsSecondList(name));
+        continue;
+      }
     }
 
-    const result = tool.run(output, step.options);
+    const result = tool.run(output, step.options, second);
     output = { ...result.output, id: output.id, name: output.name };
     applied.push({ ...step, summary: result.summary });
     warnings.push(...(result.warnings ?? []));

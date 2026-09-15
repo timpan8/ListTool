@@ -47,7 +47,7 @@ test('compare opens with a panel per list and reports the outcome', async ({ app
   await importText(app, 'bo@example.com\ndora@example.com', 'Leads');
   await app.locator('.toolbar').getByRole('button', { name: 'Compare', exact: true }).click();
   await expect(app.locator('.compare__panel')).toHaveCount(2);
-  await expect(app.locator('.compare .notice').first()).toContainText('matching');
+  await expect(app.locator('.compare .notice').first()).toContainText('in both');
   await app.getByRole('button', { name: 'Close compare' }).click();
   await expect(app.locator('.compare')).toHaveCount(0);
 });
