@@ -31,6 +31,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test -- --run
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
       # enablement: true turns Pages on (build type "workflow") the first time this
       # runs. Without it the step fails with "Get Pages site failed" on a repository
       # where Pages has never been enabled. It is a no-op once Pages is on.
