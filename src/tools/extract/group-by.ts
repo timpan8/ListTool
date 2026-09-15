@@ -4,6 +4,7 @@ import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
 import { rowsPhrase, targetColumn } from '../helpers';
+import { parseNumber } from '../../core/number';
 
 const strings = en.tools.groupBy;
 
@@ -11,18 +12,6 @@ type How = 'count' | 'sum' | 'average' | 'min' | 'max' | 'join';
 
 /** At most this many decimals in an average — enough to be exact, short enough to read. */
 const DECIMALS = 6;
-
-/**
- * A number as people write it: 1 234,50 and 1,234.50 are both meant as a number. The
- * decimal comma is only read as one when there is no dot to disagree with it.
- */
-function toNumber(value: string): number | null {
-  const cleaned = value.replace(/[\s ]/g, '');
-  if (cleaned === '') return null;
-  const normalized = cleaned.includes('.') ? cleaned.replace(/,/g, '') : cleaned.replace(',', '.');
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
-}
 
 function short(value: number): string {
   return String(Number(value.toFixed(DECIMALS)));
@@ -93,7 +82,7 @@ export const groupByTool: Tool = {
       const numbers: number[] = [];
       for (const value of values) {
         if (value.trim() === '') continue;
-        const parsed = toNumber(value);
+        const parsed = parseNumber(value);
         if (parsed === null) notNumeric += 1;
         else numbers.push(parsed);
       }

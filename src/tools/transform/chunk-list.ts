@@ -1,4 +1,3 @@
-import { makeRow } from '../../core/model';
 import { numberOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
@@ -41,12 +40,8 @@ export const chunkListTool: Tool = {
       batches.push(input.rows.slice(start, start + size));
     }
 
-    // Row ids only have to be unique within a list, so each batch numbers from 1 again.
-    const asDataset = (rows: typeof input.rows) =>
-      withRows(
-        input,
-        rows.map((row, index) => makeRow(index, row.cells)),
-      );
+    // A batch is the same rows in the same shape, so they keep their ids.
+    const asDataset = (rows: typeof input.rows) => withRows(input, rows);
 
     // The first batch replaces the list in place; the rest open as further tabs, so the
     // whole split is one undoable action rather than a dozen manual ones.

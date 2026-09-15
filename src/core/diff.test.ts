@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cellKey, diffDatasets } from './diff';
+import { cellKey, changedFirst, diffDatasets } from './diff';
 import { makeRow, VALUE_COLUMN } from './model';
 import { listOf, tableOf } from '../test/fixtures';
 import { trimTool } from '../tools/clean/trim';
@@ -93,5 +93,29 @@ describe('diffDatasets', () => {
     const snapshot = [JSON.stringify(before), JSON.stringify(after)];
     diffDatasets(before, after);
     expect([JSON.stringify(before), JSON.stringify(after)]).toEqual(snapshot);
+  });
+});
+
+describe('changedFirst', () => {
+  const before = listOf('a', ' b ', 'c', ' d ');
+
+  it('puts the rows a tool touched first, each group in its own order', () => {
+    const after = trimTool.run(before, {}).output;
+    const { rows, changed } = changedFirst(after, diffDatasets(before, after));
+    expect(changed).toBe(2);
+    expect(rows.map((row) => row.id)).toEqual(['r2', 'r4', 'r1', 'r3']);
+  });
+
+  it('counts a new row as touched', () => {
+    const after = withRows(before, [...before.rows, makeRow(9, { [VALUE_COLUMN]: 'e' })]);
+    const { rows, changed } = changedFirst(after, diffDatasets(before, after));
+    expect(changed).toBe(1);
+    expect(rows[0]?.id).toBe('r10');
+  });
+
+  it('hands the output rows back untouched when nothing changed', () => {
+    const { rows, changed } = changedFirst(before, diffDatasets(before, before));
+    expect(changed).toBe(0);
+    expect(rows).toBe(before.rows);
   });
 });

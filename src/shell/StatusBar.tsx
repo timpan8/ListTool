@@ -1,3 +1,4 @@
+import { useMemo } from 'preact/hooks';
 import { datasetStats } from '../core/stats';
 import { activeDataset, notice, selectedColumn } from '../core/store';
 import { en } from '../i18n/en';
@@ -9,7 +10,13 @@ export function StatusBar() {
   const column = selectedColumn.value;
   const message = notice.value;
 
-  if (dataset === null) {
+  // Counted once per list and column, not once per status message.
+  const stats = useMemo(
+    () => (dataset === null ? null : datasetStats(dataset, column ?? undefined)),
+    [dataset, column],
+  );
+
+  if (dataset === null || stats === null) {
     return (
       <footer class="statusbar">
         <p class="statusbar__notice" role="status">
@@ -19,7 +26,6 @@ export function StatusBar() {
     );
   }
 
-  const stats = datasetStats(dataset, column ?? undefined);
   const columnName =
     dataset.columns.find((candidate) => candidate.id === column)?.name ?? en.status.wholeRow;
 

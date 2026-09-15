@@ -1,4 +1,4 @@
-import { cell, makeRow } from '../../core/model';
+import { cell } from '../../core/model';
 import type { Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
@@ -32,10 +32,10 @@ export const validateEmailsTool: Tool = {
     const validColumn = { id: freeColumnId(input, 'valid'), name: strings.validColumn };
     let bad = 0;
 
-    const rows = input.rows.map((row, index) => {
+    const rows = input.rows.map((row) => {
       const ok = isValidEmail(cell(row, source.id));
       if (!ok) bad += 1;
-      return makeRow(index, { ...row.cells, [validColumn.id]: ok ? strings.yes : strings.no });
+      return { id: row.id, cells: { ...row.cells, [validColumn.id]: ok ? strings.yes : strings.no } };
     });
 
     return {

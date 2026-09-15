@@ -1,4 +1,4 @@
-import { cell, makeRow } from '../../core/model';
+import { cell } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
@@ -51,7 +51,7 @@ export const generateEmailTool: Tool = {
     const target = { id: freeColumnId(input, 'generated'), name: strings.columnName };
     let count = 0;
 
-    const rows = input.rows.map((row, index) => {
+    const rows = input.rows.map((row) => {
       const prepare = (value: string): string => {
         const folded = strip ? fold(value) : value;
         const cleaned = folded.trim().replace(/\s+/g, '-');
@@ -66,7 +66,7 @@ export const generateEmailTool: Tool = {
 
       const value = local === '' || domain === '' ? '' : `${local}@${domain}`;
       if (value !== '') count += 1;
-      return makeRow(index, { ...row.cells, [target.id]: value });
+      return { id: row.id, cells: { ...row.cells, [target.id]: value } };
     });
 
     return {

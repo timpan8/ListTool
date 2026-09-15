@@ -1,22 +1,33 @@
-import type { Dataset } from '../core/model';
+import { useState } from 'preact/hooks';
 import type { DatasetDiff } from '../core/diff';
+import type { Dataset } from '../core/model';
+import { numericColumns } from '../core/profile';
 import { en } from '../i18n/en';
 import { format } from '../i18n/format';
 import { DataTable } from './DataTable';
-
-/** How much of the result the panel shows before you apply it. */
-export const PREVIEW_ROWS = 8;
+import { marksFromDiff } from './marks';
+import { previewRows, PREVIEW_ROWS } from './preview';
 
 interface Props {
   output: Dataset;
   summary: string;
   warnings?: string[];
-  /** What the tool changed, so the preview can point at it rather than describe it. */
+  /** What the tool changed, so the preview can show it rather than describe it. */
   diff?: DatasetDiff;
 }
 
-/** The summary, the warnings and the first rows of what a tool would produce. */
+/** The summary, the warnings and the rows of what a tool would produce — changed ones first. */
 export function ToolPreview({ output, summary, warnings, diff }: Props) {
+  const [expanded, setExpanded] = useState(false);
+  const preview =
+    diff === undefined
+      ? {
+          rows: output.rows.slice(0, PREVIEW_ROWS),
+          caption: format(en.panel.previewNote, { n: Math.min(PREVIEW_ROWS, output.rows.length) }),
+          expandable: false,
+        }
+      : previewRows(output, diff, expanded);
+
   return (
     <>
       <p class="notice" role="status">
@@ -35,11 +46,23 @@ export function ToolPreview({ output, summary, warnings, diff }: Props) {
           <p class="field__help">{en.import.previewEmpty}</p>
         ) : (
           <>
-            <p class="field__help">{format(en.panel.previewNote, { n: PREVIEW_ROWS })}</p>
+            <p class="field__help preview__caption">
+              <span>{preview.caption}</span>
+              {preview.expandable ? (
+                <button
+                  type="button"
+                  class="button button--quiet"
+                  onClick={() => setExpanded(!expanded)}
+                >
+                  {expanded ? en.panel.previewFewer : en.panel.previewAll}
+                </button>
+              ) : null}
+            </p>
             <DataTable
               columns={output.columns}
-              rows={output.rows.slice(0, PREVIEW_ROWS)}
-              {...(diff === undefined ? {} : { diff })}
+              rows={preview.rows}
+              numeric={numericColumns(output)}
+              {...(diff === undefined ? {} : { marks: marksFromDiff(diff) })}
             />
           </>
         )}

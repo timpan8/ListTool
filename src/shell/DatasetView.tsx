@@ -1,39 +1,55 @@
-import { useState } from 'preact/hooks';
-import type { Dataset } from '../core/model';
+import { useMemo, useState } from 'preact/hooks';
+import type { Column, Dataset } from '../core/model';
+import { numericColumns } from '../core/profile';
 import { sortOptionsOf } from '../core/settings';
 import {
-  selectColumn,
+  activeView,
   selectedColumn,
   selectedRows,
   selectRows,
   settings,
-  setViewFilter,
   setViewQuery,
   toggleRow,
+  toggleViewSort,
   viewFilter,
   viewQuery,
   viewSort,
 } from '../core/store';
 import { visibleRows } from '../core/view';
 import { en } from '../i18n/en';
-import { format, plural } from '../i18n/format';
+import { format } from '../i18n/format';
+import { columnActions } from './columnActions';
 import { DataTable } from './DataTable';
 import { editCell } from './edits';
+import type { PanelIntent } from './panelIntent';
+import { ViewStatus } from './ViewStatus';
 
 interface Props {
   dataset: Dataset;
   onReparse: () => void;
+  onIntent: (intent: PanelIntent) => void;
 }
 
-/** Raw | Table, plus a search box that filters the VIEW and never the list. */
-export function DatasetView({ dataset, onReparse }: Props) {
+/**
+ * Raw | Table. The search, the filter and the header sort all narrow or order the VIEW
+ * and never the list; everything that changes the list goes through a tool, from the
+ * column menu or the ticked-rows strip, and undoes.
+ */
+export function DatasetView({ dataset, onReparse, onIntent }: Props) {
   const [mode, setMode] = useState<'table' | 'raw'>('table');
-  // The search lives in the store, so Copy and Export see the same rows this table does.
   const query = viewQuery.value;
   const filter = viewFilter.value;
-  const rows = visibleRows(dataset, query, filter, viewSort.value, sortOptionsOf(settings.value));
+  const sort = viewSort.value;
+  const prefs = settings.value;
+  const rows = useMemo(
+    () => visibleRows(dataset, query, filter, sort, sortOptionsOf(prefs)),
+    [dataset, query, filter, sort, prefs],
+  );
   const ticked = selectedRows.value;
-  const filtered = dataset.columns.find((column) => column.id === filter?.columnId);
+  const selected = selectedColumn.value;
+
+  const menuFor = (column: Column) =>
+    columnActions(column, { dataset, view: activeView.value, settings: prefs, selected, onIntent });
 
   return (
     <section class="view">
@@ -78,32 +94,7 @@ export function DatasetView({ dataset, onReparse }: Props) {
         </p>
       </div>
 
-      {mode === 'table' && filtered !== undefined && filter !== null ? (
-        <p class="view__selection" role="status">
-          {format(filter.value === '' ? en.profile.filteringBlank : en.profile.filtering, {
-            column: filtered.name,
-            value: filter.value,
-          })}
-          <button
-            type="button"
-            class="button button--quiet"
-            onClick={() => setViewFilter(null)}
-          >
-            {en.profile.clearFilter}
-          </button>
-          <span class="field__help">{en.profile.filterHint}</span>
-        </p>
-      ) : null}
-
-      {mode === 'table' && ticked.length > 0 ? (
-        <p class="view__selection" role="status">
-          {plural(ticked.length, en.view.selection)}
-          <button type="button" class="button button--quiet" onClick={() => selectRows([])}>
-            {en.view.clearSelection}
-          </button>
-          <span class="field__help">{en.view.selectionHint}</span>
-        </p>
-      ) : null}
+      {mode === 'table' ? <ViewStatus dataset={dataset} onIntent={onIntent} /> : null}
 
       {mode === 'raw' ? (
         <div class="raw">
@@ -119,10 +110,10 @@ export function DatasetView({ dataset, onReparse }: Props) {
       ) : (
         <>
           <DataTable
+            key={dataset.id}
             columns={dataset.columns}
             rows={rows}
-            selected={selectedColumn.value}
-            onSelect={selectColumn}
+            selected={selected}
             showRowNumbers
             ticked={ticked}
             onTick={toggleRow}
@@ -130,6 +121,10 @@ export function DatasetView({ dataset, onReparse }: Props) {
             // tick you cannot see is a tick you did not mean.
             onTickAll={(checked) => selectRows(checked ? rows.map((row) => row.id) : [])}
             onEdit={(rowId, columnId, value) => editCell(dataset, rowId, columnId, value)}
+            sort={sort}
+            onSort={toggleViewSort}
+            columnMenu={menuFor}
+            numeric={numericColumns(dataset)}
           />
           <p class="field__help">{en.view.editHint}</p>
         </>

@@ -17,7 +17,17 @@ interface Props {
   onNotice: (message: string) => void;
 }
 
-const SHORTCUTS = ['palette', 'apply', 'undo', 'redo', 'copy', 'close', 'paste'] as const;
+const SHORTCUTS = [
+  'palette',
+  'apply',
+  'undo',
+  'redo',
+  'copy',
+  'close',
+  'paste',
+  'cells',
+  'edit',
+] as const;
 
 export function Settings({ onClose, onCleared, onNotice }: Props) {
   const current = settings.value;

@@ -27,6 +27,7 @@ import {
   setViewQuery,
   setViewSort,
   toggleFavorite,
+  toggleViewSort,
   undo,
   updateSettings,
   viewQuery,
@@ -373,5 +374,25 @@ describe('the view', () => {
     resetWorkspace();
     expect(viewQuery.value).toBe('');
     expect(viewSort.value).toBeNull();
+  });
+});
+
+describe('toggleViewSort', () => {
+  it('goes ascending, then descending, then back to the list order', () => {
+    addDataset(list('b', 'a'), 'One');
+    toggleViewSort(VALUE_COLUMN);
+    expect(viewSort.value).toEqual({ columnId: VALUE_COLUMN, direction: 'asc' });
+    toggleViewSort(VALUE_COLUMN);
+    expect(viewSort.value).toEqual({ columnId: VALUE_COLUMN, direction: 'desc' });
+    toggleViewSort(VALUE_COLUMN);
+    expect(viewSort.value).toBeNull();
+  });
+
+  it('starts ascending on another column, whatever the first was on', () => {
+    addDataset(list('b', 'a'), 'One');
+    toggleViewSort(VALUE_COLUMN);
+    toggleViewSort(VALUE_COLUMN);
+    toggleViewSort('other');
+    expect(viewSort.value).toEqual({ columnId: 'other', direction: 'asc' });
   });
 });

@@ -49,10 +49,10 @@ describe('split into lists by a value', () => {
     });
   });
 
-  it('numbers the rows of every list from one, so no id repeats inside a list', () => {
+  it('keeps every row its id, so the preview can say which rows went where', () => {
     const result = splitByValueTool.run(PEOPLE, BASE);
-    expect(result.output.rows.map((row) => row.id)).toEqual(['r1', 'r2']);
-    expect(result.extraLists?.[0]?.dataset.rows.map((row) => row.id)).toEqual(['r1']);
+    expect(result.output.rows.map((row) => row.id)).toEqual(['r1', 'r3']);
+    expect(result.extraLists?.[0]?.dataset.rows.map((row) => row.id)).toEqual(['r2']);
   });
 
   it('keeps the columns of the list it split', () => {

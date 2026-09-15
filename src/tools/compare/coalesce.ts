@@ -1,9 +1,9 @@
-import { cell, makeRow, type Row } from '../../core/model';
+import { cell, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import { booleanOption, stringsOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { withRows } from '../helpers';
+import { rowIdsAfter, withRows } from '../helpers';
 
 const strings = en.tools.coalesce;
 
@@ -93,20 +93,20 @@ export const coalesceTool: Tool = {
       ? second.rows.filter((row) => !usedKeys.has(keyOf(row, keyB)))
       : [];
 
-    // Arriving rows are re-numbered after the ones already here, so no id repeats.
+    // Arriving rows get ids past the highest one here, so no id repeats — even after
+    // removals have left gaps in the numbering.
+    const nextId = rowIdsAfter(input);
     const all = [
       ...rows,
-      ...missing.map((row, index) =>
-        makeRow(
-          rows.length + index,
-          Object.fromEntries(
-            input.columns.map((column) => [
-              column.id,
-              shared.has(column.id) ? cell(row, column.id) : '',
-            ]),
-          ),
+      ...missing.map((row) => ({
+        id: nextId(),
+        cells: Object.fromEntries(
+          input.columns.map((column) => [
+            column.id,
+            shared.has(column.id) ? cell(row, column.id) : '',
+          ]),
         ),
-      ),
+      })),
     ];
 
     if (filled === 0 && missing.length === 0) {

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 
 interface Props {
   value: string;
   label: string;
-  selected: boolean;
+  /** Classes the cell carries for its column: selected, numeric. */
+  className?: string | undefined;
   onCommit: (value: string) => void;
 }
 
@@ -15,13 +16,15 @@ interface Props {
  * exactly once: the flag below is what stops Enter from saving twice and Escape from
  * being overtaken by the blur it causes.
  */
-export function TableCell({ value, label, selected, onCommit }: Props) {
+export function TableCell({ value, label, className, onCommit }: Props) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const open = useRef(false);
   const input = useRef<HTMLInputElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
+  // Before the paint, so the caret is there the moment the field is, keystrokes included.
+  useLayoutEffect(() => {
     if (editing) input.current?.focus();
   }, [editing]);
 
@@ -31,25 +34,27 @@ export function TableCell({ value, label, selected, onCommit }: Props) {
     setEditing(true);
   }
 
-  function finish(save: boolean): void {
+  function finish(save: boolean, refocus: boolean): void {
     if (!open.current) return;
     open.current = false;
     setEditing(false);
     if (save && draft !== value) onCommit(draft);
+    // A keyboard edit ends where it began, so the arrows can carry on from this cell.
+    if (refocus) setTimeout(() => button.current?.focus(), 0);
   }
 
   if (!editing) {
     return (
-      <td class={selected ? 'is-selected' : undefined}>
-        <button type="button" class="cell" aria-label={label} onClick={start}>
-          {value === '' ? ' ' : value}
+      <td class={className}>
+        <button ref={button} type="button" class="cell" aria-label={label} onClick={start}>
+          {value === '' ? ' ' : value}
         </button>
       </td>
     );
   }
 
   return (
-    <td class={selected ? 'is-selected' : undefined}>
+    <td class={className}>
       <input
         ref={input}
         class="cell__input"
@@ -57,12 +62,12 @@ export function TableCell({ value, label, selected, onCommit }: Props) {
         aria-label={label}
         value={draft}
         onInput={(event) => setDraft(event.currentTarget.value)}
-        onBlur={() => finish(true)}
+        onBlur={() => finish(true, false)}
         onKeyDown={(event) => {
           if (event.key !== 'Enter' && event.key !== 'Escape') return;
           event.preventDefault();
           event.stopPropagation();
-          finish(event.key === 'Enter');
+          finish(event.key === 'Enter', true);
         }}
       />
     </td>

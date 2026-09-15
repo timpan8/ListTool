@@ -4,6 +4,7 @@ import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
 import { targetColumn } from '../helpers';
+import { parseNumber } from '../../core/number';
 
 const strings = en.tools.crossTab;
 
@@ -13,14 +14,6 @@ const MAX_COLUMNS = 40;
 const NORMALIZE = { trim: true, ignoreCase: true };
 
 /** A number as people write it, or null. The same reading as Group and summarise. */
-function toNumber(value: string): number | null {
-  const cleaned = value.replace(/[\s\u00a0]/g, '');
-  if (cleaned === '') return null;
-  const normalized = cleaned.includes('.') ? cleaned.replace(/,/g, '') : cleaned.replace(',', '.');
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 function short(value: number): string {
   return String(Number(value.toFixed(6)));
 }
@@ -95,7 +88,7 @@ export const crossTabTool: Tool = {
       }
       const value = cell(row, valueColumn.id);
       if (value.trim() === '') continue;
-      const parsed = toNumber(value);
+      const parsed = parseNumber(value);
       if (parsed === null) notNumeric += 1;
       else totals.set(key, (totals.get(key) ?? 0) + parsed);
     }

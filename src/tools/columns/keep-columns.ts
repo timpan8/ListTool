@@ -1,4 +1,3 @@
-import { makeRow } from '../../core/model';
 import { stringsOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
@@ -30,12 +29,10 @@ export const keepColumnsTool: Tool = {
     }
 
     // Dropping a column drops its values too, rather than leaving them orphaned.
-    const rows = input.rows.map((row, index) =>
-      makeRow(
-        index,
-        Object.fromEntries(kept.map((column) => [column.id, row.cells[column.id] ?? ''])),
-      ),
-    );
+    const rows = input.rows.map((row) => ({
+      id: row.id,
+      cells: Object.fromEntries(kept.map((column) => [column.id, row.cells[column.id] ?? ''])),
+    }));
 
     return {
       output: withColumns(input, kept, rows),

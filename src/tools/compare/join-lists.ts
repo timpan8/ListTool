@@ -1,9 +1,9 @@
-import { cell, makeRow, type Column, type Row } from '../../core/model';
+import { cell, type Column, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import { booleanOption, stringOption, stringsOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { freeColumnId, rowsPhrase, withColumns } from '../helpers';
+import { freeColumnId, rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
 
 const strings = en.tools.joinLists;
 
@@ -94,6 +94,7 @@ export const joinListsTool: Tool = {
     const firstMatch = booleanOption(options, 'firstMatch', true);
 
     const rows: Row[] = [];
+    const nextId = rowIdsAfter(input);
     let matched = 0;
 
     for (const row of input.rows) {
@@ -103,17 +104,18 @@ export const joinListsTool: Tool = {
         if (keepUnmatched) {
           const cells = { ...row.cells };
           for (const entry of added) cells[entry.column.id] = '';
-          rows.push(makeRow(rows.length, cells));
+          rows.push({ id: row.id, cells });
         }
         continue;
       }
 
       matched += 1;
-      for (const match of firstMatch ? found.slice(0, 1) : found) {
+      (firstMatch ? found.slice(0, 1) : found).forEach((match, at) => {
         const cells = { ...row.cells };
         for (const entry of added) cells[entry.column.id] = cell(match, entry.sourceId);
-        rows.push(makeRow(rows.length, cells));
-      }
+        // The first match is still this row; every further one is a new row.
+        rows.push({ id: at === 0 ? row.id : nextId(), cells });
+      });
     }
 
     const unmatched = input.rows.length - matched;

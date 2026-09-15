@@ -1,4 +1,3 @@
-import { makeRow } from '../../core/model';
 import { booleanOption, numberOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
@@ -27,9 +26,10 @@ export const numberRowsTool: Tool = {
 
     if (asColumn) {
       const column = { id: freeColumnId(input, 'no'), name: strings.numberColumn };
-      const rows = input.rows.map((row, index) =>
-        makeRow(index, { ...row.cells, [column.id]: String(start + index) }),
-      );
+      const rows = input.rows.map((row, index) => ({
+        id: row.id,
+        cells: { ...row.cells, [column.id]: String(start + index) },
+      }));
       return {
         output: withColumns(input, [column, ...input.columns], rows),
         summary: format(strings.summary, { rows: rowsPhrase(rows.length) }),
@@ -39,12 +39,13 @@ export const numberRowsTool: Tool = {
 
     if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
 
-    const rows = input.rows.map((row, index) =>
-      makeRow(index, {
+    const rows = input.rows.map((row, index) => ({
+      id: row.id,
+      cells: {
         ...row.cells,
         [source.id]: `${start + index}${separator}${row.cells[source.id] ?? ''}`,
-      }),
-    );
+      },
+    }));
 
     return {
       output: withColumns(input, input.columns, rows),

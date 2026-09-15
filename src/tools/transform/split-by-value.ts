@@ -1,4 +1,4 @@
-import { cell, makeRow, type Row } from '../../core/model';
+import { cell, type Row } from '../../core/model';
 import { normalizeKey } from '../../core/normalize';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
@@ -65,12 +65,8 @@ export const splitByValueTool: Tool = {
     const nameOf = (value: string): string =>
       format(pattern, { name: input.name, value: value === '' ? strings.blankValue : value });
 
-    // Row ids only have to be unique within a list, so each one numbers from 1 again.
-    const asDataset = (rows: Row[]) =>
-      withRows(
-        input,
-        rows.map((row, index) => makeRow(index, row.cells)),
-      );
+    // A group is the same rows in the same shape, so they keep their ids.
+    const asDataset = (rows: Row[]) => withRows(input, rows);
 
     // The first group replaces the list in place; the rest open as further tabs, so the
     // whole split is one undoable action.

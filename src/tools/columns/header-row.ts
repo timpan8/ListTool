@@ -1,8 +1,8 @@
-import { cell, makeRow, type Column, type Row } from '../../core/model';
+import { cell, type Column, type Row } from '../../core/model';
 import { stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
-import { rowsPhrase, withColumns } from '../helpers';
+import { rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
 
 const strings = en.tools.headerRow;
 
@@ -53,11 +53,11 @@ export const headerRowTool: Tool = {
 
     // Demote: the names become a row, and the columns get plain numbered names —
     // keeping both would leave the same text in two places.
-    const header: Row = makeRow(
-      0,
-      Object.fromEntries(input.columns.map((column) => [column.id, column.name])),
-    );
-    const rows = [header, ...input.rows.map((row, index) => makeRow(index + 1, row.cells))];
+    const header: Row = {
+      id: rowIdsAfter(input)(),
+      cells: Object.fromEntries(input.columns.map((column) => [column.id, column.name])),
+    };
+    const rows = [header, ...input.rows];
     const columns = input.columns.map((column, index) => ({
       id: column.id,
       name: format(strings.blankName, { n: index + 1 }),

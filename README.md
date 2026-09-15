@@ -31,8 +31,13 @@ What the app does:
 - **Worth a look:** the tool picker leads with what the tools would find in the list as it
   stands — "27 duplicates", "3 addresses look malformed" — with the tool that fixes each
   one already configured behind it. Nothing is changed by asking.
-- **Edit in the table:** click a cell to change it, tick rows to work on just those. Both
-  go through ordinary tools, so both undo.
+- **Work in the table:** click a header to sort the view (and make that order permanent
+  in one click), open the ▾ beside any column to filter it, rename, move or remove it, or
+  see the tools that take it. Click a cell to change it; the arrow keys move between
+  cells. Tick rows and the strip above the table offers what can be done to just those.
+  Everything that changes the list goes through an ordinary tool, so everything undoes.
+  Numbers sit on the right, a long list shows its first 500 rows until asked for more,
+  and a tool's preview leads with the rows it would change.
 - **Columns tab:** what is actually in each column — filled, empty, distinct, lengths and
   the commonest values. Click a value to show only its rows. Like the search box it
   narrows the view and never the list.

@@ -33,10 +33,10 @@ describe('chunk list tool', () => {
     expect(result.extraLists?.[0]?.name).toBe('Batch 2');
   });
 
-  it('numbers the rows of every batch from one, so no id repeats inside a list', () => {
+  it('keeps every row its id, so the preview can say which rows went where', () => {
     const result = chunkListTool.run(listOf('a', 'b', 'c'), DEFAULTS);
     expect(result.output.rows.map((row) => row.id)).toEqual(['r1', 'r2']);
-    expect(result.extraLists?.[0]?.dataset.rows.map((row) => row.id)).toEqual(['r1']);
+    expect(result.extraLists?.[0]?.dataset.rows.map((row) => row.id)).toEqual(['r3']);
   });
 
   it('keeps the columns of the list it split', () => {

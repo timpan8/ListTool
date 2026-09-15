@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
-import { diffDatasets } from '../core/diff';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
 import type { Options, Tool } from '../core/registry';
 import {
@@ -15,8 +14,10 @@ import {
 import { en } from '../i18n/en';
 import { format, plural } from '../i18n/format';
 import { OptionsPanel } from './OptionsPanel';
-import { startingOptions, withColumnDefaults, withSelection } from './toolOptions';
+import { SecondListPicker } from './SecondListPicker';
+import { startingOptions } from './toolOptions';
 import { ToolPreview } from './ToolPreview';
+import { finalOptions, useToolRun } from './useToolRun';
 
 interface Props {
   dataset: Dataset;
@@ -38,10 +39,14 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
     ...initialOptions,
   });
   const [options, setOptions] = useState<Options>(opening);
+  // The newest options, before the render that shows them: Apply reads these, so a value
+  // committed by the very click that applies is never a render behind.
+  const latest = useRef(options);
   const [secondId, setSecondId] = useState('');
 
   useEffect(() => {
-    setOptions(opening());
+    latest.current = opening();
+    setOptions(latest.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tool, initialOptions]);
 
@@ -52,35 +57,41 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
       ? (others.find((candidate) => candidate.id === secondId) ?? others[0])
       : undefined;
 
-  // The form must show what will run: a column field that names nothing, or a column
-  // that is gone, is given a real one before the tool ever sees the options.
-  const chosen = withSelection(
-    tool.options,
-    withColumnDefaults(tool.options, options, dataset.columns, second?.columns ?? []),
-    selectedRows.value,
-  );
-  const result = tool.run(dataset, chosen, second);
+  const ticked = selectedRows.value;
+  const { chosen, result, diff } = useToolRun(tool, dataset, options, second, ticked);
+
+  function change(key: string, value: unknown): void {
+    latest.current = { ...latest.current, [key]: value };
+    setOptions(latest.current);
+  }
 
   function apply(toNewList: boolean): void {
+    const fresh =
+      latest.current === options
+        ? { chosen, result }
+        : (() => {
+            const now = finalOptions(tool, latest.current, dataset, second, ticked);
+            return { chosen: now, result: tool.run(dataset, now, second) };
+          })();
     const step = {
       toolId: tool.id,
-      options: second === undefined ? chosen : { ...chosen, secondListId: second.id },
-      summary: result.summary,
+      options: second === undefined ? fresh.chosen : { ...fresh.chosen, secondListId: second.id },
+      summary: fresh.result.summary,
       at: Date.now(),
     };
     let landed = dataset.id;
     if (toNewList) {
       landed = addDataset(
-        result.output,
+        fresh.result.output,
         format(en.panel.copySuffix, { name: dataset.name, tool: tool.name }),
       );
     } else {
-      applyStep(dataset.id, step, result.output);
+      applyStep(dataset.id, step, fresh.result.output);
     }
 
     // A tool that produced further lists opens them as tabs, and the result the person
     // was looking at stays in front — it is still where they were.
-    const extras = result.extraLists ?? [];
+    const extras = fresh.result.extraLists ?? [];
     for (const extra of extras) addDataset(extra.dataset, extra.name);
     if (extras.length > 0) {
       setActive(landed);
@@ -111,25 +122,7 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
       </div>
 
       {tool.arity === 'dual' ? (
-        <div class="field">
-          <label class="field__label" for="tool-second">
-            {en.tools.shared.secondList}
-          </label>
-          <select
-            id="tool-second"
-            value={second?.id ?? ''}
-            onChange={(event) => setSecondId(event.currentTarget.value)}
-          >
-            {others.map((candidate) => (
-              <option key={candidate.id} value={candidate.id}>
-                {candidate.name}
-              </option>
-            ))}
-          </select>
-          {others.length === 0 ? (
-            <p class="field__help">{en.tools.shared.secondListMissing}</p>
-          ) : null}
-        </div>
+        <SecondListPicker others={others} selected={second} onChange={setSecondId} />
       ) : null}
 
       <OptionsPanel
@@ -138,14 +131,14 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
         options={chosen}
         columns={dataset.columns}
         secondColumns={second?.columns ?? []}
-        onChange={(key, value) => setOptions({ ...options, [key]: value })}
+        onChange={change}
       />
 
       <ToolPreview
         output={result.output}
         summary={result.summary}
         {...(result.warnings === undefined ? {} : { warnings: result.warnings })}
-        diff={diffDatasets(dataset, result.output)}
+        diff={diff}
       />
 
       <div class="result__actions">
