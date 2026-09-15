@@ -1,0 +1,92 @@
+import { cell, makeRow, type Row } from '../../core/model';
+import { normalizeKey } from '../../core/normalize';
+import { booleanOption, stringOption, type Tool } from '../../core/registry';
+import { en } from '../../i18n/en';
+import { format, plural } from '../../i18n/format';
+import { rowsPhrase, targetColumn, withRows } from '../helpers';
+
+const strings = en.tools.splitByValue;
+
+const DEFAULT_PATTERN = '{value}';
+
+/** More tabs than this at once is not a split, it is a mess. */
+const MAX_LISTS = 30;
+
+export const splitByValueTool: Tool = {
+  id: 'split-by-value',
+  name: strings.name,
+  category: 'transform',
+  description: strings.description,
+  keywords: ['split', 'by', 'group', 'separate', 'per', 'lists', 'tabs', 'department'],
+  arity: 'single',
+  options: [
+    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    {
+      key: 'pattern',
+      label: strings.pattern,
+      type: 'text',
+      default: DEFAULT_PATTERN,
+      help: strings.nameHelp,
+    },
+    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
+    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
+  ],
+  run(input, options) {
+    const column = targetColumn(input, options);
+    if (column === undefined) return { output: input, summary: en.tools.nothingChanged };
+
+    const normalize = {
+      trim: booleanOption(options, 'trim', true),
+      ignoreCase: booleanOption(options, 'ignoreCase', true),
+    };
+
+    // Grouped in first-seen order, and named by the first spelling seen.
+    const groups = new Map<string, { value: string; rows: Row[] }>();
+    for (const row of input.rows) {
+      const value = cell(row, column.id).trim();
+      const key = normalizeKey(cell(row, column.id), normalize);
+      const existing = groups.get(key);
+      if (existing === undefined) groups.set(key, { value, rows: [row] });
+      else existing.rows.push(row);
+    }
+
+    if (groups.size < 2) {
+      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.onlyOne] };
+    }
+    if (groups.size > MAX_LISTS) {
+      return {
+        output: input,
+        summary: en.tools.nothingChanged,
+        warnings: [format(strings.tooMany, { n: groups.size })],
+      };
+    }
+
+    const pattern = stringOption(options, 'pattern', DEFAULT_PATTERN);
+    const nameOf = (value: string): string =>
+      format(pattern, { name: input.name, value: value === '' ? strings.blankValue : value });
+
+    // Row ids only have to be unique within a list, so each one numbers from 1 again.
+    const asDataset = (rows: Row[]) =>
+      withRows(
+        input,
+        rows.map((row, index) => makeRow(index, row.cells)),
+      );
+
+    // The first group replaces the list in place; the rest open as further tabs, so the
+    // whole split is one undoable action.
+    const [first, ...rest] = [...groups.values()];
+
+    return {
+      output: asDataset(first?.rows ?? []),
+      summary: format(strings.summary, {
+        rows: rowsPhrase(input.rows.length),
+        lists: plural(groups.size, strings.lists),
+      }),
+      stats: { lists: groups.size },
+      extraLists: rest.map((group) => ({
+        name: nameOf(group.value),
+        dataset: asDataset(group.rows),
+      })),
+    };
+  },
+};

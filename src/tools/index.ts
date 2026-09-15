@@ -35,6 +35,16 @@ import { chunkListTool } from './transform/chunk-list';
 import { setValueTool } from './transform/set-value';
 import { selectedRowsTool } from './transform/selected-rows';
 import { appendRowsTool } from './transform/append-rows';
+import { filterRulesTool } from './transform/filter-rules';
+import { templateColumnTool } from './columns/template-column';
+import { headerRowTool } from './columns/header-row';
+import { unpivotTool } from './columns/unpivot';
+import { parseColumnTool } from './columns/parse-column';
+import { fieldDiffTool } from './compare/field-diff';
+import { coalesceTool } from './compare/coalesce';
+import { sampleTool } from './transform/sample';
+import { splitByValueTool } from './transform/split-by-value';
+import { crossTabTool } from './extract/cross-tab';
 import { transposeTool } from './columns/transpose';
 import { groupByTool } from './extract/group-by';
 import { joinListsTool } from './compare/join-lists';
@@ -58,6 +68,7 @@ export const tools: Tool[] = [
   normalizePhoneTool,
   sortTool,
   filterRowsTool,
+  filterRulesTool,
   findReplaceTool,
   prefixSuffixTool,
   numberRowsTool,
@@ -65,6 +76,8 @@ export const tools: Tool[] = [
   removeRowsInBTool,
   splitIntoRowsTool,
   chunkListTool,
+  splitByValueTool,
+  sampleTool,
   appendRowsTool,
   setValueTool,
   selectedRowsTool,
@@ -76,15 +89,22 @@ export const tools: Tool[] = [
   moveColumnTool,
   keepColumnsTool,
   transposeTool,
+  unpivotTool,
+  headerRowTool,
+  templateColumnTool,
+  parseColumnTool,
   buildDisplayNameTool,
   generateEmailTool,
   extractPatternTool,
   countValuesTool,
   groupByTool,
+  crossTabTool,
   compareListsTool,
   setOperationTool,
   joinListsTool,
   markMembershipTool,
+  fieldDiffTool,
+  coalesceTool,
 ];
 
 export function toolById(id: string): Tool | undefined {

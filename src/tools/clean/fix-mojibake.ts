@@ -1,6 +1,7 @@
 import type { Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
-import { format } from '../../i18n/format';
+import { format, plural } from '../../i18n/format';
+import { cell } from '../../core/model';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
 const strings = en.tools.fixMojibake;
@@ -73,5 +74,14 @@ export const fixMojibakeTool: Tool = {
       summary: format(strings.summary, { cells: cellsPhrase(changed) }),
       stats: { changed },
     };
+  },
+  check(input) {
+    const cells = input.rows.reduce(
+      (count, row) =>
+        count + input.columns.filter((column) => repair(cell(row, column.id)) !== null).length,
+      0,
+    );
+    if (cells === 0) return null;
+    return { summary: plural(cells, strings.foundCheck), count: cells, options: { column: '' } };
   },
 };

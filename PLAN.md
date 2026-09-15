@@ -89,3 +89,22 @@ Done when:
   Mark what is in another list once per list.
 - A saved workspace file restores the lists, recipes, favourites and settings, and a file
   that is not one is refused without emptying the screen.
+
+## M8 — The fifteen that were still missing
+Scope: the improvements numbered 6-20 in the second review round.
+
+Tools: multi-key Sort, Filter on several rules, Remove duplicates with a choice of which
+row survives, Build a column from a template, Header row, Cross-tab, Turn columns into
+rows, Take a sample, Split into lists by a value, What changed between two lists, Fill the
+gaps from another list, Read a column with a parser. Parser: JSON. Exporter: Recipients.
+Core: template.ts, checkup.ts. Shell: the checkup findings above the tool list.
+
+Contract: `allowNone` on a `column` field, and an optional `check(input)` on Tool.
+
+Done when:
+- A tool that answers `check` turns up under "Worth a look" with the tool configured
+  behind it, and no tool is named anywhere in the shell to make that happen.
+- Sorting by surname then first name is one step, and each key has its own direction.
+- The Outlook round trip is exact: parse a recipient list, clean it, write it back.
+- Reading a column with the Recipients parser turns one stuck cell into first, last and
+  email columns.

@@ -21,6 +21,8 @@ import { ToolPreview } from './ToolPreview';
 interface Props {
   dataset: Dataset;
   tool: Tool;
+  /** Set when a checkup finding opened this tool: its own options win over the defaults. */
+  initialOptions?: Options;
   onBack: () => void;
   onApplied: () => void;
 }
@@ -30,13 +32,18 @@ interface Props {
  * Apply to new list. There is no bespoke panel per tool; this is generated from the
  * tool's own option list.
  */
-export function ResultPanel({ dataset, tool, onBack, onApplied }: Props) {
-  const [options, setOptions] = useState<Options>(startingOptions(tool, settings.value));
+export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }: Props) {
+  const opening = (): Options => ({
+    ...startingOptions(tool, settings.value),
+    ...initialOptions,
+  });
+  const [options, setOptions] = useState<Options>(opening);
   const [secondId, setSecondId] = useState('');
 
   useEffect(() => {
-    setOptions(startingOptions(tool, settings.value));
-  }, [tool]);
+    setOptions(opening());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tool, initialOptions]);
 
   // A dual tool needs a second list; anything but the one being worked on will do.
   const others = openDatasets.value.filter((candidate) => candidate.id !== dataset.id);

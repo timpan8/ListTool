@@ -1,6 +1,7 @@
 import { booleanOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
-import { format } from '../../i18n/format';
+import { format, plural } from '../../i18n/format';
+import { cell } from '../../core/model';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
 const strings = en.tools.cleanInvisible;
@@ -74,5 +75,23 @@ export const cleanInvisibleTool: Tool = {
       stats: { changed, removed },
       ...(removed > 0 ? { warnings: [format(strings.found, { n: removed })] } : {}),
     };
+  },
+  check(input) {
+    const cells = input.rows.reduce(
+      (count, row) =>
+        count +
+        input.columns.filter((column) => {
+          const value = cell(row, column.id);
+          // Fresh copies: these are global regexes, and lastIndex would carry over.
+          return (
+            new RegExp(ODD_SPACES.source).test(value) ||
+            new RegExp(ZERO_WIDTH.source).test(value) ||
+            new RegExp(CONTROLS.source).test(value)
+          );
+        }).length,
+      0,
+    );
+    if (cells === 0) return null;
+    return { summary: plural(cells, strings.foundCheck), count: cells, options: { column: '' } };
   },
 };

@@ -434,6 +434,16 @@ textarea {
   font: inherit;
 }
 
+/* A checkup finding: the count leads, the tool that would fix it follows. */
+.finding .picker__name {
+  font-weight: 600;
+}
+
+.finding {
+  border-left: 3px solid var(--color-accent);
+  padding-left: var(--space-3);
+}
+
 /* ---------- column profile ---------- */
 
 .profile {

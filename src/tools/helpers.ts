@@ -81,6 +81,29 @@ export function freeColumnId(dataset: { columns: Column[] }, base: string): stri
   return `${base}${suffix}`;
 }
 
+/**
+ * Does this value match this rule? Shared by Filter rows and Filter on several rules, so
+ * "contains" means the same thing in both and a fix reaches both.
+ */
+export function matchesText(
+  value: string,
+  mode: string,
+  pattern: string,
+  ignoreCase: boolean,
+): boolean {
+  if (mode === 'regex') {
+    const regex = safeRegExp(pattern, ignoreCase ? 'iu' : 'u');
+    return regex !== null && regex.test(value);
+  }
+  const haystack = ignoreCase ? value.toLocaleLowerCase() : value;
+  const needle = ignoreCase ? pattern.toLocaleLowerCase() : pattern;
+
+  if (mode === 'equals') return haystack === needle;
+  if (mode === 'starts') return haystack.startsWith(needle);
+  if (mode === 'ends') return haystack.endsWith(needle);
+  return haystack.includes(needle);
+}
+
 /** Compile a user-supplied pattern, or null when it does not compile. */
 export function safeRegExp(pattern: string, flags: string): RegExp | null {
   try {
