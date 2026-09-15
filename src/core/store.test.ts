@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   activeDataset,
+  activeView,
   addDataset,
   applyStep,
   canRedoActive,
@@ -23,9 +24,13 @@ import {
   setActive,
   toggleRow,
   setNotice,
+  setViewQuery,
+  setViewSort,
   toggleFavorite,
   undo,
   updateSettings,
+  viewQuery,
+  viewSort,
 } from './store';
 import { cell, valuesDataset, VALUE_COLUMN } from './model';
 import type { Step } from './history';
@@ -321,5 +326,52 @@ describe('settings, favorites and recents', () => {
   it('remembers only the last five tools', () => {
     for (const id of ['a', 'b', 'c', 'd', 'e', 'f']) noteToolUsed(id);
     expect(recents.value).toEqual(['f', 'e', 'd', 'c', 'b']);
+  });
+});
+
+describe('the view', () => {
+  it('starts empty and reads back what was set', () => {
+    addDataset(list('a', 'b'), 'One');
+    expect(activeView.value).toEqual({ query: '', filter: null, sort: null, ticked: [] });
+    setViewQuery('an');
+    setViewSort({ columnId: VALUE_COLUMN, direction: 'desc' });
+    expect(viewQuery.value).toBe('an');
+    expect(viewSort.value).toEqual({ columnId: VALUE_COLUMN, direction: 'desc' });
+    expect(activeView.value.query).toBe('an');
+    expect(activeView.value.sort?.direction).toBe('desc');
+  });
+
+  it('shows the ticks in the view, in list order', () => {
+    addDataset(list('a', 'b', 'c'), 'One');
+    const ids = (activeDataset.value?.rows ?? []).map((row) => row.id);
+    toggleRow(ids[2] as string);
+    toggleRow(ids[0] as string);
+    expect(activeView.value.ticked).toEqual([ids[0], ids[2]]);
+  });
+
+  it('starts over when another list takes the screen', () => {
+    const first = addDataset(list('a'), 'One');
+    setViewQuery('x');
+    setViewSort({ columnId: VALUE_COLUMN, direction: 'asc' });
+    const second = addDataset(list('b'), 'Two');
+    expect(viewQuery.value).toBe('');
+    expect(viewSort.value).toBeNull();
+
+    setViewQuery('y');
+    setActive(first);
+    expect(viewQuery.value).toBe('');
+
+    setViewQuery('z');
+    close(first);
+    expect(activeDataset.value?.id).toBe(second);
+    expect(viewQuery.value).toBe('');
+  });
+
+  it('is cleared with the workspace', () => {
+    addDataset(list('a'), 'One');
+    setViewQuery('x');
+    resetWorkspace();
+    expect(viewQuery.value).toBe('');
+    expect(viewSort.value).toBeNull();
   });
 });

@@ -139,8 +139,12 @@ charlie@example.com    —                      ← Only in A      1   0
 - Narrow screens: panels stack; the result table stays one table.
 
 ## 7. Export and copy
-Every result has **Copy**. The Export dialog lists exporters with their options; export
-renders from the dataset, never from the visible DOM.
+Every result has **Copy**. Copy takes what is on screen: the ticked rows if any, else the
+rows the search and the filter show, every column, in the order shown — as a table (TSV
+plus the HTML flavour, so Excel gets cells) when the list has more than one column, as
+lines when it has one. The Export dialog lists exporters with their options and offers
+the shown, ticked or all rows; export renders from the dataset narrowed to that scope,
+never from the visible DOM.
 
 | Exporter | Output | Options | Phase |
 |---|---|---|---|
@@ -179,7 +183,7 @@ sessions · Clear all data.
 | Ctrl/Cmd+K | Command palette |
 | Enter | Apply current tool |
 | Ctrl/Cmd+Z / Shift+Ctrl/Cmd+Z | Undo / redo |
-| Ctrl/Cmd+C (nothing selected) | Copy active dataset as lines |
+| Ctrl/Cmd+C (nothing selected) | Copy what is shown — the ticked rows if any — with every column |
 | Esc | Close panel / dialog |
 | Ctrl/Cmd+V (empty workspace) | Open import with clipboard content |
 

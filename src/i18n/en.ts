@@ -18,11 +18,17 @@ export const en = {
     undo: 'Undo',
     redo: 'Redo',
     copy: 'Copy',
+    copyHint: 'Copy what is shown — the ticked rows if any — with every column (Ctrl/Cmd+C)',
     export: 'Export',
     settings: 'Settings',
     undoHint: 'Ctrl/Cmd+Z',
     redoHint: 'Shift+Ctrl/Cmd+Z',
-    copied: 'Copied to clipboard',
+    copied: 'Copied {which} as {what}',
+    copiedShown: { one: 'the {n} row shown', other: 'the {n} rows shown' },
+    copiedTicked: { one: 'the {n} ticked row', other: 'the {n} ticked rows' },
+    copiedAll: { one: 'the only row', other: 'all {n} rows' },
+    asTable: { one: 'a table with {n} column', other: 'a table with {n} columns' },
+    nothingToCopy: 'Nothing to copy: no rows are shown.',
     copyFailed: 'Could not copy. Select the text and copy it manually.',
   },
 
@@ -110,7 +116,15 @@ export const en = {
 
   export: {
     title: 'Export',
+    rows: 'Rows',
+    scopes: { shown: 'Shown ({n})', ticked: 'Ticked ({n})', all: 'All ({n})' },
+    scopeHelp: {
+      shown: 'The rows the search and the filter show, in the order shown.',
+      ticked: 'Every ticked row, whether or not the search still shows it.',
+      all: "Every row, in the list's own order.",
+    },
     format: 'Format',
+    groups: { table: 'Whole table', other: 'Other formats' },
     preview: 'Preview',
     previewNote: 'First {n} lines',
     copy: 'Copy',
@@ -899,7 +913,7 @@ export const en = {
     apply: 'Apply the current tool',
     undo: 'Undo',
     redo: 'Redo',
-    copy: 'Copy the active list as lines',
+    copy: 'Copy what is shown — the ticked rows if any — with every column',
     close: 'Close a panel or dialog',
     paste: 'Import what is on the clipboard',
     keys: {

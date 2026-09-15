@@ -3,16 +3,17 @@ import {
   activeDataset,
   activeHistory,
   activeId,
+  activeView,
   canRedoActive,
   canUndoActive,
   hydrate,
   redo,
   setNotice,
+  settings,
   startPersistence,
   undo,
 } from '../core/store';
-import { defaultOptions, type Tool } from '../core/registry';
-import { exporterById, DEFAULT_EXPORTER_ID } from '../exporters';
+import type { Tool } from '../core/registry';
 import { htmlTableParser } from '../parsers/html-table';
 import { en } from '../i18n/en';
 import { CommandPalette } from './CommandPalette';
@@ -21,7 +22,7 @@ import { ImportDialog } from './ImportDialog';
 import { Layout } from './Layout';
 import { Settings } from './Settings';
 import { htmlFromPaste } from './clipboard';
-import { copyExported } from './copyOut';
+import { copyView } from './copyOut';
 
 type DialogState =
   | { kind: 'none' }
@@ -58,11 +59,10 @@ export function App() {
 
   useEffect(() => startPersistence(() => setNotice(en.settings.quota)), []);
 
-  async function copyAs(exporterId: string): Promise<void> {
-    const exporter = exporterById(exporterId);
-    if (exporter === undefined || dataset === null) return;
-    const copied = await copyExported(exporter, dataset, defaultOptions(exporter.options));
-    setNotice(copied ? en.toolbar.copied : en.toolbar.copyFailed);
+  // Every copy takes what is on screen; without a format named, the list's shape decides.
+  async function copyAs(exporterId?: string): Promise<void> {
+    if (dataset === null) return;
+    setNotice(await copyView(dataset, activeView.value, settings.value, exporterId));
   }
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export function App() {
         const selection = globalThis.getSelection();
         if (dataset === null || (selection !== null && !selection.isCollapsed)) return;
         event.preventDefault();
-        void copyAs(DEFAULT_EXPORTER_ID);
+        void copyAs();
         return;
       }
       if (key !== 'z' || id === null || open) return;

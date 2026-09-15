@@ -1,3 +1,4 @@
+import type { Dataset } from '../core/model';
 import type { Exporter } from '../core/registry';
 import { linesExporter } from './lines';
 import { joinedLineExporter } from './joined-line';
@@ -33,6 +34,16 @@ export function exporterById(id: string): Exporter | undefined {
   return exporters.find((exporter) => exporter.id === id);
 }
 
-/** The exporter behind the toolbar's one-click Copy, and the one dialogs open on. */
-export const defaultExporter: Exporter = linesExporter;
-export const DEFAULT_EXPORTER_ID = defaultExporter.id;
+/** True for an exporter that writes the whole table: it asks which columns to include. */
+export function isTableExporter(exporter: Exporter): boolean {
+  return exporter.options.some((field) => field.type === 'columns');
+}
+
+/**
+ * The exporter behind one-click Copy. A table is copied as a table — tab-separated text
+ * plus the HTML flavour, so a paste into Excel lands in cells — and a plain list as
+ * lines. The decision lives here so the shell never reasons about column counts.
+ */
+export function copyExporter(dataset: Dataset): Exporter {
+  return dataset.columns.length > 1 ? tsvExporter : linesExporter;
+}

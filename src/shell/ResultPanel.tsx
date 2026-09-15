@@ -15,7 +15,7 @@ import {
 import { en } from '../i18n/en';
 import { format, plural } from '../i18n/format';
 import { OptionsPanel } from './OptionsPanel';
-import { startingOptions, withSelection } from './toolOptions';
+import { startingOptions, withColumnDefaults, withSelection } from './toolOptions';
 import { ToolPreview } from './ToolPreview';
 
 interface Props {
@@ -52,7 +52,13 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
       ? (others.find((candidate) => candidate.id === secondId) ?? others[0])
       : undefined;
 
-  const chosen = withSelection(tool.options, options, selectedRows.value);
+  // The form must show what will run: a column field that names nothing, or a column
+  // that is gone, is given a real one before the tool ever sees the options.
+  const chosen = withSelection(
+    tool.options,
+    withColumnDefaults(tool.options, options, dataset.columns, second?.columns ?? []),
+    selectedRows.value,
+  );
   const result = tool.run(dataset, chosen, second);
 
   function apply(toNewList: boolean): void {
