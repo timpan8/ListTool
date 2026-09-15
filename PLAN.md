@@ -108,3 +108,36 @@ Done when:
 - The Outlook round trip is exact: parse a recipient list, clean it, write it back.
 - Reading a column with the Recipients parser turns one stuck cell into first, last and
   email columns.
+
+## M9 — Quality overhaul
+Scope: the review after M8 — the tool has the parts but not the level. Five phases, one
+pull request each, gated by CI on every pull request and by the browser suite this
+milestone schedules: `@playwright/test` as a dev dependency, `e2e/*.e2e.ts` run by
+`npm run e2e` against the dev server, Chromium only.
+
+1. **Copy what I see** — Copy, Ctrl+C and the palette copy the ticked rows if any, else
+   the rows on screen, every column, as a table (TSV + HTML); the export dialog offers
+   shown / ticked / all rows and remembers the last format; column selects show the
+   columns that actually run.
+2. **The table as a workbench** — click a header to sort the view, a header menu for
+   filter / rename / move / remove / tools for this column, actions for ticked rows,
+   changed rows first in the preview, keyboard movement between cells, numbers right
+   aligned, memoised checkup and profile, a 500-row cap with Show more; tools keep row
+   ids so the preview marks what really changed.
+3. **Compare as a diff view** — two lists called by their names everywhere, one row per
+   key with both sides' columns beside each other, differing cells marked, create a list
+   or copy from any bucket; every dual tool's form names the lists; recipes replay dual
+   tools when the second list is open.
+4. **Data tools, consistency, performance** — normalise dates and numbers, validate
+   Swedish ID numbers, pad / truncate, fill down, column maths, capture groups, sort as
+   numbers or dates; run any tool on the ticked rows only; the audit's consistency
+   fixes; near-duplicates and cross-tab that stay fast on large lists.
+5. **Swedish** — every string in Swedish as well as English, chosen in Settings; English
+   stays the default.
+
+Done when:
+- Every phase's pull request passed typecheck, tests, build and the browser suite.
+- Copy from a three-column list pastes into Excel as three columns of the rows on screen.
+- Compare shows both list names and marks the cells that differ on matched rows.
+- A 10 000-row list sorts, filters and previews a tool without a visible freeze.
+- The whole UI reads in Swedish with no key missing, proven by a parity test.

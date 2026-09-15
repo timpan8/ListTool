@@ -10,7 +10,8 @@ when the page and its assets are downloaded.)
 
 ## Status
 
-All six milestones in `PLAN.md` are built, plus the M7 round of improvements it lists.
+All six milestones in `PLAN.md` are built, plus the M7 and M8 rounds of improvements it
+lists. M9, the quality overhaul, is in progress phase by phase.
 See `SPEC.md` for what the app is meant to be and `CLAUDE.md` for the contracts the code
 follows. The items under SPEC §13 (Web Workers, table virtualization, PWA caching, XLSX
 export, a Swedish UI) are deliberately not built, and nothing in the UI pretends
@@ -64,11 +65,13 @@ Node.js 22 and npm. Install dependencies once with `npm ci` (or `npm install`).
 | `npm run dev` | Dev server with hot reload at http://localhost:5173/ListTool/ |
 | `npm run build` | Production build into `dist/` |
 | `npm run preview` | Serve the built `dist/` locally, exactly as Pages will |
-| `npm run typecheck` | `tsc --noEmit` against `src/` and `vite.config.ts` |
+| `npm run typecheck` | `tsc --noEmit` against `src/`, `e2e/` and the config files |
 | `npm test` | Vitest, single run |
+| `npm run e2e` | The Chromium suite in `e2e/`, against a dev server it starts itself |
 
-Run `npm run typecheck`, `npm test` and `npm run build` before pushing — the deploy
-workflow runs all three and fails the deployment if any of them fails.
+Run `npm run typecheck`, `npm test`, `npm run build` and `npm run e2e` before pushing —
+CI runs all four on every pull request, and the deploy workflow runs them again before
+anything reaches Pages.
 
 ## Deployment
 
