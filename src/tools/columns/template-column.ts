@@ -1,10 +1,10 @@
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { fillTemplate, placeholdersIn } from '../../core/template';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { freeColumnId, rowsPhrase, withColumns } from '../helpers';
 
-const strings = en.tools.templateColumn;
+const strings = ui.tools.templateColumn;
 
 export const templateColumnTool: Tool = {
   id: 'template-column',
@@ -21,7 +21,7 @@ export const templateColumnTool: Tool = {
   run(input, options) {
     const template = stringOption(options, 'template', '');
     if (template.trim() === '') {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.needTemplate] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.needTemplate] };
     }
 
     const keepUnknown = booleanOption(options, 'unknown', true);

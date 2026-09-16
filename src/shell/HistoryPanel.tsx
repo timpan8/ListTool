@@ -1,5 +1,5 @@
 import { appliedSteps, type History } from '../core/history';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 interface Props {
   history: History;
@@ -13,18 +13,18 @@ export function HistoryPanel({ history }: Props) {
     <div class="history">
       <ol class="history__list">
         <li class="history__step">
-          <span class="history__summary">{en.panel.historyStart}</span>
+          <span class="history__summary">{ui.panel.historyStart}</span>
         </li>
         {steps.map((step, index) => (
           <li key={`${step.at}-${index}`} class="history__step">
             <span class="history__summary">{step.summary}</span>
             {index === steps.length - 1 ? (
-              <span class="history__current">{en.panel.historyCurrent}</span>
+              <span class="history__current">{ui.panel.historyCurrent}</span>
             ) : null}
           </li>
         ))}
       </ol>
-      {steps.length === 0 ? <p class="field__help">{en.panel.historyEmpty}</p> : null}
+      {steps.length === 0 ? <p class="field__help">{ui.panel.historyEmpty}</p> : null}
     </div>
   );
 }

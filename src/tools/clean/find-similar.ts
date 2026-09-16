@@ -2,7 +2,7 @@ import { cell, type Row } from '../../core/model';
 import { clusterValues } from '../../core/similarity';
 import { normalizeKey } from '../../core/normalize';
 import { booleanOption, numberOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import {
   freeColumnId,
@@ -12,7 +12,7 @@ import {
   withColumns,
 } from '../helpers';
 
-const strings = en.tools.findSimilar;
+const strings = ui.tools.findSimilar;
 
 const DEFAULT_THRESHOLD = 90;
 
@@ -30,7 +30,7 @@ export const findSimilarTool: Tool = {
   keywords: ['similar', 'fuzzy', 'near', 'almost', 'typo', 'cluster', 'duplicate', 'misspelling'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     {
       key: 'threshold',
       label: strings.threshold,
@@ -43,7 +43,7 @@ export const findSimilarTool: Tool = {
   ],
   run(input, options) {
     const source = targetColumn(input, options);
-    if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (source === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     // A percentage in the form, a fraction in the maths. 100 means exact.
     const threshold = Math.min(100, Math.max(0, numberOption(options, 'threshold', DEFAULT_THRESHOLD))) / 100;
@@ -62,7 +62,7 @@ export const findSimilarTool: Tool = {
     if (display.size > MAX_DISTINCT) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
+        summary: ui.tools.nothingChanged,
         warnings: [format(strings.tooMany, { n: display.size, limit: MAX_DISTINCT })],
       };
     }
@@ -82,7 +82,7 @@ export const findSimilarTool: Tool = {
       clusters.filter((cluster) => cluster.values.length > 1).map((cluster) => cluster.representative),
     );
     if (interesting.size === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.none] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.none] };
     }
 
     const groupId = freeColumnId(input, 'group');

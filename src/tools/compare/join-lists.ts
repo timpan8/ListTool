@@ -1,12 +1,12 @@
 import { cell, type Column, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import { booleanOption, stringOption, stringsOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
 import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
-const strings = en.tools.joinLists;
+const strings = ui.tools.joinLists;
 
 export const joinListsTool: Tool = {
   id: 'join-lists',
@@ -33,8 +33,8 @@ export const joinListsTool: Tool = {
     if (second === undefined) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
-        warnings: [en.tools.shared.secondListMissing],
+        summary: ui.tools.nothingChanged,
+        warnings: [ui.tools.shared.secondListMissing],
       };
     }
 
@@ -49,7 +49,7 @@ export const joinListsTool: Tool = {
     if (bring.length === 0) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
+        summary: ui.tools.nothingChanged,
         warnings: [strings.nothingToBring],
       };
     }

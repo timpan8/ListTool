@@ -1,8 +1,8 @@
 import { cell, type Dataset } from '../core/model';
 import { booleanOption, stringOption, type Exporter, type Options } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
-const strings = en.exporters.recipients;
+const strings = ui.exporters.recipients;
 
 /** The column a field means, falling back to the id the Recipients parser produces. */
 function columnFor(dataset: Dataset, options: Options, key: string, fallback: string): string {

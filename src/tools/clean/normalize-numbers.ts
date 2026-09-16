@@ -1,11 +1,11 @@
 import { cell } from '../../core/model';
 import { formatNumber, parseNumber, type NumberShape } from '../../core/number';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.normalizeNumbers;
+const strings = ui.tools.normalizeNumbers;
 
 function shapeOf(options: Record<string, unknown>): NumberShape {
   const thousands = stringOption(options, 'thousands', ' ');
@@ -36,7 +36,7 @@ export const normalizeNumbersTool: Tool = {
   keywords: ['number', 'numbers', 'decimal', 'comma', 'thousands', 'format', 'normalise', 'amount'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
     {
       key: 'decimal',
       label: strings.decimal,
@@ -88,7 +88,7 @@ export const normalizeNumbersTool: Tool = {
     });
 
     if (changed === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.nothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.nothing] };
     }
 
     return {

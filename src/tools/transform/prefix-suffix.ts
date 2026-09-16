@@ -1,9 +1,9 @@
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.affix;
+const strings = ui.tools.affix;
 
 export const prefixSuffixTool: Tool = {
   id: 'prefix-suffix',
@@ -13,7 +13,7 @@ export const prefixSuffixTool: Tool = {
   keywords: ['prefix', 'suffix', 'wrap', 'quote', 'surround', 'append'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
     { key: 'prefix', label: strings.prefix, type: 'text', default: '' },
     { key: 'suffix', label: strings.suffix, type: 'text', default: '' },
   ],
@@ -22,7 +22,7 @@ export const prefixSuffixTool: Tool = {
     const suffix = stringOption(options, 'suffix', '');
 
     if (prefix === '' && suffix === '') {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.nothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.nothing] };
     }
 
     // An empty cell stays empty: wrapping nothing in quotes is never what was meant.
@@ -34,7 +34,7 @@ export const prefixSuffixTool: Tool = {
       output: changed === 0 ? input : withRows(input, rows),
       summary:
         changed === 0
-          ? en.tools.nothingChanged
+          ? ui.tools.nothingChanged
           : format(strings.summary, { cells: cellsPhrase(changed) }),
       stats: { changed },
     };

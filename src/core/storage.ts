@@ -79,7 +79,15 @@ export function readPersisted(value: unknown): Persisted {
   };
 }
 
-/** Read what was stored. Anything unreadable is treated as "nothing stored". */
+/** The text last parsed and what it parsed to, so the same text is never parsed twice. */
+let loadedText: string | null = null;
+let loaded: Persisted = EMPTY_PERSISTED;
+
+/**
+ * Read what was stored. Anything unreadable is treated as "nothing stored". The language
+ * is read before the app starts and the workspace right after, from the same text, so
+ * the parse is kept until the text changes — a saved workspace can be large.
+ */
 export function load(): Persisted {
   const store = storage();
   if (store === null) return EMPTY_PERSISTED;
@@ -87,7 +95,11 @@ export function load(): Persisted {
   try {
     const text = store.getItem(STORAGE_KEY);
     if (text === null) return EMPTY_PERSISTED;
-    return readPersisted(JSON.parse(text));
+    if (text !== loadedText) {
+      loaded = readPersisted(JSON.parse(text));
+      loadedText = text;
+    }
+    return loaded;
   } catch {
     return EMPTY_PERSISTED;
   }

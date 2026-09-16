@@ -2,11 +2,11 @@ import { dateShapeOf } from '../../core/dates';
 import { cell } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { readSwedishId } from '../../core/swedish-id';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { mapCells, targetColumn, withRows } from '../helpers';
 
-const strings = en.tools.phone;
+const strings = ui.tools.phone;
 
 /** E.164 allows at most 15 digits; fewer than 6 is not a phone number anywhere. */
 const MIN_DIGITS = 6;
@@ -74,7 +74,7 @@ export const normalizePhoneTool: Tool = {
   keywords: ['phone', 'telephone', 'mobile', 'number', 'e164', 'format', 'msisdn'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     {
       key: 'country',
       label: strings.country,
@@ -97,7 +97,7 @@ export const normalizePhoneTool: Tool = {
   ],
   run(input, options) {
     const column = targetColumn(input, options);
-    if (column === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (column === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     // A leading + on the country code is punctuation, not a digit.
     const country = stringOption(options, 'country', DEFAULT_COUNTRY).replace(/[^0-9]/g, '');
@@ -123,7 +123,7 @@ export const normalizePhoneTool: Tool = {
     });
 
     if (changed === 0) {
-      return { output: input, summary: en.tools.nothingChanged, stats: { normalized, unparsed } };
+      return { output: input, summary: ui.tools.nothingChanged, stats: { normalized, unparsed } };
     }
 
     return {

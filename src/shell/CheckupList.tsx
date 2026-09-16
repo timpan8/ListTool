@@ -3,7 +3,7 @@ import { checkup } from '../core/checkup';
 import { memoByDataset } from '../core/memo';
 import type { Options, Tool } from '../core/registry';
 import { tools } from '../tools';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
 interface Props {
@@ -25,15 +25,15 @@ export function CheckupList({ dataset, onPick }: Props) {
 
   return (
     <section class="picker__group">
-      <h3 class="picker__title">{en.checkup.title}</h3>
-      <p class="field__help">{en.checkup.intro}</p>
+      <h3 class="picker__title">{ui.checkup.title}</h3>
+      <p class="field__help">{ui.checkup.intro}</p>
       <ul class="picker__list">
         {found.map(({ tool, finding }) => (
           <li key={tool.id} class="picker__row">
             <button
               type="button"
               class="picker__tool finding"
-              title={format(en.checkup.open, { tool: tool.name })}
+              title={format(ui.checkup.open, { tool: tool.name })}
               onClick={() => onPick(tool, finding.options)}
             >
               <span class="picker__name">{finding.summary}</span>

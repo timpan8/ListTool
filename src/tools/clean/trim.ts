@@ -1,10 +1,10 @@
 import { cell } from '../../core/model';
 import type { Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.trim;
+const strings = ui.tools.trim;
 
 export const trimTool: Tool = {
   id: 'trim-whitespace',
@@ -14,7 +14,7 @@ export const trimTool: Tool = {
   keywords: ['trim', 'whitespace', 'space', 'strip', 'clean'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
   ],
   run(input, options) {
     const columns = targetColumns(input, options);
@@ -24,7 +24,7 @@ export const trimTool: Tool = {
       output: changed === 0 ? input : withRows(input, rows),
       summary:
         changed === 0
-          ? en.tools.nothingChanged
+          ? ui.tools.nothingChanged
           : format(strings.summary, { cells: cellsPhrase(changed) }),
       stats: { changed },
     };

@@ -3,7 +3,7 @@ import type { Tool } from '../core/registry';
 import type { Settings } from '../core/settings';
 import { selectColumn, setViewFilter, setViewSort } from '../core/store';
 import type { ViewState } from '../core/view';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { toolById } from '../tools';
 import type { MenuItem } from './ColumnMenu';
@@ -44,7 +44,7 @@ export function makeSortPermanent(dataset: Dataset, view: ViewState, settings: S
 /** What the ▾ beside a column offers, in the order it offers it. */
 export function columnActions(column: Column, context: ColumnContext): MenuItem[] {
   const { dataset, view, settings, selected, onIntent } = context;
-  const strings = en.columnMenu;
+  const strings = ui.columnMenu;
   const items: MenuItem[] = [];
   const sortedHere = view.sort !== null && view.sort.columnId === column.id;
   const filter = view.filter !== null && view.filter.columnId === column.id ? view.filter : null;

@@ -1,9 +1,9 @@
 import { stringOption, stringsOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { cellsPhrase, targetColumn, withRows } from '../helpers';
 
-const strings = en.tools.setValue;
+const strings = ui.tools.setValue;
 
 export const setValueTool: Tool = {
   id: 'set-value',
@@ -14,14 +14,14 @@ export const setValueTool: Tool = {
   arity: 'single',
   options: [
     { key: 'rows', label: strings.rows, type: 'rows' },
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     { key: 'value', label: strings.value, type: 'text', default: '' },
   ],
   run(input, options) {
     const column = targetColumn(input, options);
     const chosen = new Set(stringsOption(options, 'rows', []));
     if (column === undefined || chosen.size === 0) {
-      return { output: input, summary: en.tools.nothingChanged };
+      return { output: input, summary: ui.tools.nothingChanged };
     }
 
     const value = stringOption(options, 'value', '');
@@ -33,7 +33,7 @@ export const setValueTool: Tool = {
       return { id: row.id, cells: { ...row.cells, [column.id]: value } };
     });
 
-    if (changed === 0) return { output: input, summary: en.tools.nothingChanged };
+    if (changed === 0) return { output: input, summary: ui.tools.nothingChanged };
 
     return {
       output: withRows(input, rows),

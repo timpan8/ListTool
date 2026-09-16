@@ -9,7 +9,7 @@ import {
   settings,
   undo,
 } from '../core/store';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { copyView } from './copyOut';
 
 interface Props {
@@ -34,47 +34,47 @@ export function Toolbar({ onImport, onTools, onCompare, onExport }: Props) {
   }
 
   return (
-    <div class="toolbar" role="toolbar" aria-label={en.app.name}>
+    <div class="toolbar" role="toolbar" aria-label={ui.app.name}>
       <button type="button" class="button button--primary" onClick={onImport}>
-        {en.toolbar.import}
+        {ui.toolbar.import}
       </button>
       {id === null ? null : (
         <>
-          <button type="button" class="button" title={en.panel.toolsHint} onClick={onTools}>
-            {en.toolbar.tools}
+          <button type="button" class="button" title={ui.panel.toolsHint} onClick={onTools}>
+            {ui.toolbar.tools}
           </button>
           <button type="button" class="button" onClick={onCompare}>
-            {en.compare.open}
+            {ui.compare.open}
           </button>
           <button
             type="button"
             class="button"
             disabled={!canUndoActive.value}
-            title={en.toolbar.undoHint}
+            title={ui.toolbar.undoHint}
             onClick={() => undo(id)}
           >
-            {en.toolbar.undo}
+            {ui.toolbar.undo}
           </button>
           <button
             type="button"
             class="button"
             disabled={!canRedoActive.value}
-            title={en.toolbar.redoHint}
+            title={ui.toolbar.redoHint}
             onClick={() => redo(id)}
           >
-            {en.toolbar.redo}
+            {ui.toolbar.redo}
           </button>
           <span class="toolbar__gap" />
           <button
             type="button"
             class="button"
-            title={en.toolbar.copyHint}
+            title={ui.toolbar.copyHint}
             onClick={() => void copy()}
           >
-            {en.toolbar.copy}
+            {ui.toolbar.copy}
           </button>
           <button type="button" class="button" onClick={onExport}>
-            {en.toolbar.export}
+            {ui.toolbar.export}
           </button>
         </>
       )}

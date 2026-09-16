@@ -1,10 +1,10 @@
 import { cell } from '../../core/model';
 import type { Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, targetColumn, withColumns } from '../helpers';
 
-const strings = en.tools.validateEmails;
+const strings = ui.tools.validateEmails;
 
 /**
  * Deliberately practical rather than RFC-complete: one @, something on each side, a dot
@@ -27,7 +27,7 @@ export const validateEmailsTool: Tool = {
   options: [{ key: 'column', label: strings.column, type: 'column', default: 'email' }],
   run(input, options) {
     const source = targetColumn(input, options);
-    if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (source === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const validColumn = { id: freeColumnId(input, 'valid'), name: strings.validColumn };
     let bad = 0;

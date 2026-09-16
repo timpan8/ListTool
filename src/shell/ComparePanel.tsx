@@ -1,5 +1,5 @@
 import type { Dataset } from '../core/model';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 interface Props {
   /** Which side this is, for the control ids only: the heading is the list's own name. */
@@ -18,7 +18,7 @@ export function ComparePanel({ idPrefix, datasets, selected, onSelect, onPaste }
 
       <div class="field">
         <label class="field__label" for={`${idPrefix}-list`}>
-          {en.compare.pick}
+          {ui.compare.pick}
         </label>
         <select
           id={`${idPrefix}-list`}
@@ -34,7 +34,7 @@ export function ComparePanel({ idPrefix, datasets, selected, onSelect, onPaste }
       </div>
 
       <button type="button" class="button button--quiet" onClick={onPaste}>
-        {en.compare.paste}
+        {ui.compare.paste}
       </button>
     </section>
   );

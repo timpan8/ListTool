@@ -1,6 +1,6 @@
 import type { Exporter } from '../core/registry';
 import { columnValues } from './column';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 /** PowerShell escapes a single quote inside a single-quoted string by doubling it. */
 function quote(value: string): string {
@@ -9,8 +9,8 @@ function quote(value: string): string {
 
 export const powershellExporter: Exporter = {
   id: 'powershell',
-  name: en.exporters.powershell.name,
-  options: [{ key: 'column', label: en.exporters.powershell.column, type: 'column' }],
+  name: ui.exporters.powershell.name,
+  options: [{ key: 'column', label: ui.exporters.powershell.column, type: 'column' }],
   render(dataset, options) {
     return `@(${columnValues(dataset, options).map(quote).join(', ')})`;
   },

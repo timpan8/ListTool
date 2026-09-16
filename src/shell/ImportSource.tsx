@@ -1,5 +1,5 @@
 import { useRef, useState } from 'preact/hooks';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 interface Props {
   text: string;
@@ -21,7 +21,7 @@ export function ImportSource({ text, onText }: Props) {
       onText(await file.text());
       setError('');
     } catch {
-      setError(en.import.fileFailed);
+      setError(ui.import.fileFailed);
     }
   }
 
@@ -40,12 +40,12 @@ export function ImportSource({ text, onText }: Props) {
       }}
     >
       <label class="field">
-        <span class="field__label">{en.import.pasteLabel}</span>
+        <span class="field__label">{ui.import.pasteLabel}</span>
         <textarea
           id="import-text"
           class="source__text"
           rows={6}
-          placeholder={en.import.pastePlaceholder}
+          placeholder={ui.import.pastePlaceholder}
           value={text}
           onInput={(event) => onText(event.currentTarget.value)}
         />
@@ -53,9 +53,9 @@ export function ImportSource({ text, onText }: Props) {
 
       <div class="source__file">
         <button type="button" class="button" onClick={() => fileInput.current?.click()}>
-          {en.import.file}
+          {ui.import.file}
         </button>
-        <span class="field__help">{en.import.fileHint}</span>
+        <span class="field__help">{ui.import.fileHint}</span>
         <input
           ref={fileInput}
           type="file"

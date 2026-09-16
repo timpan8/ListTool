@@ -1,11 +1,11 @@
 import { type Column, type Row } from '../../core/model';
 import { booleanOption, type Tool } from '../../core/registry';
 import { normalizeKey } from '../../core/normalize';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
 
-const strings = en.tools.append;
+const strings = ui.tools.append;
 
 const NORMALIZE = { trim: true, ignoreCase: true };
 
@@ -55,12 +55,12 @@ export const appendRowsTool: Tool = {
     if (second === undefined) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
-        warnings: [en.tools.shared.secondListMissing],
+        summary: ui.tools.nothingChanged,
+        warnings: [ui.tools.shared.secondListMissing],
       };
     }
     if (second.rows.length === 0) {
-      return { output: input, summary: en.tools.nothingChanged };
+      return { output: input, summary: ui.tools.nothingChanged };
     }
 
     const { map, added } = mapColumns(input, second, booleanOption(options, 'byName', true));

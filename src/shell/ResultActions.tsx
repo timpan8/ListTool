@@ -1,4 +1,4 @@
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 interface Props {
   /** False when the result cannot replace the list — it can only become a new one. */
@@ -12,21 +12,21 @@ export function ResultActions({ canReplace, onApply }: Props) {
     <>
       {canReplace ? null : (
         <p class="notice notice--warning" role="status">
-          {en.scope.notMergeable}
+          {ui.scope.notMergeable}
         </p>
       )}
       <div class="result__actions">
         <button type="button" class="button" onClick={() => onApply(true)}>
-          {en.panel.applyToNew}
+          {ui.panel.applyToNew}
         </button>
         {canReplace ? (
           <button
             type="button"
             class="button button--primary"
-            title={en.panel.applyHint}
+            title={ui.panel.applyHint}
             onClick={() => onApply(false)}
           >
-            {en.panel.apply}
+            {ui.panel.apply}
           </button>
         ) : null}
       </div>

@@ -1,7 +1,7 @@
 import type { Column } from '../core/model';
 import { defaultOptions, type OptionField, type Options, type Tool } from '../core/registry';
 import { withSettings, type Settings } from '../core/settings';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
 /** The names of the lists a form is about, so a column field can say which it means. */
@@ -20,7 +20,7 @@ export function labelFor(field: OptionField, names?: ListNames): string {
     return field.label;
   }
   const list = field.from === 'second' ? names.second : names.input;
-  return list === undefined ? field.label : format(en.options.forList, { label: field.label, list });
+  return list === undefined ? field.label : format(ui.options.forList, { label: field.label, list });
 }
 
 /** A tool's own defaults, with the user's settings applied by option key. */

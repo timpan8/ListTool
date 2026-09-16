@@ -1,11 +1,11 @@
 import { cell, type Column, type Row } from '../../core/model';
 import { booleanOption, defaultOptions, stringOption, type Tool } from '../../core/registry';
 import { defaultParser, parserById, parsers } from '../../parsers';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, targetColumn, withColumns } from '../helpers';
 
-const strings = en.tools.parseColumn;
+const strings = ui.tools.parseColumn;
 
 /**
  * The parser registry, offered inside a tool. "Read this column as recipients" is the
@@ -22,7 +22,7 @@ export const parseColumnTool: Tool = {
   keywords: ['parse', 'read', 'split', 'recipients', 'extract', 'expand', 'column', 'inside'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     {
       key: 'parserId',
       label: strings.parser,
@@ -35,7 +35,7 @@ export const parseColumnTool: Tool = {
   ],
   run(input, options) {
     const source = targetColumn(input, options);
-    if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (source === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const parser = parserById(stringOption(options, 'parserId', 'recipients')) ?? defaultParser;
 
@@ -49,7 +49,7 @@ export const parseColumnTool: Tool = {
 
     const shape = parsedRows.find((dataset) => dataset.rows.length > 0);
     if (shape === undefined) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.nothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.nothing] };
     }
 
     const prefix = stringOption(options, 'prefix', '');

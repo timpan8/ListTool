@@ -1,7 +1,7 @@
 import { cell, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import { booleanOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import {
   freeColumnId,
@@ -11,7 +11,7 @@ import {
   withColumns,
 } from '../helpers';
 
-const strings = en.tools.findDuplicates;
+const strings = ui.tools.findDuplicates;
 
 export const findDuplicatesTool: Tool = {
   id: 'find-duplicates',
@@ -23,7 +23,7 @@ export const findDuplicatesTool: Tool = {
   options: [
     {
       key: 'column',
-      label: en.tools.shared.keyColumn,
+      label: ui.tools.shared.keyColumn,
       type: 'column',
       default: '',
       allowAll: true,

@@ -1,12 +1,12 @@
 import { cell, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { freeColumnId, rowsPhrase, withColumns } from '../helpers';
 import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
-const strings = en.tools.markMembership;
+const strings = ui.tools.markMembership;
 
 export const markMembershipTool: Tool = {
   id: 'mark-membership',
@@ -26,8 +26,8 @@ export const markMembershipTool: Tool = {
     if (second === undefined) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
-        warnings: [en.tools.shared.secondListMissing],
+        summary: ui.tools.nothingChanged,
+        warnings: [ui.tools.shared.secondListMissing],
       };
     }
 

@@ -16,7 +16,7 @@ import {
   viewSort,
 } from '../core/store';
 import { visibleRows } from '../core/view';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { columnActions } from './columnActions';
 import { DataTable } from './DataTable';
@@ -54,14 +54,14 @@ export function DatasetView({ dataset, onReparse, onIntent }: Props) {
   return (
     <section class="view">
       <div class="view__bar">
-        <div class="segmented" role="group" aria-label={en.view.modeLabel}>
+        <div class="segmented" role="group" aria-label={ui.view.modeLabel}>
           <button
             type="button"
             class="segmented__button"
             aria-pressed={mode === 'raw'}
             onClick={() => setMode('raw')}
           >
-            {en.view.raw}
+            {ui.view.raw}
           </button>
           <button
             type="button"
@@ -69,28 +69,28 @@ export function DatasetView({ dataset, onReparse, onIntent }: Props) {
             aria-pressed={mode === 'table'}
             onClick={() => setMode('table')}
           >
-            {en.view.table}
+            {ui.view.table}
           </button>
         </div>
 
         {mode === 'table' ? (
           <label class="view__search">
-            <span class="visually-hidden">{en.view.searchLabel}</span>
+            <span class="visually-hidden">{ui.view.searchLabel}</span>
             <input
               type="search"
-              placeholder={en.view.search}
+              placeholder={ui.view.search}
               value={query}
               onInput={(event) => setViewQuery(event.currentTarget.value)}
             />
           </label>
         ) : (
           <button type="button" class="button" onClick={onReparse}>
-            {en.view.reparse}
+            {ui.view.reparse}
           </button>
         )}
 
         <p class="view__count">
-          {format(en.view.showing, { shown: rows.length, total: dataset.rows.length })}
+          {format(ui.view.showing, { shown: rows.length, total: dataset.rows.length })}
         </p>
       </div>
 
@@ -98,15 +98,15 @@ export function DatasetView({ dataset, onReparse, onIntent }: Props) {
 
       {mode === 'raw' ? (
         <div class="raw">
-          <h2 class="visually-hidden">{en.view.rawLabel}</h2>
+          <h2 class="visually-hidden">{ui.view.rawLabel}</h2>
           {dataset.rawInput === undefined ? (
-            <p class="field__help">{en.view.rawMissing}</p>
+            <p class="field__help">{ui.view.rawMissing}</p>
           ) : (
             <pre class="raw__text">{dataset.rawInput}</pre>
           )}
         </div>
       ) : rows.length === 0 ? (
-        <p class="view__empty">{format(en.view.noMatches, { query })}</p>
+        <p class="view__empty">{format(ui.view.noMatches, { query })}</p>
       ) : (
         <>
           <DataTable
@@ -126,11 +126,11 @@ export function DatasetView({ dataset, onReparse, onIntent }: Props) {
             columnMenu={menuFor}
             numeric={numericColumns(dataset)}
           />
-          <p class="field__help">{en.view.editHint}</p>
+          <p class="field__help">{ui.view.editHint}</p>
         </>
       )}
 
-      {query.trim() === '' ? null : <p class="field__help">{en.view.searchHint}</p>}
+      {query.trim() === '' ? null : <p class="field__help">{ui.view.searchHint}</p>}
     </section>
   );
 }

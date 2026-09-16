@@ -1,5 +1,5 @@
 import type { Dataset } from '../core/model';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
 interface Props {
@@ -20,16 +20,16 @@ export function ImportTarget({ openList, append, onAppend, showName, name, onNam
       {openList === null ? null : (
         <div class="field">
           <label class="field__label" for="import-target">
-            {en.import.target}
+            {ui.import.target}
           </label>
           <select
             id="import-target"
             value={append ? 'append' : 'new'}
             onChange={(event) => onAppend(event.currentTarget.value === 'append')}
           >
-            <option value="new">{en.import.targetNew}</option>
+            <option value="new">{ui.import.targetNew}</option>
             <option value="append">
-              {format(en.import.targetAppend, { name: openList.name })}
+              {format(ui.import.targetAppend, { name: openList.name })}
             </option>
           </select>
         </div>
@@ -38,7 +38,7 @@ export function ImportTarget({ openList, append, onAppend, showName, name, onNam
       {showName ? (
         <div class="field">
           <label class="field__label" for="import-name">
-            {en.import.nameLabel}
+            {ui.import.nameLabel}
           </label>
           <input
             id="import-name"

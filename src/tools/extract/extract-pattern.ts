@@ -1,41 +1,41 @@
 import { cell, type Column, type Row } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, safeRegExp, targetColumn, withColumns } from '../helpers';
 
-const strings = en.tools.extract;
+const strings = ui.tools.extract;
 
 const PRESETS: Record<string, { source: string; columnName: string; capture?: number }> = {
   email: {
     source: '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}',
-    columnName: en.columns.email,
+    columnName: ui.columns.email,
   },
   domain: {
     source: '[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})',
-    columnName: en.columns.domain,
+    columnName: ui.columns.domain,
     capture: 1,
   },
   url: {
     source: 'https?://[^\\s<>"\'\\]]+',
-    columnName: en.columns.url,
+    columnName: ui.columns.url,
   },
   ipv4: {
     source: '\\b(?:(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)\\b',
-    columnName: en.columns.ipv4,
+    columnName: ui.columns.ipv4,
   },
   ipv6: {
     // Hex groups joined by at least two colons, so a clock time is not an address.
     source: '(?:[0-9A-Fa-f]{1,4})?(?::(?:[0-9A-Fa-f]{1,4})?){2,7}',
-    columnName: en.columns.ipv6,
+    columnName: ui.columns.ipv6,
   },
   guid: {
     source: '\\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\\b',
-    columnName: en.columns.guid,
+    columnName: ui.columns.guid,
   },
   number: {
     source: '-?\\d+(?:[.,]\\d+)?',
-    columnName: en.columns.number,
+    columnName: ui.columns.number,
   },
 };
 
@@ -80,7 +80,7 @@ export const extractPatternTool: Tool = {
   keywords: ['extract', 'email', 'domain', 'regex', 'pattern', 'pull', 'find'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     {
       key: 'preset',
       label: strings.preset,
@@ -115,7 +115,7 @@ export const extractPatternTool: Tool = {
   ],
   run(input, options) {
     const source = targetColumn(input, options);
-    if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (source === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const presetId = stringOption(options, 'preset', 'email');
     const preset = PRESETS[presetId];
@@ -123,11 +123,11 @@ export const extractPatternTool: Tool = {
     const capture = preset?.capture ?? 0;
 
     if (patternSource === '') {
-      return { output: input, summary: en.tools.nothingChanged };
+      return { output: input, summary: ui.tools.nothingChanged };
     }
     const pattern = safeRegExp(patternSource, 'gu');
     if (pattern === null) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.badRegex] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.badRegex] };
     }
 
     const all = booleanOption(options, 'allMatches', false);
@@ -140,7 +140,7 @@ export const extractPatternTool: Tool = {
       const targets: Column[] = groupNames.map((name, index) => {
         const column: Column = {
           id: freeColumnId(taken, name ?? `match${index + 1}`),
-          name: name ?? format(en.columns.part, { name: en.columns.match, n: index + 1 }),
+          name: name ?? format(ui.columns.part, { name: ui.columns.match, n: index + 1 }),
         };
         taken = { ...taken, columns: [...taken.columns, column] };
         return column;
@@ -168,7 +168,7 @@ export const extractPatternTool: Tool = {
 
     const target: Column = {
       id: freeColumnId(input, preset === undefined ? 'match' : presetId),
-      name: preset?.columnName ?? en.columns.match,
+      name: preset?.columnName ?? ui.columns.match,
     };
 
     let found = 0;

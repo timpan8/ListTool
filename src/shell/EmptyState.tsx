@@ -1,4 +1,4 @@
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 interface Props {
   onImport: () => void;
@@ -8,17 +8,17 @@ interface Props {
 export function EmptyState({ onImport }: Props) {
   return (
     <section class="empty">
-      <h2 class="empty__title">{en.empty.title}</h2>
-      <p class="empty__body">{en.empty.body}</p>
+      <h2 class="empty__title">{ui.empty.title}</h2>
+      <p class="empty__body">{ui.empty.body}</p>
       <p class="empty__example">
-        <span class="field__label">{en.empty.exampleLabel}</span>
-        <code>{en.empty.example}</code>
-        <span>{en.empty.exampleResult}</span>
+        <span class="field__label">{ui.empty.exampleLabel}</span>
+        <code>{ui.empty.example}</code>
+        <span>{ui.empty.exampleResult}</span>
       </p>
       <button type="button" class="button button--primary" onClick={onImport}>
-        {en.empty.action}
+        {ui.empty.action}
       </button>
-      <p class="field__help">{en.empty.pasteHint}</p>
+      <p class="field__help">{ui.empty.pasteHint}</p>
     </section>
   );
 }

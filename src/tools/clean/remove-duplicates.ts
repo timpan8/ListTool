@@ -1,12 +1,12 @@
 import { cell, type Column, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { NORMALIZE_FIELDS, readNormalize, rowsPhrase, targetColumns, withRows } from '../helpers';
 import { parseNumber } from '../../core/number';
 
-const strings = en.tools.dedupe;
+const strings = ui.tools.dedupe;
 
 type Keep = 'first' | 'last' | 'fullest' | 'largest' | 'smallest';
 
@@ -49,7 +49,7 @@ export const removeDuplicatesTool: Tool = {
   options: [
     {
       key: 'column',
-      label: en.tools.shared.keyColumn,
+      label: ui.tools.shared.keyColumn,
       type: 'column',
       default: '',
       allowAll: true,
@@ -105,7 +105,7 @@ export const removeDuplicatesTool: Tool = {
       output: withRows(input, kept),
       summary:
         removed === 0
-          ? en.tools.nothingChanged
+          ? ui.tools.nothingChanged
           : format(strings.summary, {
               removed: plural(removed, strings.duplicates),
               before: rowsPhrase(input.rows.length),

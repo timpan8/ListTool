@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { buildCommands, searchCommands, type CommandHandlers } from './commands';
 import { Dialog } from './Dialog';
@@ -26,16 +26,16 @@ export function CommandPalette({ dataset, onClose, ...handlers }: Props) {
   }
 
   return (
-    <Dialog title={en.palette.title} onClose={onClose}>
+    <Dialog title={ui.palette.title} onClose={onClose}>
       <div class="field">
         <label class="visually-hidden" for="palette-query">
-          {en.palette.title}
+          {ui.palette.title}
         </label>
         <input
           id="palette-query"
           type="search"
           autofocus
-          placeholder={en.palette.placeholder}
+          placeholder={ui.palette.placeholder}
           value={query}
           onInput={(event) => {
             setQuery(event.currentTarget.value);
@@ -56,11 +56,11 @@ export function CommandPalette({ dataset, onClose, ...handlers }: Props) {
             }
           }}
         />
-        <p class="field__help">{en.palette.move}</p>
+        <p class="field__help">{ui.palette.move}</p>
       </div>
 
       {commands.length === 0 ? (
-        <p class="field__help">{format(en.palette.empty, { query })}</p>
+        <p class="field__help">{format(ui.palette.empty, { query })}</p>
       ) : (
         <ul class="palette__list">
           {commands.map((command, at) => (

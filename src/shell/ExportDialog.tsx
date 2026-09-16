@@ -5,7 +5,7 @@ import { sortOptionsOf } from '../core/settings';
 import { activeView, setNotice, settings, updateSettings } from '../core/store';
 import { copyScope, scopeRows, withVisible, type RowScope } from '../core/view';
 import { copyExporter, exporterById, exporters, isTableExporter } from '../exporters';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { Dialog } from './Dialog';
 import { OptionsPanel } from './OptionsPanel';
@@ -46,8 +46,8 @@ export function ExportDialog({ dataset, onClose }: Props) {
   const text = exporter.render(scoped, chosen);
   const previewLines = text.split('\n');
   const groups = [
-    { label: en.export.groups.table, members: exporters.filter(isTableExporter) },
-    { label: en.export.groups.other, members: exporters.filter((e) => !isTableExporter(e)) },
+    { label: ui.export.groups.table, members: exporters.filter(isTableExporter) },
+    { label: ui.export.groups.other, members: exporters.filter((e) => !isTableExporter(e)) },
   ];
 
   function chooseExporter(id: string): void {
@@ -77,12 +77,12 @@ export function ExportDialog({ dataset, onClose }: Props) {
   }
 
   return (
-    <Dialog title={en.export.title} onClose={onClose}>
+    <Dialog title={ui.export.title} onClose={onClose}>
       <RowScopeField id="export-rows" value={scope} counts={counts} onChange={setScope} />
 
       <div class="field">
         <label class="field__label" for="export-format">
-          {en.export.format}
+          {ui.export.format}
         </label>
         <select
           id="export-format"
@@ -110,12 +110,12 @@ export function ExportDialog({ dataset, onClose }: Props) {
       />
 
       <section class="preview">
-        <h3 class="preview__title">{en.export.preview}</h3>
+        <h3 class="preview__title">{ui.export.preview}</h3>
         {scoped.rows.length === 0 ? (
-          <p class="field__help">{en.export.empty}</p>
+          <p class="field__help">{ui.export.empty}</p>
         ) : (
           <>
-            <p class="field__help">{format(en.export.previewNote, { n: PREVIEW_LINES })}</p>
+            <p class="field__help">{format(ui.export.previewNote, { n: PREVIEW_LINES })}</p>
             <pre class="preview__text">{previewLines.slice(0, PREVIEW_LINES).join('\n')}</pre>
           </>
         )}
@@ -123,15 +123,15 @@ export function ExportDialog({ dataset, onClose }: Props) {
 
       <div class="dialog__actions">
         <button type="button" class="button" onClick={onClose}>
-          {en.export.close}
+          {ui.export.close}
         </button>
         {exporter.extension === undefined ? null : (
           <button type="button" class="button" onClick={download}>
-            {en.export.download}
+            {ui.export.download}
           </button>
         )}
         <button type="button" class="button button--primary" onClick={() => void copy()}>
-          {en.export.copy}
+          {ui.export.copy}
         </button>
       </div>
     </Dialog>

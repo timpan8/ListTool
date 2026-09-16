@@ -1,10 +1,10 @@
 import { booleanOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { cell } from '../../core/model';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.cleanInvisible;
+const strings = ui.tools.cleanInvisible;
 
 /**
  * Spaces that are not the space key: non-breaking, thin, ideographic and the rest of the
@@ -46,7 +46,7 @@ export const cleanInvisibleTool: Tool = {
   ],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
     { key: 'spaces', label: strings.spaces, type: 'boolean', default: true },
     { key: 'zeroWidth', label: strings.zeroWidth, type: 'boolean', default: true },
     { key: 'controls', label: strings.controls, type: 'boolean', default: true },
@@ -72,7 +72,7 @@ export const cleanInvisibleTool: Tool = {
     });
 
     if (changed === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.nothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.nothing] };
     }
 
     return {

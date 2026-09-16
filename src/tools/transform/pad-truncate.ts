@@ -1,9 +1,9 @@
 import { booleanOption, numberOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.padTruncate;
+const strings = ui.tools.padTruncate;
 
 /** Characters, not code units, so an emoji or an å counts as one. */
 const chars = (value: string): string[] => [...value];
@@ -16,7 +16,7 @@ export const padTruncateTool: Tool = {
   keywords: ['pad', 'truncate', 'cut', 'length', 'fixed', 'width', 'zero', 'leading'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
     {
       key: 'mode',
       label: strings.mode,
@@ -51,7 +51,7 @@ export const padTruncateTool: Tool = {
       return mode === 'padEnd' ? `${value}${padding}` : `${padding}${value}`;
     });
 
-    if (changed === 0) return { output: input, summary: en.tools.nothingChanged };
+    if (changed === 0) return { output: input, summary: ui.tools.nothingChanged };
 
     return {
       output: withRows(input, rows),

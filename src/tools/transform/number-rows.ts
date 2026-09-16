@@ -1,9 +1,9 @@
 import { booleanOption, numberOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { freeColumnId, rowsPhrase, targetColumn, withColumns } from '../helpers';
 
-const strings = en.tools.numberRows;
+const strings = ui.tools.numberRows;
 
 export const numberRowsTool: Tool = {
   id: 'number-rows',
@@ -13,7 +13,7 @@ export const numberRowsTool: Tool = {
   keywords: ['number', 'index', 'count', 'enumerate', 'position'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     { key: 'start', label: strings.start, type: 'number', default: 1 },
     { key: 'asColumn', label: strings.asColumn, type: 'boolean', default: true },
     { key: 'separator', label: strings.separator, type: 'text', default: '. ' },
@@ -37,7 +37,7 @@ export const numberRowsTool: Tool = {
       };
     }
 
-    if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (source === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const rows = input.rows.map((row, index) => ({
       id: row.id,

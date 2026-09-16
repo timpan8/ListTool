@@ -1,5 +1,5 @@
 import type { Dataset } from '../core/model';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format, plural } from '../i18n/format';
 import { DataTable } from './DataTable';
 
@@ -17,21 +17,21 @@ export function ImportPreview({ parserName, preview, hasText }: Props) {
     <>
       <p class="notice" role="status">
         {hasText
-          ? format(en.import.detected, {
+          ? format(ui.import.detected, {
               parser: parserName,
-              rows: plural(preview.rows.length, en.status.rows),
-              columns: plural(preview.columns.length, en.import.columns),
+              rows: plural(preview.rows.length, ui.status.rows),
+              columns: plural(preview.columns.length, ui.import.columns),
             })
-          : en.import.detectedNothing}
+          : ui.import.detectedNothing}
       </p>
 
       <section class="preview">
-        <h3 class="preview__title">{en.import.preview}</h3>
+        <h3 class="preview__title">{ui.import.preview}</h3>
         {preview.rows.length === 0 ? (
-          <p class="field__help">{en.import.previewEmpty}</p>
+          <p class="field__help">{ui.import.previewEmpty}</p>
         ) : (
           <>
-            <p class="field__help">{format(en.import.previewNote, { n: PREVIEW_ROWS })}</p>
+            <p class="field__help">{format(ui.import.previewNote, { n: PREVIEW_ROWS })}</p>
             <DataTable columns={preview.columns} rows={preview.rows.slice(0, PREVIEW_ROWS)} />
           </>
         )}

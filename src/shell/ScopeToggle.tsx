@@ -1,4 +1,4 @@
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { plural } from '../i18n/format';
 
 interface Props {
@@ -17,9 +17,9 @@ export function ScopeToggle({ ticked, on, onChange }: Props) {
           checked={on}
           onChange={(event) => onChange(event.currentTarget.checked)}
         />
-        {plural(ticked, en.scope.only)}
+        {plural(ticked, ui.scope.only)}
       </label>
-      <p class="field__help">{en.scope.help}</p>
+      <p class="field__help">{ui.scope.help}</p>
     </div>
   );
 }

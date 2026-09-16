@@ -1,5 +1,5 @@
 import type { Dataset } from '../core/model';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 interface Props {
   /** Every open list but the one being worked on. */
@@ -13,7 +13,7 @@ export function SecondListPicker({ others, selected, onChange }: Props) {
   return (
     <div class="field">
       <label class="field__label" for="tool-second">
-        {en.tools.shared.secondList}
+        {ui.tools.shared.secondList}
       </label>
       <select
         id="tool-second"
@@ -27,7 +27,7 @@ export function SecondListPicker({ others, selected, onChange }: Props) {
         ))}
       </select>
       {others.length === 0 ? (
-        <p class="field__help">{en.tools.shared.secondListMissing}</p>
+        <p class="field__help">{ui.tools.shared.secondListMissing}</p>
       ) : null}
     </div>
   );

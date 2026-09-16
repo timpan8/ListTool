@@ -2,7 +2,7 @@ import { cell, type Column, type Dataset } from '../core/model';
 import { booleanOption, stringOption, type Exporter } from '../core/registry';
 import { renderHtmlTable } from './html-table';
 import { chosenColumns } from './table-text';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 /** A pipe would end the cell, so it is escaped; a newline becomes a break. */
 function markdownCell(value: string): string {
@@ -25,21 +25,21 @@ function renderMarkdown(dataset: Dataset, columns: Column[], header: boolean): s
 
 export const markdownExporter: Exporter = {
   id: 'markdown',
-  name: en.exporters.markdown.name,
+  name: ui.exporters.markdown.name,
   extension: 'md',
   options: [
-    { key: 'columns', label: en.exporters.shared.columns, type: 'columns' },
+    { key: 'columns', label: ui.exporters.shared.columns, type: 'columns' },
     {
       key: 'flavour',
-      label: en.exporters.markdown.flavour,
+      label: ui.exporters.markdown.flavour,
       type: 'select',
       default: 'markdown',
       choices: [
-        { value: 'markdown', label: en.exporters.markdown.markdown },
-        { value: 'html', label: en.exporters.markdown.html },
+        { value: 'markdown', label: ui.exporters.markdown.markdown },
+        { value: 'html', label: ui.exporters.markdown.html },
       ],
     },
-    { key: 'header', label: en.exporters.markdown.header, type: 'boolean', default: true },
+    { key: 'header', label: ui.exporters.markdown.header, type: 'boolean', default: true },
   ],
   render(dataset, options) {
     const header = booleanOption(options, 'header', true);

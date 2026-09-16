@@ -11,11 +11,10 @@ when the page and its assets are downloaded.)
 ## Status
 
 All six milestones in `PLAN.md` are built, plus the M7 and M8 rounds of improvements it
-lists. M9, the quality overhaul, is in progress phase by phase.
+lists and the five phases of M9, the quality overhaul.
 See `SPEC.md` for what the app is meant to be and `CLAUDE.md` for the contracts the code
 follows. The items under SPEC §13 (Web Workers, table virtualization, PWA caching, XLSX
-export, a Swedish UI) are deliberately not built, and nothing in the UI pretends
-otherwise.
+export) are deliberately not built, and nothing in the UI pretends otherwise.
 
 What the app does:
 
@@ -76,6 +75,10 @@ What the app does:
   The full list is in Settings, not just in this file.
 - **Light and dark** following the operating system. Both palettes meet WCAG 2.2 AA, and
   `src/styles/tokens.test.ts` reads the real stylesheet to keep it that way.
+- **English or Swedish**, chosen in Settings. English is the default; the choice is
+  stored with the other settings and the page reloads in the new language. Every string
+  lives in `src/i18n/en.ts` and `src/i18n/sv.ts`, and a parity test keeps the two files
+  key for key and placeholder for placeholder the same.
 
 ## Requirements
 

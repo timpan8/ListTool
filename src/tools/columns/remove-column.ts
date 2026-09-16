@@ -1,10 +1,10 @@
 import { cell } from '../../core/model';
 import type { Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { targetColumn, withColumns } from '../helpers';
 
-const strings = en.tools.removeColumn;
+const strings = ui.tools.removeColumn;
 
 export const removeColumnTool: Tool = {
   id: 'remove-column',
@@ -13,14 +13,14 @@ export const removeColumnTool: Tool = {
   description: strings.description,
   keywords: ['remove', 'delete', 'drop', 'column'],
   arity: 'single',
-  options: [{ key: 'column', label: en.tools.shared.column, type: 'column' }],
+  options: [{ key: 'column', label: ui.tools.shared.column, type: 'column' }],
   appliesTo(input) {
     return input.columns.length >= 2;
   },
   run(input, options) {
     const target = targetColumn(input, options);
     if (target === undefined || input.columns.length < 2) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.lastColumn] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.lastColumn] };
     }
 
     const columns = input.columns.filter((column) => column.id !== target.id);

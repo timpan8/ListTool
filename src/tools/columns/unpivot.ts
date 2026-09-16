@@ -1,10 +1,10 @@
 import { cell, makeRow, type Column, type Row } from '../../core/model';
 import { booleanOption, stringOption, stringsOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, withColumns } from '../helpers';
 
-const strings = en.tools.unpivot;
+const strings = ui.tools.unpivot;
 
 export const unpivotTool: Tool = {
   id: 'unpivot',
@@ -28,7 +28,7 @@ export const unpivotTool: Tool = {
     const turn = input.columns.filter((column) => !keepIds.includes(column.id));
 
     if (turn.length === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.keepAll] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.keepAll] };
     }
 
     // A kept column may itself be called field or value; the new ones step aside.

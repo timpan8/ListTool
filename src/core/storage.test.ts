@@ -98,4 +98,16 @@ describe('storage', () => {
     vi.stubGlobal('localStorage', undefined);
     expect(() => clear()).not.toThrow();
   });
+
+  it('parses the same stored text once, and again as soon as it changes', () => {
+    save(state);
+    const first = load();
+    expect(load()).toBe(first);
+    save({ ...state, favorites: ['trim-whitespace'] });
+    const second = load();
+    expect(second).not.toBe(first);
+    expect(second.favorites).toEqual(['trim-whitespace']);
+    memory.setItem(STORAGE_KEY, JSON.stringify({ favorites: ['sort'] }));
+    expect(load().favorites).toEqual(['sort']);
+  });
 });

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 /** One entry of a column menu: something to do now, or a value to type first. */
 export type MenuItem =
@@ -132,7 +132,7 @@ export function ColumnMenu({ label, items }: Props) {
             onInput={(event) => setDraft(event.currentTarget.value)}
           />
           <button type="submit" class="button button--primary">
-            {en.menu.ok}
+            {ui.menu.ok}
           </button>
         </form>
       ) : (

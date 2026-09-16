@@ -1,15 +1,15 @@
 import { stringOption, type Exporter } from '../core/registry';
 import { columnValues } from './column';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 export const joinedLineExporter: Exporter = {
   id: 'joined-line',
-  name: en.exporters.joinedLine.name,
+  name: ui.exporters.joinedLine.name,
   options: [
-    { key: 'column', label: en.exporters.joinedLine.column, type: 'column' },
+    { key: 'column', label: ui.exporters.joinedLine.column, type: 'column' },
     {
       key: 'delimiter',
-      label: en.exporters.joinedLine.delimiter,
+      label: ui.exporters.joinedLine.delimiter,
       type: 'delimiter',
       default: ', ',
     },

@@ -1,9 +1,9 @@
 import { stringOption, stringsOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { rowsPhrase, withRows } from '../helpers';
 
-const strings = en.tools.selectedRows;
+const strings = ui.tools.selectedRows;
 
 export const selectedRowsTool: Tool = {
   id: 'selected-rows',
@@ -33,18 +33,18 @@ export const selectedRowsTool: Tool = {
   run(input, options) {
     const chosen = new Set(stringsOption(options, 'rows', []));
     if (chosen.size === 0) {
-      return { output: input, summary: en.tools.nothingChanged };
+      return { output: input, summary: ui.tools.nothingChanged };
     }
 
     const keep = stringOption(options, 'mode', 'keep') === 'keep';
     const rows = input.rows.filter((row) => chosen.has(row.id) === keep);
 
     if (rows.length === input.rows.length) {
-      return { output: input, summary: en.tools.nothingChanged };
+      return { output: input, summary: ui.tools.nothingChanged };
     }
     if (rows.length === 0) {
       // Emptying a list is never what a tick meant, so it is refused rather than done.
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.keepNothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.keepNothing] };
     }
 
     return {

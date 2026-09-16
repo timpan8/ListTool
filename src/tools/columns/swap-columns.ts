@@ -1,10 +1,10 @@
 import { cell } from '../../core/model';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { rowsPhrase, withRows } from '../helpers';
 
-const strings = en.tools.swap;
+const strings = ui.tools.swap;
 
 export const swapColumnsTool: Tool = {
   id: 'swap-columns',
@@ -28,7 +28,7 @@ export const swapColumnsTool: Tool = {
       columns[1];
 
     if (a === undefined || b === undefined || a.id === b.id) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.same] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.same] };
     }
 
     // The values move, the columns stay where they are: a swap, not a reorder.

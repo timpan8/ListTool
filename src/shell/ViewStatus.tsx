@@ -8,7 +8,7 @@ import {
   viewFilter,
   viewSort,
 } from '../core/store';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { makeSortPermanent } from './columnActions';
 import type { PanelIntent } from './panelIntent';
@@ -37,27 +37,27 @@ export function ViewStatus({ dataset, onIntent }: Props) {
         <p class="view__selection" role="status">
           {format(
             filter.mode === 'contains'
-              ? en.profile.filteringContains
+              ? ui.profile.filteringContains
               : filter.value === ''
-                ? en.profile.filteringBlank
-                : en.profile.filtering,
+                ? ui.profile.filteringBlank
+                : ui.profile.filtering,
             { column: filtered.name, value: filter.value },
           )}
           <button type="button" class="button button--quiet" onClick={() => setViewFilter(null)}>
-            {en.profile.clearFilter}
+            {ui.profile.clearFilter}
           </button>
-          <span class="field__help">{en.profile.filterHint}</span>
+          <span class="field__help">{ui.profile.filterHint}</span>
         </p>
       ) : null}
 
       {sort !== null && sortedOn !== undefined ? (
         <p class="view__selection" role="status">
-          {format(en.view.sortedBy, {
+          {format(ui.view.sortedBy, {
             column: sortedOn.name,
-            direction: sort.direction === 'desc' ? en.view.sortDesc : en.view.sortAsc,
+            direction: sort.direction === 'desc' ? ui.view.sortDesc : ui.view.sortAsc,
           })}
           <button type="button" class="button button--quiet" onClick={() => setViewSort(null)}>
-            {en.view.clearSort}
+            {ui.view.clearSort}
           </button>
           <button
             type="button"
@@ -67,9 +67,9 @@ export function ViewStatus({ dataset, onIntent }: Props) {
               if (makeSortPermanent(dataset, activeView.value, settings.value)) setViewSort(null);
             }}
           >
-            {en.view.makePermanent}
+            {ui.view.makePermanent}
           </button>
-          <span class="field__help">{en.view.sortHint}</span>
+          <span class="field__help">{ui.view.sortHint}</span>
         </p>
       ) : null}
 

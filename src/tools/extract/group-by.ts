@@ -1,12 +1,12 @@
 import { cell, makeRow, type Row } from '../../core/model';
 import { normalizeKey } from '../../core/normalize';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freshDataset, NORMALIZE_FIELDS, readNormalize, rowsPhrase, targetColumn } from '../helpers';
 import { parseNumber } from '../../core/number';
 
-const strings = en.tools.groupBy;
+const strings = ui.tools.groupBy;
 
 type How = 'count' | 'sum' | 'average' | 'min' | 'max' | 'join';
 
@@ -51,7 +51,7 @@ export const groupByTool: Tool = {
   ],
   run(input, options) {
     const groupColumn = targetColumn(input, options);
-    if (groupColumn === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (groupColumn === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const how = stringOption(options, 'how', 'count') as How;
     const valueColumn = targetColumn(input, options, 'valueColumn') ?? groupColumn;

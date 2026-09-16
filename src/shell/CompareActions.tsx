@@ -9,7 +9,7 @@ import { defaultOptions } from '../core/registry';
 import { addDataset, setNotice } from '../core/store';
 import { withVisible } from '../core/view';
 import { copyExporter } from '../exporters';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { rowIdsAfter } from '../tools/helpers';
 import { copyExported, copyNotice } from './copyOut';
@@ -39,7 +39,7 @@ export function CompareActions({ a, b, result, side, shown, onCreated }: Props) 
     const rows = [...picked.a, ...picked.b.map((row) => ({ id: nextId(), cells: row.cells }))];
     addDataset(
       { ...source, rows },
-      format(en.compare.newListName, { what: format(en.compare.creations[kind], names), ...names }),
+      format(ui.compare.newListName, { what: format(ui.compare.creations[kind], names), ...names }),
     );
     onCreated();
   }
@@ -53,15 +53,15 @@ export function CompareActions({ a, b, result, side, shown, onCreated }: Props) 
 
   return (
     <div class="compare__create">
-      <span class="field__label">{en.compare.create}</span>
+      <span class="field__label">{ui.compare.create}</span>
       {CREATIONS.map((kind) => (
         <button key={kind} type="button" class="button" onClick={() => create(kind)}>
-          {format(en.compare.creations[kind], names)}
+          {format(ui.compare.creations[kind], names)}
         </button>
       ))}
       <span class="toolbar__gap" />
       <button type="button" class="button" onClick={() => void copy()}>
-        {en.compare.copyShown}
+        {ui.compare.copyShown}
       </button>
     </div>
   );

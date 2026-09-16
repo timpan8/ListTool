@@ -1,7 +1,7 @@
 import type { CompareLabels, CompareOptions, CompareRow } from '../../core/compare';
 import type { Dataset } from '../../core/model';
 import { stringsOption, type OptionField, type Options } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { readNormalize } from '../helpers';
 
@@ -13,10 +13,10 @@ export { NORMALIZE_FIELDS, readNormalize } from '../helpers';
  * falls back to its first column, in the form and in the run alike.
  */
 export const KEY_FIELDS: OptionField[] = [
-  { key: 'keyA', label: en.tools.shared.matchOn, type: 'columns', default: ['email'] },
+  { key: 'keyA', label: ui.tools.shared.matchOn, type: 'columns', default: ['email'] },
   {
     key: 'keyB',
-    label: en.tools.shared.matchOn,
+    label: ui.tools.shared.matchOn,
     type: 'columns',
     from: 'second',
     default: ['email'],
@@ -44,12 +44,12 @@ export function readCompareOptions(options: Options, a: Dataset, b: Dataset): Co
 export function compareLabels(a: Dataset, b: Dataset): CompareLabels {
   const names = { a: a.name, b: b.name };
   return {
-    status: en.compare.statusColumn,
-    countA: format(en.compare.countIn, { list: a.name }),
-    countB: format(en.compare.countIn, { list: b.name }),
-    missing: en.compare.missing,
+    status: ui.compare.statusColumn,
+    countA: format(ui.compare.countIn, { list: a.name }),
+    countB: format(ui.compare.countIn, { list: b.name }),
+    missing: ui.compare.missing,
     statusText: (row: CompareRow) =>
-      format(en.compare.statuses[row.status], {
+      format(ui.compare.statuses[row.status], {
         ...names,
         countA: row.countA,
         countB: row.countB,

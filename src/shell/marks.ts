@@ -1,5 +1,5 @@
 import type { DatasetDiff } from '../core/diff';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 /**
  * What a table points at: cells, rows and columns to mark, and the word each mark
@@ -21,9 +21,9 @@ export function marksFromDiff(diff: DatasetDiff): Marks {
     rows: diff.addedRows,
     columns: diff.addedColumns,
     labels: {
-      cell: en.panel.changedCell,
-      row: en.panel.addedRow,
-      column: en.panel.addedColumn,
+      cell: ui.panel.changedCell,
+      row: ui.panel.addedRow,
+      column: ui.panel.addedColumn,
     },
   };
 }

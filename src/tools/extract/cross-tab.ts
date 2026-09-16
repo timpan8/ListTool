@@ -1,12 +1,12 @@
 import { cell, columnId, makeRow, type Column } from '../../core/model';
 import { normalizeKey, type NormalizeOptions } from '../../core/normalize';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freshDataset, NORMALIZE_FIELDS, readNormalize, targetColumn } from '../helpers';
 import { parseNumber } from '../../core/number';
 
-const strings = en.tools.crossTab;
+const strings = ui.tools.crossTab;
 
 /** How many columns a cross-tab may grow to before it stops being readable. */
 const MAX_COLUMNS = 40;
@@ -71,7 +71,7 @@ export const crossTabTool: Tool = {
     const down = targetColumn(input, options);
     const across = targetColumn(input, options, 'by') ?? down;
     if (down === undefined || across === undefined) {
-      return { output: input, summary: en.tools.nothingChanged };
+      return { output: input, summary: ui.tools.nothingChanged };
     }
 
     const summing = stringOption(options, 'how', 'count') === 'sum';
@@ -113,7 +113,7 @@ export const crossTabTool: Tool = {
       grid.set(downKey, line);
     });
 
-    const label = (value: string): string => (value === '' ? en.profile.blankValue : value);
+    const label = (value: string): string => (value === '' ? ui.profile.blankValue : value);
     const columns: Column[] = [
       { id: 'label', name: down.name },
       ...colAxis.keys.map((key, index) => ({

@@ -1,12 +1,12 @@
 import { compareDatasets, type CompareRow } from '../../core/compare';
 import { valuesDataset, type Dataset, type Row } from '../../core/model';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
 import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
-const strings = en.tools.setOperation;
+const strings = ui.tools.setOperation;
 
 type Mode = 'intersection' | 'union' | 'a-minus-b' | 'b-minus-a' | 'symmetric';
 
@@ -78,8 +78,8 @@ export const setOperationTool: Tool = {
     if (second === undefined) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
-        warnings: [en.tools.shared.secondListMissing],
+        summary: ui.tools.nothingChanged,
+        warnings: [ui.tools.shared.secondListMissing],
       };
     }
 
@@ -97,7 +97,7 @@ export const setOperationTool: Tool = {
       return {
         output: valuesDataset(
           picked.keys,
-          column?.name ?? en.columns.value,
+          column?.name ?? ui.columns.value,
           input.rawInput ?? '',
           input.parse ?? { parserId: 'lines', options: {} },
         ),

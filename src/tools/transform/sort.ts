@@ -3,11 +3,11 @@ import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { parseDate } from '../../core/dates';
 import { parseNumber } from '../../core/number';
 import { compareValues, DEFAULT_LOCALE, type SortOptions } from '../../core/sort';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { rowsPhrase, withRows } from '../helpers';
 
-const strings = en.tools.sort;
+const strings = ui.tools.sort;
 
 const DIRECTIONS = [
   { value: 'asc', label: strings.ascending },
@@ -53,7 +53,7 @@ export const sortTool: Tool = {
   keywords: ['sort', 'order', 'alphabetical', 'az', 'za', 'length', 'then', 'secondary'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     { key: 'direction', label: strings.direction, type: 'select', default: 'asc', choices: DIRECTIONS },
     { key: 'then', label: strings.then, type: 'column', allowNone: true, default: '' },
     {
@@ -107,7 +107,7 @@ export const sortTool: Tool = {
   run(input, options) {
     const keys = levels(input, options);
     if (keys.length === 0) {
-      return { output: input, summary: en.tools.nothingChanged };
+      return { output: input, summary: ui.tools.nothingChanged };
     }
 
     const byLength = stringOption(options, 'by', 'value') === 'length';

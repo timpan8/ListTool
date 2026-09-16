@@ -2,7 +2,7 @@ import type { CompareResult as Outcome, CompareStatus, SideBySide } from '../cor
 import type { Dataset, Row } from '../core/model';
 import { numericColumns } from '../core/profile';
 import type { ViewSort } from '../core/view';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format, plural } from '../i18n/format';
 import { DataTable } from './DataTable';
 import type { Marks } from './marks';
@@ -49,23 +49,23 @@ export function CompareResult({ a, b, result, side, rows, filter, onFilter, sort
     cells: side.changedCells,
     rows: NO_ROWS,
     columns: NO_ROWS,
-    labels: { cell: en.compare.differs, row: '', column: '' },
+    labels: { cell: ui.compare.differs, row: '', column: '' },
   };
 
   return (
     <>
       <p class="notice" role="status">
-        {format(en.compare.summary, {
+        {format(ui.compare.summary, {
           ...names,
           match: result.stats.match,
           differs: result.stats['count-differs'],
           onlyA: result.stats['only-a'],
           onlyB: result.stats['only-b'],
         })}
-        {differing > 0 ? ` · ${plural(differing, en.compare.differing)}` : ''}
+        {differing > 0 ? ` · ${plural(differing, ui.compare.differing)}` : ''}
       </p>
 
-      <div class="compare__chips" role="group" aria-label={en.compare.filterLabel}>
+      <div class="compare__chips" role="group" aria-label={ui.compare.filterLabel}>
         {FILTERS.map((option) => (
           <button
             key={option}
@@ -74,13 +74,13 @@ export function CompareResult({ a, b, result, side, rows, filter, onFilter, sort
             aria-pressed={filter === option}
             onClick={() => onFilter(option)}
           >
-            {format(en.compare.filters[option], names)}
+            {format(ui.compare.filters[option], names)}
           </button>
         ))}
       </div>
 
       {rows.length === 0 ? (
-        <p class="field__help">{en.compare.empty}</p>
+        <p class="field__help">{ui.compare.empty}</p>
       ) : (
         <DataTable
           columns={side.dataset.columns}

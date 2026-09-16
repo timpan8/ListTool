@@ -1,8 +1,8 @@
 import { draftDataset, makeRow, type Column } from '../core/model';
 import { stringOption, type Parser } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
-const strings = en.parsers.recipients;
+const strings = ui.parsers.recipients;
 
 /** Loose on purpose: it has to recognise addresses, not validate them. */
 const EMAIL = /[^\s<>,;"]+@[^\s<>,;"]+\.[^\s<>,;"]+/;
@@ -126,10 +126,10 @@ function looksLikeRecipient(entry: string): boolean {
 }
 
 const COLUMNS: Column[] = [
-  { id: 'first', name: en.columns.first },
-  { id: 'last', name: en.columns.last },
-  { id: 'email', name: en.columns.email },
-  { id: 'original', name: en.columns.original },
+  { id: 'first', name: ui.columns.first },
+  { id: 'last', name: ui.columns.last },
+  { id: 'email', name: ui.columns.email },
+  { id: 'original', name: ui.columns.original },
 ];
 
 export const recipientsParser: Parser = {

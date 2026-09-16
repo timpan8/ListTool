@@ -1,8 +1,8 @@
 import { valuesDataset } from '../core/model';
 import { booleanOption, type Parser } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
-const strings = en.parsers.emails;
+const strings = ui.parsers.emails;
 
 const EMAIL_ALL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
 
@@ -36,7 +36,7 @@ export const emailsInTextParser: Parser = {
     const found = findEmails(input).map((email) => (lowercase ? email.toLowerCase() : email));
     const values = dedupe ? [...new Set(found)] : found;
 
-    return valuesDataset(values, en.columns.email, input, {
+    return valuesDataset(values, ui.columns.email, input, {
       parserId: 'emails-in-text',
       options,
     });

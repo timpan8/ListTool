@@ -5,7 +5,7 @@ import { carryOptions, defaultOptions, type Options } from '../core/registry';
 import { withSettings } from '../core/settings';
 import { activeDataset, nextDatasetNumberForName, settings } from '../core/store';
 import { defaultParser, parserById, parsers } from '../parsers';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { Dialog } from './Dialog';
 import { ImportPreview } from './ImportPreview';
@@ -34,7 +34,7 @@ export function ImportDialog({ initialText, target, forceParserId, onClose }: Pr
     forceParserId === null ? (target?.parse?.options ?? {}) : {},
   );
   const [name, setName] = useState(
-    target?.name ?? format(en.tabs.untitled, { n: nextDatasetNumberForName() }),
+    target?.name ?? format(ui.tabs.untitled, { n: nextDatasetNumberForName() }),
   );
   // Where the parsed rows go: a new list, or the end of the one already open.
   const [append, setAppend] = useState(false);
@@ -83,12 +83,12 @@ export function ImportDialog({ initialText, target, forceParserId, onClose }: Pr
   }
 
   return (
-    <Dialog title={reparsing ? en.import.reparseTitle : en.import.title} onClose={onClose}>
+    <Dialog title={reparsing ? ui.import.reparseTitle : ui.import.title} onClose={onClose}>
       <ImportSource text={text} onText={setText} />
 
       <div class="field">
         <label class="field__label" for="import-parser">
-          {en.import.parser}
+          {ui.import.parser}
         </label>
         <select
           id="import-parser"
@@ -125,7 +125,7 @@ export function ImportDialog({ initialText, target, forceParserId, onClose }: Pr
 
       <div class="dialog__actions">
         <button type="button" class="button" onClick={onClose}>
-          {en.import.cancel}
+          {ui.import.cancel}
         </button>
         <button
           type="button"
@@ -133,7 +133,7 @@ export function ImportDialog({ initialText, target, forceParserId, onClose }: Pr
           disabled={!hasText}
           onClick={submit}
         >
-          {reparsing ? en.import.resubmit : append ? en.import.append : en.import.submit}
+          {reparsing ? ui.import.resubmit : append ? ui.import.append : ui.import.submit}
         </button>
       </div>
     </Dialog>

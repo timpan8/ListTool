@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import type { Dataset } from '../core/model';
 import type { History } from '../core/history';
 import type { Options, Tool } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { HistoryPanel } from './HistoryPanel';
 import type { PanelIntent } from './panelIntent';
 import { ProfilePanel } from './ProfilePanel';
@@ -52,16 +52,16 @@ export function SidePanel({ dataset, history, intent, onIntentHandled, onClose }
   }, [intent, onIntentHandled]);
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'tools', label: en.panel.tools },
-    { id: 'columns', label: en.profile.title },
-    { id: 'history', label: en.panel.history },
-    { id: 'recipes', label: en.recipes.title },
+    { id: 'tools', label: ui.panel.tools },
+    { id: 'columns', label: ui.profile.title },
+    { id: 'history', label: ui.panel.history },
+    { id: 'recipes', label: ui.recipes.title },
   ];
 
   return (
-    <aside class="side" aria-label={en.panel.tools}>
+    <aside class="side" aria-label={ui.panel.tools}>
       <div class="side__head">
-        <div class="segmented" role="group" aria-label={en.panel.tools}>
+        <div class="segmented" role="group" aria-label={ui.panel.tools}>
           {tabs.map((entry) => (
             <button
               key={entry.id}
@@ -75,7 +75,7 @@ export function SidePanel({ dataset, history, intent, onIntentHandled, onClose }
           ))}
         </div>
         <button type="button" class="button button--quiet" onClick={onClose}>
-          {en.panel.close}
+          {ui.panel.close}
         </button>
       </div>
 

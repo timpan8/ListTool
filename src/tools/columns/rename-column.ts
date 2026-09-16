@@ -1,9 +1,9 @@
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { targetColumn, withColumns } from '../helpers';
 
-const strings = en.tools.renameColumn;
+const strings = ui.tools.renameColumn;
 
 export const renameColumnTool: Tool = {
   id: 'rename-column',
@@ -13,14 +13,14 @@ export const renameColumnTool: Tool = {
   keywords: ['rename', 'column', 'header', 'title', 'name'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     { key: 'name', label: strings.newName, type: 'text', default: '' },
   ],
   run(input, options) {
     const target = targetColumn(input, options);
     const name = stringOption(options, 'name', '').trim();
     if (target === undefined || name === '') {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.needName] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.needName] };
     }
 
     // Only the name changes: the id is what recipes and tool options reference.

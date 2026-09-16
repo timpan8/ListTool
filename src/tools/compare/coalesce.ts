@@ -1,12 +1,12 @@
 import { cell, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import { booleanOption, stringsOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { rowIdsAfter, withRows } from '../helpers';
 import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
-const strings = en.tools.coalesce;
+const strings = ui.tools.coalesce;
 
 export const coalesceTool: Tool = {
   id: 'coalesce',
@@ -26,8 +26,8 @@ export const coalesceTool: Tool = {
     if (second === undefined) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
-        warnings: [en.tools.shared.secondListMissing],
+        summary: ui.tools.nothingChanged,
+        warnings: [ui.tools.shared.secondListMissing],
       };
     }
 
@@ -96,7 +96,7 @@ export const coalesceTool: Tool = {
     ];
 
     if (filled === 0 && missing.length === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.nothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.nothing] };
     }
 
     return {

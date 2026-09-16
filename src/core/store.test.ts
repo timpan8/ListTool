@@ -32,9 +32,12 @@ import {
   updateSettings,
   viewQuery,
   viewSort,
+  flushPersistence,
+  startPersistence,
 } from './store';
 import { cell, valuesDataset, VALUE_COLUMN } from './model';
 import type { Step } from './history';
+import { load, STORAGE_KEY } from './storage';
 
 const parseRef = { parserId: 'lines', options: {} };
 
@@ -294,6 +297,33 @@ describe('status messages', () => {
     vi.advanceTimersByTime(1000);
     expect(notice.value).toBe('');
     vi.useRealTimers();
+  });
+});
+
+describe('persistence', () => {
+  it('writes at once when flushed, rather than after the usual pause', () => {
+    const memory = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => memory.get(key) ?? null,
+      setItem: (key: string, value: string) => memory.set(key, value),
+      removeItem: (key: string) => memory.delete(key),
+    });
+    vi.useFakeTimers();
+    const stop = startPersistence(() => {});
+
+    updateSettings({ language: 'sv' });
+    expect(memory.has(STORAGE_KEY)).toBe(false);
+    flushPersistence();
+    expect(load().settings.language).toBe('sv');
+
+    // The pending write was cancelled by the flush: nothing else lands later.
+    memory.clear();
+    vi.advanceTimersByTime(1000);
+    expect(memory.has(STORAGE_KEY)).toBe(false);
+
+    stop();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 });
 

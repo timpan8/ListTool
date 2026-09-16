@@ -1,10 +1,10 @@
 import { cell, type Row } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { rowIdsAfter, rowsPhrase, targetColumn, withRows } from '../helpers';
 
-const strings = en.tools.splitIntoRows;
+const strings = ui.tools.splitIntoRows;
 
 /** "a@example.com; b@example.com": a delimiter with another address after it. */
 const DELIMITED_ADDRESSES = /([;,])\s*[^\s;,<>@]+@[^\s;,<>@]+/u;
@@ -20,8 +20,8 @@ export const splitIntoRowsTool: Tool = {
   keywords: ['split', 'explode', 'rows', 'unnest', 'expand', 'delimiter', 'one per line'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
-    { key: 'delimiter', label: en.parsers.delimited.delimiter, type: 'delimiter', default: ',' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
+    { key: 'delimiter', label: ui.parsers.delimited.delimiter, type: 'delimiter', default: ',' },
     { key: 'trim', label: strings.trim, type: 'boolean', default: true },
     { key: 'dropEmpty', label: strings.dropEmpty, type: 'boolean', default: true },
   ],
@@ -29,7 +29,7 @@ export const splitIntoRowsTool: Tool = {
     const source = targetColumn(input, options);
     const delimiter = stringOption(options, 'delimiter', ',');
     if (source === undefined || delimiter === '') {
-      return { output: input, summary: en.tools.nothingChanged };
+      return { output: input, summary: ui.tools.nothingChanged };
     }
 
     const trim = booleanOption(options, 'trim', true);
@@ -54,7 +54,7 @@ export const splitIntoRowsTool: Tool = {
     }
 
     if (rows.length === input.rows.length) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.nothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.nothing] };
     }
 
     return {

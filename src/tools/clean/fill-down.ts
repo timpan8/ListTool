@@ -1,10 +1,10 @@
 import { cell, type Row } from '../../core/model';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { cellsPhrase, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.fillDown;
+const strings = ui.tools.fillDown;
 
 export const fillDownTool: Tool = {
   id: 'fill-down',
@@ -14,7 +14,7 @@ export const fillDownTool: Tool = {
   keywords: ['fill', 'down', 'up', 'empty', 'blank', 'merged', 'cells', 'repeat', 'above'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
     {
       key: 'direction',
       label: strings.direction,
@@ -52,7 +52,7 @@ export const fillDownTool: Tool = {
     }
 
     if (changed === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.nothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.nothing] };
     }
 
     const rows: Row[] = input.rows.map((row) => {

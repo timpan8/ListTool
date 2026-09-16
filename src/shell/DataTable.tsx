@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import type { ColumnGroup } from '../core/compare';
 import type { Column, Row } from '../core/model';
 import type { ViewSort } from '../core/view';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import type { MenuItem } from './ColumnMenu';
 import { nextCell } from './gridKeys';
@@ -99,13 +99,13 @@ export function DataTable({
               <th class="table__tick">
                 <input
                   type="checkbox"
-                  aria-label={en.view.selectAll}
+                  aria-label={ui.view.selectAll}
                   checked={allTicked}
                   onChange={(event) => onTickAll?.(event.currentTarget.checked)}
                 />
               </th>
             ) : null}
-            {showRowNumbers === true ? <th class="table__number">{en.view.rowNumber}</th> : null}
+            {showRowNumbers === true ? <th class="table__number">{ui.view.rowNumber}</th> : null}
             {columns.map((column) => (
               <HeaderCell
                 key={column.id}
@@ -142,12 +142,12 @@ export function DataTable({
       </table>
       {rows.length > limit ? (
         <p class="table__more">
-          <span>{format(en.table.capped, { shown: shown.length, total: rows.length })}</span>
+          <span>{format(ui.table.capped, { shown: shown.length, total: rows.length })}</span>
           <button type="button" class="button button--quiet" onClick={() => setLimit(limit + cap)}>
-            {format(en.table.showMore, { n: Math.min(cap, rows.length - limit) })}
+            {format(ui.table.showMore, { n: Math.min(cap, rows.length - limit) })}
           </button>
           <button type="button" class="button button--quiet" onClick={() => setLimit(rows.length)}>
-            {format(en.table.showAll, { n: rows.length })}
+            {format(ui.table.showAll, { n: rows.length })}
           </button>
         </p>
       ) : null}

@@ -1,9 +1,9 @@
 import { stringsOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { withColumns } from '../helpers';
 
-const strings = en.tools.keepColumns;
+const strings = ui.tools.keepColumns;
 
 export const keepColumnsTool: Tool = {
   id: 'keep-columns',
@@ -22,10 +22,10 @@ export const keepColumnsTool: Tool = {
     const kept = ids.length === 0 ? input.columns : input.columns.filter((c) => ids.includes(c.id));
 
     if (kept.length === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.needOne] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.needOne] };
     }
     if (kept.length === input.columns.length) {
-      return { output: input, summary: en.tools.nothingChanged };
+      return { output: input, summary: ui.tools.nothingChanged };
     }
 
     // Dropping a column drops its values too, rather than leaving them orphaned.

@@ -1,6 +1,6 @@
 import { changedFirst, type DatasetDiff } from '../core/diff';
 import type { Dataset, Row } from '../core/model';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format, plural } from '../i18n/format';
 
 /** How much of the result the panel shows before you apply it. */
@@ -26,7 +26,7 @@ export function previewRows(output: Dataset, diff: DatasetDiff, expanded: boolea
   const limit = expanded ? PREVIEW_MAX : PREVIEW_ROWS;
   const rows = ordered.rows.length > limit ? ordered.rows.slice(0, limit) : ordered.rows;
   const n = rows.length;
-  const strings = en.panel;
+  const strings = ui.panel;
 
   let caption: string;
   if (ordered.changed > n) {

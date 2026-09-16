@@ -1,9 +1,9 @@
 import { detectDelimiter, splitLines } from '../core/detect';
 import { valuesDataset } from '../core/model';
 import { booleanOption, type Options, type Parser } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
-const strings = en.parsers.lines;
+const strings = ui.parsers.lines;
 
 function applyOptions(items: string[], options: Options): string[] {
   const trim = booleanOption(options, 'trim', true);
@@ -31,7 +31,7 @@ export const linesParser: Parser = {
   },
 
   parse(input, options) {
-    return valuesDataset(applyOptions(splitLines(input), options), en.columns.value, input, {
+    return valuesDataset(applyOptions(splitLines(input), options), ui.columns.value, input, {
       parserId: 'lines',
       options,
     });

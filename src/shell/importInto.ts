@@ -2,7 +2,7 @@ import { PARSE_STEP_ID } from '../core/history';
 import type { Dataset } from '../core/model';
 import type { Options, Parser } from '../core/registry';
 import { addDataset, applyStep } from '../core/store';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format, plural } from '../i18n/format';
 import { appendRowsTool } from '../tools/transform/append-rows';
 
@@ -26,9 +26,9 @@ export function importInto(preview: Dataset, parser: Parser, options: Options, t
       {
         toolId: PARSE_STEP_ID,
         options: { parserId: parser.id, ...options },
-        summary: format(en.steps.parse, {
+        summary: format(ui.steps.parse, {
           parser: parser.name,
-          rows: plural(preview.rows.length, en.status.rows),
+          rows: plural(preview.rows.length, ui.status.rows),
         }),
         at: Date.now(),
       },

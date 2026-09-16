@@ -2,10 +2,10 @@ import { parse as papaParse } from 'papaparse';
 import { columnId, draftDataset, makeRow, type Column } from '../core/model';
 import { booleanOption, stringOption, type Parser } from '../core/registry';
 import { detectDelimiter, nonEmptyLines } from '../core/detect';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
-const strings = en.parsers.csv;
+const strings = ui.parsers.csv;
 
 /** '' asks PapaParse to detect the delimiter itself. */
 const AUTO = '';
@@ -31,10 +31,10 @@ export const csvParser: Parser = {
       default: AUTO,
       choices: [
         { value: AUTO, label: strings.auto },
-        { value: ',', label: en.options.delimiters.comma },
-        { value: ';', label: en.options.delimiters.semicolon },
-        { value: '\t', label: en.options.delimiters.tab },
-        { value: '|', label: en.options.delimiters.pipe },
+        { value: ',', label: ui.options.delimiters.comma },
+        { value: ';', label: ui.options.delimiters.semicolon },
+        { value: '\t', label: ui.options.delimiters.tab },
+        { value: '|', label: ui.options.delimiters.pipe },
       ],
     },
     { key: 'header', label: strings.header, type: 'boolean', default: true },
@@ -67,7 +67,7 @@ export const csvParser: Parser = {
         name:
           fromHeader !== undefined && fromHeader !== ''
             ? fromHeader
-            : format(en.columns.numbered, { n: index + 1 }),
+            : format(ui.columns.numbered, { n: index + 1 }),
       };
     });
 

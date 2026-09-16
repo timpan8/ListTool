@@ -1,15 +1,15 @@
 import { cell } from '../core/model';
 import { booleanOption, type Exporter } from '../core/registry';
 import { columnValues } from './column';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 export const jsonExporter: Exporter = {
   id: 'json',
-  name: en.exporters.json.name,
+  name: ui.exporters.json.name,
   extension: 'json',
   options: [
-    { key: 'column', label: en.exporters.json.column, type: 'column' },
-    { key: 'asObjects', label: en.exporters.json.asObjects, type: 'boolean', default: false },
+    { key: 'column', label: ui.exporters.json.column, type: 'column' },
+    { key: 'asObjects', label: ui.exporters.json.asObjects, type: 'boolean', default: false },
   ],
   render(dataset, options) {
     if (booleanOption(options, 'asObjects', false)) {
