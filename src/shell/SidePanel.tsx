@@ -4,71 +4,71 @@ import type { History } from '../core/history';
 import type { Options, Tool } from '../core/registry';
 import { en } from '../i18n/en';
 import { HistoryPanel } from './HistoryPanel';
+import type { PanelIntent } from './panelIntent';
 import { ProfilePanel } from './ProfilePanel';
 import { ResultPanel } from './ResultPanel';
 import { RecipesPanel } from './RecipesPanel';
 import { ToolPicker } from './ToolPicker';
 
+type Tab = 'tools' | 'columns' | 'history' | 'recipes';
+
 interface Props {
   dataset: Dataset;
   history: History;
-  /** A tool chosen in the command palette, to open straight into. */
-  pendingTool: Tool | null;
-  onPendingHandled: () => void;
+  /** Something asked the panel to open on a tool, a column's tools or a column's values. */
+  intent: PanelIntent | null;
+  onIntentHandled: () => void;
   onClose: () => void;
 }
 
-/** The collapsible right-hand panel: tools on one tab, this list's history on the other. */
-export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onClose }: Props) {
-  const [tab, setTab] = useState<'tools' | 'columns' | 'history' | 'recipes'>('tools');
+/** The collapsible right-hand panel: tools, this list's columns, its history, recipes. */
+export function SidePanel({ dataset, history, intent, onIntentHandled, onClose }: Props) {
+  const [tab, setTab] = useState<Tab>('tools');
   const [tool, setTool] = useState<Tool | null>(null);
-  // Options a finding handed over, so the tool opens on what was found.
+  // Options a finding or a menu handed over, so the tool opens on what was meant.
   const [opening, setOpening] = useState<Options | undefined>(undefined);
+  // A column the picker is narrowed to, or the profile is scrolled to.
+  const [columnId, setColumnId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (pendingTool === null) return;
-    setTab('tools');
-    setTool(pendingTool);
-    setOpening(undefined);
-    onPendingHandled();
-  }, [pendingTool, onPendingHandled]);
+    if (intent === null) return;
+    if (intent.kind === 'tool') {
+      setTab('tools');
+      setTool(intent.tool);
+      setOpening(intent.options);
+    } else if (intent.kind === 'column-tools') {
+      setTab('tools');
+      setTool(null);
+      setColumnId(intent.columnId);
+    } else {
+      setTab('columns');
+      setColumnId(intent.columnId);
+    }
+    onIntentHandled();
+  }, [intent, onIntentHandled]);
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'tools', label: en.panel.tools },
+    { id: 'columns', label: en.profile.title },
+    { id: 'history', label: en.panel.history },
+    { id: 'recipes', label: en.recipes.title },
+  ];
 
   return (
     <aside class="side" aria-label={en.panel.tools}>
       <div class="side__head">
         <div class="segmented" role="group" aria-label={en.panel.tools}>
-          <button
-            type="button"
-            class="segmented__button"
-            aria-pressed={tab === 'tools'}
-            onClick={() => setTab('tools')}
-          >
-            {en.panel.tools}
-          </button>
-          <button
-            type="button"
-            class="segmented__button"
-            aria-pressed={tab === 'columns'}
-            onClick={() => setTab('columns')}
-          >
-            {en.profile.title}
-          </button>
-          <button
-            type="button"
-            class="segmented__button"
-            aria-pressed={tab === 'history'}
-            onClick={() => setTab('history')}
-          >
-            {en.panel.history}
-          </button>
-          <button
-            type="button"
-            class="segmented__button"
-            aria-pressed={tab === 'recipes'}
-            onClick={() => setTab('recipes')}
-          >
-            {en.recipes.title}
-          </button>
+          {tabs.map((entry) => (
+            <button
+              key={entry.id}
+              type="button"
+              class="segmented__button"
+              aria-pressed={tab === entry.id}
+              onClick={() => setTab(entry.id)}
+            >
+              {entry.label}
+            </button>
+          ))}
         </div>
         <button type="button" class="button button--quiet" onClick={onClose}>
           {en.panel.close}
@@ -79,12 +79,17 @@ export function SidePanel({ dataset, history, pendingTool, onPendingHandled, onC
         {tab === 'recipes' ? (
           <RecipesPanel dataset={dataset} history={history} />
         ) : tab === 'columns' ? (
-          <ProfilePanel dataset={dataset} />
+          <ProfilePanel
+            dataset={dataset}
+            {...(columnId === undefined ? {} : { focusColumn: columnId })}
+          />
         ) : tab === 'history' ? (
           <HistoryPanel history={history} />
         ) : tool === null ? (
           <ToolPicker
             dataset={dataset}
+            {...(columnId === undefined ? {} : { columnId })}
+            onAllTools={() => setColumnId(undefined)}
             onPick={(picked, options) => {
               setTool(picked);
               setOpening(options);

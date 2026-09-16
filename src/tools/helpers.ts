@@ -30,7 +30,11 @@ export interface CellChange {
   changed: number;
 }
 
-/** Apply a per-cell transform to the given columns, counting real changes only. */
+/**
+ * Apply a per-cell transform to the given columns, counting real changes only. A row
+ * with no changed cell is handed back as the same object, so snapshots share what did
+ * not change and a diff has nothing to look at there.
+ */
 export function mapCells(
   dataset: Dataset,
   columns: Column[],
@@ -41,17 +45,37 @@ export function mapCells(
 
   const rows = dataset.rows.map((row) => {
     const cells: Record<string, string> = { ...row.cells };
+    let touched = false;
     for (const column of dataset.columns) {
       if (!ids.has(column.id)) continue;
       const before = cell(row, column.id);
       const after = transform(before, column, row);
-      if (after !== before) changed += 1;
+      if (after === before) continue;
+      changed += 1;
+      touched = true;
       cells[column.id] = after;
     }
-    return { id: row.id, cells };
+    return touched ? { id: row.id, cells } : row;
   });
 
   return { rows, changed };
+}
+
+/**
+ * Fresh row ids for rows a tool creates: each call gives the next id past the highest
+ * one the list already uses. Ids are never re-derived from positions — after a removal
+ * the positions have gaps, and `r3` may well still be someone.
+ */
+export function rowIdsAfter(dataset: { rows: Row[] }): () => string {
+  let highest = 0;
+  for (const row of dataset.rows) {
+    const match = /^r(\d+)$/.exec(row.id);
+    if (match !== null) highest = Math.max(highest, Number(match[1]));
+  }
+  return () => {
+    highest += 1;
+    return `r${highest}`;
+  };
 }
 
 /** Same dataset, different rows. rawInput and the parse options survive. */

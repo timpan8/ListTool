@@ -1,9 +1,9 @@
 import { compareDatasets, type CompareRow } from '../../core/compare';
-import { makeRow, valuesDataset, type Dataset, type Row } from '../../core/model';
+import { valuesDataset, type Dataset, type Row } from '../../core/model';
 import { booleanOption, stringOption, stringsOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
-import { rowsPhrase, withColumns } from '../helpers';
+import { rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
 
 const strings = en.tools.setOperation;
 
@@ -127,9 +127,12 @@ export const setOperationTool: Tool = {
     }
 
     // Same shape on both sides, so A's columns describe every row.
-    const rows = [...picked.fromA, ...picked.fromB].map((row, index) =>
-      makeRow(index, row.cells),
-    );
+    // A's rows are still themselves; B's arrive with ids past A's, so none repeats.
+    const nextId = rowIdsAfter(input);
+    const rows = [
+      ...picked.fromA,
+      ...picked.fromB.map((row) => ({ id: nextId(), cells: row.cells })),
+    ];
 
     return {
       output: withColumns(input, input.columns, rows),

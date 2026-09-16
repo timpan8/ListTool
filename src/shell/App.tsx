@@ -13,13 +13,13 @@ import {
   startPersistence,
   undo,
 } from '../core/store';
-import type { Tool } from '../core/registry';
 import { htmlTableParser } from '../parsers/html-table';
 import { en } from '../i18n/en';
 import { CommandPalette } from './CommandPalette';
 import { ExportDialog } from './ExportDialog';
 import { ImportDialog } from './ImportDialog';
 import { Layout } from './Layout';
+import type { PanelIntent } from './panelIntent';
 import { Settings } from './Settings';
 import { htmlFromPaste } from './clipboard';
 import { copyView } from './copyOut';
@@ -52,8 +52,16 @@ export function App() {
   const [dialog, setDialog] = useState<DialogState>({ kind: 'none' });
   const [panelOpen, setPanelOpen] = useState(false);
   const [comparing, setComparing] = useState(false);
-  const [pendingTool, setPendingTool] = useState<Tool | null>(null);
+  const [intent, setIntent] = useState<PanelIntent | null>(null);
   const dataset = activeDataset.value;
+
+  // Anything that wants the side panel open on something — the palette, a column menu,
+  // the ticked rows — says what, and the panel takes it from there.
+  function openPanelOn(next: PanelIntent): void {
+    setComparing(false);
+    setPanelOpen(true);
+    setIntent(next);
+  }
   const id = activeId.value;
   const open = dialog.kind !== 'none';
 
@@ -128,8 +136,9 @@ export function App() {
         history={activeHistory.value}
         panelOpen={panelOpen}
         comparing={comparing}
-        pendingTool={pendingTool}
-        onPendingHandled={() => setPendingTool(null)}
+        intent={intent}
+        onIntent={openPanelOn}
+        onIntentHandled={() => setIntent(null)}
         onTools={() => setPanelOpen(true)}
         onClosePanel={() => setPanelOpen(false)}
         onCompare={() => setComparing(true)}
@@ -167,11 +176,7 @@ export function App() {
         <CommandPalette
           dataset={dataset}
           onClose={() => setDialog({ kind: 'none' })}
-          pickTool={(tool) => {
-            setComparing(false);
-            setPanelOpen(true);
-            setPendingTool(tool);
-          }}
+          pickTool={(tool) => openPanelOn({ kind: 'tool', tool })}
           reparse={(parserId) =>
             setDialog({
               kind: 'import',

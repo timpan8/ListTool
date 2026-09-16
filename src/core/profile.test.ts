@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { profileColumns, TOP_VALUES } from './profile';
+import { columnProfiles, numericColumns, profileColumns, TOP_VALUES } from './profile';
+import { VALUE_COLUMN } from './model';
 import { listOf, tableOf } from '../test/fixtures';
 
 describe('profileColumns', () => {
@@ -68,5 +69,43 @@ describe('profileColumns', () => {
     const before = JSON.stringify(dataset);
     profileColumns(dataset);
     expect(JSON.stringify(dataset)).toBe(before);
+  });
+});
+
+describe('numericColumns', () => {
+  it('finds the columns that read as numbers, in every shape people write them', () => {
+    const dataset = tableOf(
+      ['name', 'amount', 'postcode', 'phone'],
+      [
+        { name: 'Anna', amount: '1 234,50', postcode: '412 50', phone: '070-123 45 67' },
+        { name: 'Bo', amount: '-12', postcode: '11122', phone: '08-123 456' },
+        { name: 'Carl', amount: '99 kr', postcode: '', phone: '' },
+      ],
+    );
+    expect([...numericColumns(dataset)].sort()).toEqual(['amount', 'postcode']);
+  });
+
+  it('forgives a stray non-number, but not a column that is mostly text', () => {
+    const mostly = listOf('1', '2', '3', '4', 'n/a');
+    expect(numericColumns(mostly).has(VALUE_COLUMN)).toBe(true);
+    const mixed = listOf('1', '2', 'three', 'four');
+    expect(numericColumns(mixed).has(VALUE_COLUMN)).toBe(false);
+  });
+
+  it('never calls an empty column numeric', () => {
+    expect(numericColumns(listOf('', '')).size).toBe(0);
+  });
+
+  it('answers the same set for the same dataset object', () => {
+    const dataset = listOf('1', '2');
+    expect(numericColumns(dataset)).toBe(numericColumns(dataset));
+  });
+});
+
+describe('columnProfiles', () => {
+  it('is the profile with the usual top values, remembered per dataset', () => {
+    const dataset = listOf('a', 'a', 'b');
+    expect(columnProfiles(dataset)).toBe(columnProfiles(dataset));
+    expect(columnProfiles(dataset)[0]?.top[0]).toEqual({ value: 'a', count: 2 });
   });
 });

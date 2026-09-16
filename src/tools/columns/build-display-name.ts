@@ -1,4 +1,4 @@
-import { cell, makeRow } from '../../core/model';
+import { cell } from '../../core/model';
 import { stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
@@ -40,7 +40,7 @@ export const buildDisplayNameTool: Tool = {
 
     const target = { id: freeColumnId(input, 'display'), name: strings.columnName };
 
-    const rows = input.rows.map((row, index) => {
+    const rows = input.rows.map((row) => {
       const first = cell(row, firstId);
       const last = cell(row, lastId);
       const parts =
@@ -52,7 +52,7 @@ export const buildDisplayNameTool: Tool = {
           ? [last, first].filter((part) => part !== '').join(', ')
           : parts.filter((part) => part !== '').join(separator);
 
-      return makeRow(index, { ...row.cells, [target.id]: value });
+      return { id: row.id, cells: { ...row.cells, [target.id]: value } };
     });
 
     return {

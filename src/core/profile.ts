@@ -1,5 +1,7 @@
+import { memoByDataset } from './memo';
 import { cell, type Column, type Dataset } from './model';
 import { normalizeKey, type NormalizeOptions } from './normalize';
+import { parseNumber } from './number';
 
 export interface ValueCount {
   value: string;
@@ -64,3 +66,30 @@ export function profileColumns(dataset: Dataset, limit = TOP_VALUES): ColumnProf
     };
   });
 }
+
+/** The profile with the usual number of top values, computed once per dataset. */
+export const columnProfiles = memoByDataset((dataset) => profileColumns(dataset));
+
+/** How much of a column must read as numbers before the table treats it as numbers. */
+export const NUMERIC_SHARE = 0.8;
+
+/**
+ * The columns that hold numbers, so the table can right-align them the way a spreadsheet
+ * does. A column counts when at least NUMERIC_SHARE of its filled cells parse — a stray
+ * "n/a" does not turn a column of amounts back into text. Once per dataset.
+ */
+export const numericColumns = memoByDataset((dataset): ReadonlySet<string> => {
+  const numeric = new Set<string>();
+  for (const column of dataset.columns) {
+    let filled = 0;
+    let parsed = 0;
+    for (const row of dataset.rows) {
+      const value = cell(row, column.id);
+      if (value.trim() === '') continue;
+      filled += 1;
+      if (parseNumber(value) !== null) parsed += 1;
+    }
+    if (filled > 0 && parsed / filled >= NUMERIC_SHARE) numeric.add(column.id);
+  }
+  return numeric;
+});

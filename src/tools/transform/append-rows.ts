@@ -1,9 +1,9 @@
-import { makeRow, type Column, type Row } from '../../core/model';
+import { type Column, type Row } from '../../core/model';
 import { booleanOption, type Tool } from '../../core/registry';
 import { normalizeKey } from '../../core/normalize';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { freeColumnId, rowsPhrase, withColumns } from '../helpers';
+import { freeColumnId, rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
 
 const strings = en.tools.append;
 
@@ -66,12 +66,15 @@ export const appendRowsTool: Tool = {
     const { map, added } = mapColumns(input, second, booleanOption(options, 'byName', true));
     const columns = [...input.columns, ...added];
 
+    // Arriving rows get ids past the highest one here, so none repeats — even after
+    // removals have left gaps in the numbering.
+    const nextId = rowIdsAfter(input);
     const rows: Row[] = [
       ...input.rows,
-      ...second.rows.map((row, index) => {
+      ...second.rows.map((row) => {
         const cells: Record<string, string> = {};
         for (const [from, to] of map) cells[to] = row.cells[from] ?? '';
-        return makeRow(input.rows.length + index, cells);
+        return { id: nextId(), cells };
       }),
     ];
 

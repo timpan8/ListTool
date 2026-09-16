@@ -153,3 +153,53 @@ describe('tool registry', () => {
     expect(hidden).toEqual([]);
   });
 });
+
+describe('row identity', () => {
+  // A list that has lost a row: the positions have gaps, and r2 is nobody.
+  const full = tableOf(
+    ['first', 'email'],
+    [
+      { first: 'Anna', email: 'anna@example.com' },
+      { first: 'Bo', email: 'bo@example.com' },
+      { first: 'Carl', email: 'carl@example.com' },
+    ],
+  );
+  const gapped = { ...full, rows: full.rows.filter((row) => row.id !== 'r2') };
+  const second = tableOf(
+    ['first', 'email'],
+    [
+      { first: 'Dora', email: 'dora@example.com' },
+      { first: 'Anna', email: 'anna@example.com' },
+    ],
+  );
+
+  it('never produces two rows with the same id, for every tool, on a list with gaps', () => {
+    for (const tool of tools) {
+      const result = tool.run(gapped, defaultOptions(tool.options), second);
+      const lists = [result.output, ...(result.extraLists ?? []).map((extra) => extra.dataset)];
+      for (const list of lists) {
+        const ids = list.rows.map((row) => row.id);
+        expect(new Set(ids).size, tool.id).toBe(ids.length);
+      }
+    }
+  });
+
+  it('keeps the id of a row that survives, for every tool that keeps the columns', () => {
+    for (const tool of tools) {
+      const result = tool.run(gapped, defaultOptions(tool.options), second);
+      const output = result.output;
+      const keepsColumns = gapped.columns.every((column) =>
+        output.columns.some((candidate) => candidate.id === column.id),
+      );
+      if (!keepsColumns) continue;
+      // A surviving row is one whose original cells are all still there, unchanged.
+      for (const row of gapped.rows) {
+        const survivor = output.rows.find((candidate) =>
+          gapped.columns.every((column) => candidate.cells[column.id] === row.cells[column.id]),
+        );
+        if (survivor === undefined) continue;
+        expect(output.rows.some((candidate) => candidate.id === row.id), `${tool.id} ${row.id}`).toBe(true);
+      }
+    }
+  });
+});

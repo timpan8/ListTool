@@ -23,6 +23,12 @@ const ZERO_WIDTH =
 /** C0 and C1 control codes, but never tab, carriage return or newline. */
 const CONTROLS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/g;
 
+// The same characters as non-global tests: a global regex carries lastIndex between
+// calls, and a check runs over every cell of a list.
+const ANY_ODD_SPACE = new RegExp(ODD_SPACES.source, 'u');
+const ANY_ZERO_WIDTH = new RegExp(ZERO_WIDTH.source, 'u');
+const ANY_CONTROL = new RegExp(CONTROLS.source, 'u');
+
 export const cleanInvisibleTool: Tool = {
   id: 'clean-invisible',
   name: strings.name,
@@ -82,12 +88,7 @@ export const cleanInvisibleTool: Tool = {
         count +
         input.columns.filter((column) => {
           const value = cell(row, column.id);
-          // Fresh copies: these are global regexes, and lastIndex would carry over.
-          return (
-            new RegExp(ODD_SPACES.source).test(value) ||
-            new RegExp(ZERO_WIDTH.source).test(value) ||
-            new RegExp(CONTROLS.source).test(value)
-          );
+          return ANY_ODD_SPACE.test(value) || ANY_ZERO_WIDTH.test(value) || ANY_CONTROL.test(value);
         }).length,
       0,
     );

@@ -93,6 +93,17 @@ export interface Finding {
   options?: Options;
 }
 
+/**
+ * A one-click way to run a tool: a label and the options it stands for. The shell shows
+ * presets wherever it offers the tool without its form — next to the ticked rows, say —
+ * so "Remove these" is one click while the tool itself stays one tool with one form.
+ */
+export interface ToolPreset {
+  id: string;
+  label: string;
+  options: Options;
+}
+
 export interface Tool {
   /** kebab-case, never renamed: recipes reference it. */
   id: string;
@@ -103,6 +114,8 @@ export interface Tool {
   arity: 'single' | 'dual';
   /** The options panel is GENERATED from this — never hand-built. */
   options: OptionField[];
+  /** One-click ways to run the tool with its options already decided. */
+  presets?: ToolPreset[];
   appliesTo?(input: Dataset, second?: Dataset): boolean;
   run(input: Dataset, options: Options, second?: Dataset): ToolResult;
   /**

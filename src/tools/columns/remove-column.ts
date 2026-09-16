@@ -1,4 +1,3 @@
-import { makeRow } from '../../core/model';
 import type { Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
@@ -24,10 +23,10 @@ export const removeColumnTool: Tool = {
     }
 
     const columns = input.columns.filter((column) => column.id !== target.id);
-    const rows = input.rows.map((row, index) => {
+    const rows = input.rows.map((row) => {
       const cells = { ...row.cells };
       delete cells[target.id];
-      return makeRow(index, cells);
+      return { id: row.id, cells };
     });
 
     return {

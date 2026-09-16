@@ -25,6 +25,11 @@ export const selectedRowsTool: Tool = {
       ],
     },
   ],
+  // Both answers are one click from the ticked rows themselves.
+  presets: [
+    { id: 'keep', label: strings.keep, options: { mode: 'keep' } },
+    { id: 'remove', label: strings.remove, options: { mode: 'remove' } },
+  ],
   run(input, options) {
     const chosen = new Set(stringsOption(options, 'rows', []));
     if (chosen.size === 0) {

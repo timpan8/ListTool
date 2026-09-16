@@ -263,6 +263,18 @@ export function setViewSort(sort: ViewSort | null): void {
   viewSortSignal.value = sort;
 }
 
+/** A header click: ascending, then descending, then the list's own order again. */
+export function toggleViewSort(columnId: string): void {
+  const current = viewSortSignal.value;
+  if (current === null || current.columnId !== columnId) {
+    viewSortSignal.value = { columnId, direction: 'asc' };
+  } else if (current.direction === 'asc') {
+    viewSortSignal.value = { columnId, direction: 'desc' };
+  } else {
+    viewSortSignal.value = null;
+  }
+}
+
 /** How long a status message stays before the status bar goes quiet again. */
 const NOTICE_MS = 4000;
 let noticeTimer: ReturnType<typeof setTimeout> | undefined;

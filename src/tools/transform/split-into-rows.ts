@@ -1,8 +1,8 @@
-import { cell, makeRow, type Row } from '../../core/model';
+import { cell, type Row } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
-import { rowsPhrase, targetColumn, withRows } from '../helpers';
+import { rowIdsAfter, rowsPhrase, targetColumn, withRows } from '../helpers';
 
 const strings = en.tools.splitIntoRows;
 
@@ -30,6 +30,7 @@ export const splitIntoRowsTool: Tool = {
     const dropEmpty = booleanOption(options, 'dropEmpty', true);
 
     const rows: Row[] = [];
+    const nextId = rowIdsAfter(input);
     for (const row of input.rows) {
       const parts = cell(row, source.id)
         .split(delimiter)
@@ -39,10 +40,11 @@ export const splitIntoRowsTool: Tool = {
       // A row whose cell held nothing usable still exists — dropping it would be a
       // second, silent edit. It keeps one row with an empty cell.
       const values = parts.length === 0 ? [''] : parts;
-      for (const value of values) {
-        // Every other column is repeated, which is what makes the new rows readable.
-        rows.push(makeRow(rows.length, { ...row.cells, [source.id]: value }));
-      }
+      values.forEach((value, at) => {
+        // Every other column is repeated, which is what makes the new rows readable. The
+        // first part is still this row; the rest are new rows.
+        rows.push({ id: at === 0 ? row.id : nextId(), cells: { ...row.cells, [source.id]: value } });
+      });
     }
 
     if (rows.length === input.rows.length) {

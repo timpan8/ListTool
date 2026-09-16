@@ -1,15 +1,22 @@
-import { cellKey, type DatasetDiff } from '../core/diff';
-import { cell, type Column, type Row } from '../core/model';
+import { useState } from 'preact/hooks';
+import type { Column, Row } from '../core/model';
+import type { ViewSort } from '../core/view';
 import { en } from '../i18n/en';
 import { format } from '../i18n/format';
-import { TableCell } from './TableCell';
+import type { MenuItem } from './ColumnMenu';
+import { nextCell } from './gridKeys';
+import { HeaderCell } from './HeaderCell';
+import type { Marks } from './marks';
+import { TableRow } from './TableRow';
+
+/** How many rows a table shows before it asks; a list is rarely read past this. */
+export const ROW_CAP = 500;
 
 interface Props {
   columns: Column[];
   rows: Row[];
-  /** Column the status bar counts on; clicking a header toggles it. */
+  /** The column the status bar counts on, shown highlighted. */
   selected?: string | null;
-  onSelect?: (columnId: string | null) => void;
   showRowNumbers?: boolean;
   /** Row ids ticked in the table. Given only when the view offers ticking. */
   ticked?: string[];
@@ -17,41 +24,55 @@ interface Props {
   onTickAll?: (checked: boolean) => void;
   /** Given only where editing is meant: the dataset view, never a preview. */
   onEdit?: (rowId: string, columnId: string, value: string) => void;
-  /** Marks what a tool changed. Shown as a mark and a word, never as colour alone. */
-  diff?: DatasetDiff;
-}
-
-/** The mark a changed cell, new row or new column carries. */
-function Mark({ label }: { label: string }) {
-  return (
-    <>
-      <span class="mark" aria-hidden="true">
-        ●
-      </span>
-      <span class="visually-hidden">{label}</span>
-    </>
-  );
+  /** Cells, rows and columns to point at. Shown as a mark and a word, never as colour alone. */
+  marks?: Marks;
+  /** The view's order, and what a header click does about it. */
+  sort?: ViewSort | null;
+  onSort?: (columnId: string) => void;
+  /** What the ▾ beside a column offers. Given only in the dataset view. */
+  columnMenu?: (column: Column) => MenuItem[];
+  /** Columns shown as numbers: right-aligned, like a spreadsheet. */
+  numeric?: ReadonlySet<string>;
+  rowClass?: (row: Row) => string | undefined;
+  cap?: number;
 }
 
 export function DataTable({
   columns,
   rows,
   selected,
-  onSelect,
   showRowNumbers,
   ticked,
   onTick,
   onTickAll,
   onEdit,
-  diff,
+  marks,
+  sort,
+  onSort,
+  columnMenu,
+  numeric,
+  rowClass,
+  cap = ROW_CAP,
 }: Props) {
+  const [limit, setLimit] = useState(cap);
   const chosen = new Set(ticked ?? []);
   const tickable = ticked !== undefined && onTick !== undefined;
   const allTicked = rows.length > 0 && rows.every((row) => chosen.has(row.id));
+  const shown = rows.length > limit ? rows.slice(0, limit) : rows;
+
+  function onKeyDown(event: KeyboardEvent): void {
+    // Arrows inside a text box move the caret; anywhere else they move between cells.
+    if (!(event.target instanceof HTMLElement)) return;
+    if (event.target instanceof HTMLInputElement && event.target.type === 'text') return;
+    const target = nextCell(event.target, event.key);
+    if (target === null) return;
+    event.preventDefault();
+    target.focus();
+  }
 
   return (
     <div class="table-wrap">
-      <table class="table">
+      <table class="table" onKeyDown={onKeyDown}>
         <thead>
           <tr>
             {tickable ? (
@@ -65,87 +86,51 @@ export function DataTable({
               </th>
             ) : null}
             {showRowNumbers === true ? <th class="table__number">{en.view.rowNumber}</th> : null}
-            {columns.map((column) => {
-              const isSelected = selected === column.id;
-              const isNew = diff?.addedColumns.has(column.id) === true;
-              return (
-                <th key={column.id} class={isNew ? 'is-new' : undefined}>
-                  {isNew ? <Mark label={en.panel.addedColumn} /> : null}
-                  {onSelect === undefined ? (
-                    column.name
-                  ) : (
-                    <button
-                      type="button"
-                      class={isSelected ? 'table__head is-selected' : 'table__head'}
-                      aria-pressed={isSelected}
-                      onClick={() => onSelect(isSelected ? null : column.id)}
-                    >
-                      {column.name}
-                    </button>
-                  )}
-                </th>
-              );
-            })}
+            {columns.map((column) => (
+              <HeaderCell
+                key={column.id}
+                column={column}
+                selected={selected === column.id}
+                numeric={numeric?.has(column.id) === true}
+                marks={marks}
+                sort={sort}
+                onSort={onSort}
+                columnMenu={columnMenu}
+              />
+            ))}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
-            <tr
+          {shown.map((row, index) => (
+            <TableRow
               key={row.id}
-              class={
-                [
-                  chosen.has(row.id) ? 'is-ticked' : '',
-                  diff?.addedRows.has(row.id) === true ? 'is-new' : '',
-                ]
-                  .filter((name) => name !== '')
-                  .join(' ') || undefined
-              }
-            >
-              {tickable ? (
-                <td class="table__tick">
-                  <input
-                    type="checkbox"
-                    aria-label={format(en.view.selectRow, { n: index + 1 })}
-                    checked={chosen.has(row.id)}
-                    onChange={() => onTick?.(row.id)}
-                  />
-                </td>
-              ) : null}
-              {showRowNumbers === true ? <td class="table__number">{index + 1}</td> : null}
-              {columns.map((column) =>
-                onEdit === undefined ? (
-                  <td
-                    key={column.id}
-                    class={
-                      [
-                        selected === column.id ? 'is-selected' : '',
-                        diff?.changedCells.has(cellKey(row.id, column.id)) === true
-                          ? 'is-changed'
-                          : '',
-                      ]
-                        .filter((name) => name !== '')
-                        .join(' ') || undefined
-                    }
-                  >
-                    {diff?.changedCells.has(cellKey(row.id, column.id)) === true ? (
-                      <Mark label={en.panel.changedCell} />
-                    ) : null}
-                    {cell(row, column.id)}
-                  </td>
-                ) : (
-                  <TableCell
-                    key={column.id}
-                    value={cell(row, column.id)}
-                    label={format(en.view.editCell, { column: column.name, n: index + 1 })}
-                    selected={selected === column.id}
-                    onCommit={(value) => onEdit(row.id, column.id, value)}
-                  />
-                ),
-              )}
-            </tr>
+              row={row}
+              index={index}
+              columns={columns}
+              tickable={tickable}
+              ticked={chosen.has(row.id)}
+              onTick={onTick}
+              showNumber={showRowNumbers === true}
+              selected={selected}
+              numeric={numeric}
+              marks={marks}
+              extraClass={rowClass?.(row)}
+              onEdit={onEdit}
+            />
           ))}
         </tbody>
       </table>
+      {rows.length > limit ? (
+        <p class="table__more">
+          <span>{format(en.table.capped, { shown: shown.length, total: rows.length })}</span>
+          <button type="button" class="button button--quiet" onClick={() => setLimit(limit + cap)}>
+            {format(en.table.showMore, { n: Math.min(cap, rows.length - limit) })}
+          </button>
+          <button type="button" class="button button--quiet" onClick={() => setLimit(rows.length)}>
+            {format(en.table.showAll, { n: rows.length })}
+          </button>
+        </p>
+      ) : null}
     </div>
   );
 }

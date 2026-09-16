@@ -1,11 +1,14 @@
+import { useEffect, useRef } from 'preact/hooks';
 import type { Dataset } from '../core/model';
-import { profileColumns, type ColumnProfile } from '../core/profile';
+import { columnProfiles, type ColumnProfile } from '../core/profile';
 import { setViewFilter, viewFilter } from '../core/store';
 import { en } from '../i18n/en';
 import { format } from '../i18n/format';
 
 interface Props {
   dataset: Dataset;
+  /** A column to scroll to and put the focus on: asked for from its header menu. */
+  focusColumn?: string;
 }
 
 /** One value and its count, as a button that narrows the view to its rows. */
@@ -18,8 +21,12 @@ function Value({
   value: string;
   count: number;
 }) {
+  const current = viewFilter.value;
   const active =
-    viewFilter.value?.columnId === profile.column.id && viewFilter.value.value === value;
+    current !== null &&
+    current.columnId === profile.column.id &&
+    current.value === value &&
+    current.mode !== 'contains';
   const blank = value === '';
   const label = format(blank ? en.profile.onlyBlank : en.profile.onlyRows, {
     column: profile.column.name,
@@ -45,15 +52,28 @@ function Value({
 }
 
 /** What is in each column, and a way to look at one value of it. */
-export function ProfilePanel({ dataset }: Props) {
+export function ProfilePanel({ dataset, focusColumn }: Props) {
+  const wanted = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (focusColumn === undefined) return;
+    wanted.current?.scrollIntoView({ block: 'start' });
+    wanted.current?.focus();
+  }, [focusColumn, dataset]);
+
   if (dataset.rows.length === 0) return <p class="field__help">{en.profile.empty}</p>;
 
   return (
     <div class="profile">
       <p class="field__help">{en.profile.intro}</p>
 
-      {profileColumns(dataset).map((profile) => (
-        <section key={profile.column.id} class="profile__column">
+      {columnProfiles(dataset).map((profile) => (
+        <section
+          key={profile.column.id}
+          class="profile__column"
+          tabIndex={-1}
+          {...(profile.column.id === focusColumn ? { ref: wanted } : {})}
+        >
           <h4 class="profile__name">{profile.column.name}</h4>
           <p class="profile__stats">
             {[

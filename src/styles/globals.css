@@ -1147,3 +1147,157 @@ kbd {
     margin-left: 0;
   }
 }
+
+/* ---------- column headers: sort and the ▾ menu ---------- */
+
+.table__header {
+  display: flex;
+  align-items: stretch;
+}
+
+.table__header .table__head {
+  flex: 1;
+  min-width: 0;
+}
+
+.table thead th:has(.table__header) {
+  padding: 0;
+}
+
+.table__name {
+  display: block;
+  padding: var(--space-2) var(--space-4);
+}
+
+.table__sort {
+  margin-left: var(--space-2);
+  color: var(--color-accent);
+  font-size: var(--text-xs);
+}
+
+.table thead th.is-selected {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.table thead th.is-selected .table__sort,
+.table thead th.is-selected .menu__trigger {
+  color: inherit;
+}
+
+.menu {
+  display: flex;
+  align-items: stretch;
+}
+
+.menu__trigger {
+  min-width: var(--control-height);
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.menu__trigger:hover,
+.menu__trigger[aria-expanded='true'] {
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.menu__list,
+.menu__form {
+  position: fixed;
+  z-index: 20;
+  margin: 0;
+  padding: var(--space-2);
+  background: var(--color-surface-raised);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-weight: 400;
+  text-align: left;
+}
+
+.menu__list {
+  list-style: none;
+  min-width: 14rem;
+}
+
+.menu__form {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.menu__item {
+  display: block;
+  width: 100%;
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menu__item:hover,
+.menu__item:focus {
+  background: var(--color-surface-sunken);
+}
+
+/* Numbers sit on the right, like a spreadsheet, so magnitudes line up. */
+.table td.is-numeric,
+.table th.is-numeric .table__head,
+.table th.is-numeric .table__name {
+  text-align: right;
+}
+
+.table td.is-numeric .cell {
+  text-align: right;
+}
+
+.table__more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-muted);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.preview__caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+/* Tool categories fold: the title is the handle, and the count says what is inside. */
+details.picker__group > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+details.picker__group > summary::before {
+  content: '▸';
+  display: inline-block;
+  width: 1.2em;
+}
+
+details[open].picker__group > summary::before {
+  content: '▾';
+}
+
+.picker__count {
+  margin-left: var(--space-2);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}

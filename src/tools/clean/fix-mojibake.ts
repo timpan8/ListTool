@@ -27,12 +27,19 @@ function byteOf(code: number): number {
   return CP1252_HIGH.get(code) ?? -1;
 }
 
+/** Anything outside printable ASCII. Text without it cannot be mis-decoded UTF-8. */
+const NON_ASCII = /[^ -~]/;
+
+/** One decoder for the whole list: constructing one per cell was most of the cost. */
+const STRICT_UTF8 = new TextDecoder('utf-8', { fatal: true });
+
 /**
  * Read the string back as the bytes it was before someone decoded it wrongly, then
  * decode those bytes as UTF-8. Returns null when the text is not mis-decoded at all,
  * which is the common case and must be left exactly as it is.
  */
 function repair(value: string): string | null {
+  if (!NON_ASCII.test(value)) return null;
   const bytes: number[] = [];
   for (const character of value) {
     const code = character.codePointAt(0) ?? 0;
@@ -42,7 +49,7 @@ function repair(value: string): string | null {
   }
 
   try {
-    const decoded = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(bytes));
+    const decoded = STRICT_UTF8.decode(Uint8Array.from(bytes));
     return decoded === value ? null : decoded;
   } catch {
     // Not valid UTF-8, so these bytes never were a mis-decoded UTF-8 string.

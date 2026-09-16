@@ -1,11 +1,11 @@
 import type { Dataset } from '../core/model';
 import type { History } from '../core/history';
-import type { Tool } from '../core/registry';
 import { en } from '../i18n/en';
 import { CompareMode } from './CompareMode';
 import { DatasetTabs } from './DatasetTabs';
 import { DatasetView } from './DatasetView';
 import { EmptyState } from './EmptyState';
+import type { PanelIntent } from './panelIntent';
 import { SidePanel } from './SidePanel';
 import { StatusBar } from './StatusBar';
 import { Toolbar } from './Toolbar';
@@ -15,8 +15,9 @@ interface Props {
   history: History | null;
   panelOpen: boolean;
   comparing: boolean;
-  pendingTool: Tool | null;
-  onPendingHandled: () => void;
+  intent: PanelIntent | null;
+  onIntent: (intent: PanelIntent) => void;
+  onIntentHandled: () => void;
   onImport: () => void;
   onReparse: () => void;
   onExport: () => void;
@@ -33,8 +34,9 @@ export function Layout({
   history,
   panelOpen,
   comparing,
-  pendingTool,
-  onPendingHandled,
+  intent,
+  onIntent,
+  onIntentHandled,
   onImport,
   onReparse,
   onExport,
@@ -68,15 +70,15 @@ export function Layout({
           ) : dataset === null ? (
             <EmptyState onImport={onImport} />
           ) : (
-            <DatasetView dataset={dataset} onReparse={onReparse} />
+            <DatasetView dataset={dataset} onReparse={onReparse} onIntent={onIntent} />
           )}
         </main>
         {panelOpen && !comparing && dataset !== null && history !== null ? (
           <SidePanel
             dataset={dataset}
             history={history}
-            pendingTool={pendingTool}
-            onPendingHandled={onPendingHandled}
+            intent={intent}
+            onIntentHandled={onIntentHandled}
             onClose={onClosePanel}
           />
         ) : null}

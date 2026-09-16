@@ -4,6 +4,7 @@ import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
 import { rowsPhrase, targetColumns, withRows } from '../helpers';
+import { parseNumber } from '../../core/number';
 
 const strings = en.tools.dedupe;
 
@@ -16,11 +17,9 @@ function filledCells(row: Row, columns: Column[]): number {
 
 /** Compare two values as numbers when both are, and as text otherwise. */
 function compare(a: string, b: string): number {
-  const left = Number(a.replace(/\s/g, '').replace(',', '.'));
-  const right = Number(b.replace(/\s/g, '').replace(',', '.'));
-  if (a.trim() !== '' && b.trim() !== '' && Number.isFinite(left) && Number.isFinite(right)) {
-    return left - right;
-  }
+  const left = parseNumber(a);
+  const right = parseNumber(b);
+  if (left !== null && right !== null) return left - right;
   return a.localeCompare(b);
 }
 

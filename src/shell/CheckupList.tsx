@@ -1,5 +1,6 @@
 import type { Dataset } from '../core/model';
 import { checkup } from '../core/checkup';
+import { memoByDataset } from '../core/memo';
 import type { Options, Tool } from '../core/registry';
 import { tools } from '../tools';
 import { en } from '../i18n/en';
@@ -10,13 +11,16 @@ interface Props {
   onPick: (tool: Tool, options?: Options) => void;
 }
 
+/** Every tool's check runs once per list, not once per time the panel is looked at. */
+const checkupOf = memoByDataset((dataset) => checkup(dataset, tools));
+
 /**
  * What the tools would find, above the list of tools. No new tab and no new concept:
  * each finding is a way into the ordinary tool with its options already set, and the
  * ordinary preview still has the last word before anything changes.
  */
 export function CheckupList({ dataset, onPick }: Props) {
-  const found = checkup(dataset, tools);
+  const found = checkupOf(dataset);
   if (found.length === 0) return null;
 
   return (

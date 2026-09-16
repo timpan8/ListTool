@@ -2,6 +2,7 @@ import type { Column } from '../core/model';
 import type { OptionField, Options } from '../core/registry';
 import { en } from '../i18n/en';
 import { plural } from '../i18n/format';
+import { DebouncedInput } from './DebouncedInput';
 import { DelimiterField } from './DelimiterField';
 
 interface Props {
@@ -147,17 +148,12 @@ export function OptionsPanel({
               {field.label}
             </label>
             {choices === null ? (
-              <input
+              <DebouncedInput
                 id={id}
                 type={field.type === 'number' ? 'number' : 'text'}
                 value={value === undefined ? String(field.default) : String(value)}
-                onInput={(event) =>
-                  onChange(
-                    field.key,
-                    field.type === 'number'
-                      ? Number(event.currentTarget.value)
-                      : event.currentTarget.value,
-                  )
+                onChange={(typed) =>
+                  onChange(field.key, field.type === 'number' ? Number(typed) : typed)
                 }
               />
             ) : (
