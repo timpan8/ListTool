@@ -1,16 +1,20 @@
 import { cell, type Row } from '../../core/model';
 import { normalizeKey } from '../../core/normalize';
-import { booleanOption, stringOption, type Tool } from '../../core/registry';
+import { stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { rowsPhrase, targetColumn, withRows } from '../helpers';
+import {
+  MAX_LISTS,
+  NORMALIZE_FIELDS,
+  readNormalize,
+  rowsPhrase,
+  targetColumn,
+  withRows,
+} from '../helpers';
 
 const strings = en.tools.splitByValue;
 
 const DEFAULT_PATTERN = '{value}';
-
-/** More tabs than this at once is not a split, it is a mess. */
-const MAX_LISTS = 30;
 
 export const splitByValueTool: Tool = {
   id: 'split-by-value',
@@ -28,17 +32,13 @@ export const splitByValueTool: Tool = {
       default: DEFAULT_PATTERN,
       help: strings.nameHelp,
     },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options) {
     const column = targetColumn(input, options);
     if (column === undefined) return { output: input, summary: en.tools.nothingChanged };
 
-    const normalize = {
-      trim: booleanOption(options, 'trim', true),
-      ignoreCase: booleanOption(options, 'ignoreCase', true),
-    };
+    const normalize = readNormalize(options);
 
     // Grouped in first-seen order, and named by the first spelling seen.
     const groups = new Map<string, { value: string; rows: Row[] }>();
@@ -57,7 +57,7 @@ export const splitByValueTool: Tool = {
       return {
         output: input,
         summary: en.tools.nothingChanged,
-        warnings: [format(strings.tooMany, { n: groups.size })],
+        warnings: [format(strings.tooMany, { n: groups.size, limit: MAX_LISTS })],
       };
     }
 

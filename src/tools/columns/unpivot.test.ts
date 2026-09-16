@@ -58,6 +58,15 @@ describe('unpivot tool', () => {
     expect(output.rows).toHaveLength(1);
   });
 
+  it('steps aside when a kept column is already called field or value', () => {
+    const clash = tableOf(['field', 'value', 'jan'], [{ field: 'x', value: 'y', jan: '3' }]);
+    const output = unpivotTool.run(clash, { ...BASE, keep: ['field', 'value'] }).output;
+    expect(output.columns.map((column) => column.id)).toEqual(['field', 'value', 'field2', 'value2']);
+    expect(cell(output.rows[0]!, 'field')).toBe('x');
+    expect(cell(output.rows[0]!, 'field2')).toBe('jan');
+    expect(cell(output.rows[0]!, 'value2')).toBe('3');
+  });
+
   it('keeps the first column when nothing was chosen', () => {
     const result = unpivotTool.run(MONTHS, BASE);
     expect(result.stats).toEqual({ columns: 2, rows: 3 });

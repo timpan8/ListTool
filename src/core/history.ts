@@ -10,6 +10,8 @@ export interface Step {
   options: Options;
   summary: string;
   at: number;
+  /** The rows the tool ran on, when it ran on the ticked rows only. */
+  scope?: { rows: string[] };
 }
 
 export interface HistoryEntry {

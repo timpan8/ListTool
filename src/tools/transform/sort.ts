@@ -1,5 +1,7 @@
 import { cell, type Column, type Row } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
+import { parseDate } from '../../core/dates';
+import { parseNumber } from '../../core/number';
 import { compareValues, DEFAULT_LOCALE, type SortOptions } from '../../core/sort';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
@@ -80,6 +82,17 @@ export const sortTool: Tool = {
       ],
     },
     {
+      key: 'as',
+      label: strings.as,
+      type: 'select',
+      default: 'text',
+      choices: [
+        { value: 'text', label: strings.asText },
+        { value: 'number', label: strings.asNumber },
+        { value: 'date', label: strings.asDate },
+      ],
+    },
+    {
       key: 'locale',
       label: strings.locale,
       type: 'select',
@@ -105,6 +118,18 @@ export const sortTool: Tool = {
 
     const valueOf = (row: Row, column: Column): string => cell(row, column.id);
 
+    // Read as numbers or dates when asked: a value that cannot be read sorts last in
+    // either direction, and two that cannot be read fall back to text.
+    const as = stringOption(options, 'as', 'text');
+    const read = (value: string): number | null => {
+      if (as === 'number') return parseNumber(value);
+      if (as === 'date') {
+        const parts = parseDate(value);
+        return parts === null ? null : parts.y * 10000 + parts.m * 100 + parts.d;
+      }
+      return null;
+    };
+
     // One pass over every level: the second key only ever decides a tie on the first.
     // The original position breaks a full tie, so the order never wobbles between runs.
     const rows = input.rows
@@ -113,6 +138,17 @@ export const sortTool: Tool = {
         for (const level of keys) {
           const left = valueOf(a.row, level.column);
           const right = valueOf(b.row, level.column);
+          if (as !== 'text' && !byLength) {
+            const leftRead = read(left);
+            const rightRead = read(right);
+            if (leftRead === null && rightRead !== null) return 1;
+            if (leftRead !== null && rightRead === null) return -1;
+            if (leftRead !== null && rightRead !== null) {
+              const difference = leftRead - rightRead;
+              if (difference !== 0) return level.descending ? -difference : difference;
+              continue;
+            }
+          }
           const verdict = byLength
             ? [...left].length - [...right].length || compareValues(left, right, base)
             : compareValues(left, right, base);

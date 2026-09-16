@@ -40,3 +40,26 @@ export function parseNumber(value: string): number | null {
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? sign * parsed : null;
 }
+
+export interface NumberShape {
+  decimal: ',' | '.';
+  thousands: '' | ' ' | ',' | '.';
+  /** Fixed decimals, or undefined to keep whatever the number has. */
+  decimals?: number;
+}
+
+/** Write a number in one shape: "1 234,50", "1,234.5", "1234.50". */
+export function formatNumber(value: number, shape: NumberShape): string {
+  const magnitude = Math.abs(value);
+  const text =
+    shape.decimals === undefined
+      ? String(Number(magnitude.toFixed(10)))
+      : magnitude.toFixed(shape.decimals);
+  const [whole = '0', fraction] = text.split('.');
+  // A thousands mark that is the decimal mark would make the number unreadable.
+  const thousands = shape.thousands === shape.decimal ? '' : shape.thousands;
+  const grouped =
+    thousands === '' ? whole : whole.replace(/\B(?=(\d{3})+(?!\d))/g, thousands);
+  const signed = value < 0 && Number(text) !== 0 ? `-${grouped}` : grouped;
+  return fraction === undefined ? signed : `${signed}${shape.decimal}${fraction}`;
+}

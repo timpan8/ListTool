@@ -23,6 +23,14 @@ export function SelectionActions({ dataset, ticked, onIntent }: Props) {
           {action.label}
         </button>
       ))}
+      {/* Any tool at all: with rows ticked, the panel runs it on those rows only. */}
+      <button
+        type="button"
+        class="button button--quiet"
+        onClick={() => onIntent({ kind: 'tools' })}
+      >
+        {en.view.toolsForRows}
+      </button>
       <button type="button" class="button button--quiet" onClick={() => selectRows([])}>
         {en.view.clearSelection}
       </button>

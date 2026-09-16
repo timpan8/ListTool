@@ -49,8 +49,10 @@ describe('generate email', () => {
     expect(generated({ lowercase: false })[0]).toBe('Anna.Andersson@example.com');
   });
 
-  it('reports how many it generated', () => {
+  it('reports how many it generated, in the singular when it is one', () => {
     expect(generateEmailTool.run(table(), {}).summary).toBe('Generated 3 addresses');
+    const one = tableOf(['first', 'last'], [{ first: 'Anna', last: 'Andersson' }]);
+    expect(generateEmailTool.run(one, {}).summary).toBe('Generated 1 address');
   });
 
   it('is hidden on a one-column list', () => {

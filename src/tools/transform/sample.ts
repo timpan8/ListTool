@@ -1,7 +1,7 @@
 import { numberOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
-import { withRows } from '../helpers';
+import { rowsPhrase, withRows } from '../helpers';
 import { shuffle } from './reorder-rows';
 
 const strings = en.tools.sample;
@@ -62,7 +62,7 @@ export const sampleTool: Tool = {
 
     return {
       output: withRows(input, kept),
-      summary: format(strings.summary, { kept: kept.length, before: input.rows.length }),
+      summary: format(strings.summary, { kept: kept.length, before: rowsPhrase(input.rows.length) }),
       stats: { kept: kept.length, removed: input.rows.length - kept.length },
     };
   },

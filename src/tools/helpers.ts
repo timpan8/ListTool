@@ -1,7 +1,39 @@
-import { cell, type Column, type Dataset, type Row } from '../core/model';
-import { stringOption, type Options } from '../core/registry';
+import { cell, draftDataset, type Column, type Dataset, type Row } from '../core/model';
+import type { NormalizeOptions } from '../core/normalize';
+import { booleanOption, stringOption, type OptionField, type Options } from '../core/registry';
 import { en } from '../i18n/en';
 import { plural } from '../i18n/format';
+
+/**
+ * How values are matched — the same four switches, in the same order, last in the form
+ * of every tool that builds keys, whether it dedupes one list or compares two.
+ */
+export const NORMALIZE_FIELDS: OptionField[] = [
+  { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
+  { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
+  {
+    key: 'collapseWhitespace',
+    label: en.tools.shared.collapseWhitespace,
+    type: 'boolean',
+    default: false,
+  },
+  {
+    key: 'ignoreDiacritics',
+    label: en.tools.shared.ignoreDiacritics,
+    type: 'boolean',
+    default: false,
+    help: en.tools.shared.diacriticsHelp,
+  },
+];
+
+export function readNormalize(options: Options): NormalizeOptions {
+  return {
+    trim: booleanOption(options, 'trim', true),
+    ignoreCase: booleanOption(options, 'ignoreCase', true),
+    collapseWhitespace: booleanOption(options, 'collapseWhitespace', false),
+    ignoreDiacritics: booleanOption(options, 'ignoreDiacritics', false),
+  };
+}
 
 /**
  * The columns a tool should work on: the chosen one, or every column when the option is
@@ -61,21 +93,18 @@ export function mapCells(
   return { rows, changed };
 }
 
-/**
- * Fresh row ids for rows a tool creates: each call gives the next id past the highest
- * one the list already uses. Ids are never re-derived from positions — after a removal
- * the positions have gaps, and `r3` may well still be someone.
- */
-export function rowIdsAfter(dataset: { rows: Row[] }): () => string {
-  let highest = 0;
-  for (const row of dataset.rows) {
-    const match = /^r(\d+)$/.exec(row.id);
-    if (match !== null) highest = Math.max(highest, Number(match[1]));
-  }
-  return () => {
-    highest += 1;
-    return `r${highest}`;
-  };
+export { rowIdsAfter } from '../core/model';
+
+/** Same identity, brand-new shape: for tools that build a fresh table from the list. */
+export function freshDataset(input: Dataset, columns: Column[], rows: Row[]): Dataset {
+  return { ...draftDataset({ columns, rows }), id: input.id, name: input.name };
+}
+
+/** How many lists a tool may open at once before it stops being a help. */
+export const MAX_LISTS = 30;
+
+export function columnsPhrase(count: number): string {
+  return plural(count, en.tools.columnsCount);
 }
 
 /** Same dataset, different rows. rawInput and the parse options survive. */

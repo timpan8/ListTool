@@ -118,7 +118,7 @@ describe('join lists tool', () => {
     const result = joinListsTool.run(PEOPLE, DEFAULTS, DEPARTMENTS);
     expect(result.summary).toBe('Matched 1 of 2 rows, bringing 1 column');
     expect(result.stats).toEqual({ matched: 1, unmatched: 1, rows: 2 });
-    expect(result.warnings?.[0]).toBe('1 rows matched nothing.');
+    expect(result.warnings?.[0]).toBe('1 row matched nothing.');
   });
 
   it('warns and changes nothing without a second list', () => {

@@ -28,10 +28,10 @@ describe('find and replace', () => {
     ).toEqual(['Andersson, Anna']);
   });
 
-  it('respects case by default and ignores it when told to', () => {
-    expect(values(['Anna anna'], { find: 'anna', replace: 'X' })).toEqual(['Anna X']);
-    expect(values(['Anna anna'], { find: 'anna', replace: 'X', ignoreCase: true })).toEqual([
-      'X X',
+  it('ignores case by default, like every other match, and respects it when told to', () => {
+    expect(values(['Anna anna'], { find: 'anna', replace: 'X' })).toEqual(['X X']);
+    expect(values(['Anna anna'], { find: 'anna', replace: 'X', ignoreCase: false })).toEqual([
+      'Anna X',
     ]);
   });
 

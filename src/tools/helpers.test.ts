@@ -1,7 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { mapCells, rowIdsAfter } from './helpers';
+import { mapCells, NORMALIZE_FIELDS, readNormalize, rowIdsAfter } from './helpers';
 import { listOf, tableOf } from '../test/fixtures';
 import { VALUE_COLUMN } from '../core/model';
+
+describe('the shared matching rules', () => {
+  it('are the same four, in the same order, wherever a tool builds keys', () => {
+    expect(NORMALIZE_FIELDS.map((field) => field.key)).toEqual([
+      'trim',
+      'ignoreCase',
+      'collapseWhitespace',
+      'ignoreDiacritics',
+    ]);
+    for (const field of NORMALIZE_FIELDS) expect(field.type).toBe('boolean');
+  });
+
+  it('read with their defaults: trim and case on, the rest off', () => {
+    expect(readNormalize({})).toEqual({
+      trim: true,
+      ignoreCase: true,
+      collapseWhitespace: false,
+      ignoreDiacritics: false,
+    });
+    expect(readNormalize({ ignoreDiacritics: true, trim: false })).toMatchObject({
+      trim: false,
+      ignoreDiacritics: true,
+    });
+  });
+});
 
 describe('rowIdsAfter', () => {
   it('continues past the highest id in the list, gaps and all', () => {

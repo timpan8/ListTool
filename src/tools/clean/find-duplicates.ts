@@ -3,7 +3,13 @@ import { joinKeys, normalizeKey } from '../../core/normalize';
 import { booleanOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { freeColumnId, targetColumns, withColumns } from '../helpers';
+import {
+  freeColumnId,
+  NORMALIZE_FIELDS,
+  readNormalize,
+  targetColumns,
+  withColumns,
+} from '../helpers';
 
 const strings = en.tools.findDuplicates;
 
@@ -22,36 +28,31 @@ export const findDuplicatesTool: Tool = {
       default: '',
       allowAll: true,
     },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
     { key: 'onlyDuplicates', label: strings.onlyDuplicates, type: 'boolean', default: true },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options) {
     const columns = targetColumns(input, options);
-    const normalize = {
-      trim: booleanOption(options, 'trim', true),
-      ignoreCase: booleanOption(options, 'ignoreCase', true),
-    };
+    const normalize = readNormalize(options);
 
     const keyOf = (row: Row): string =>
       joinKeys(columns.map((column) => normalizeKey(cell(row, column.id), normalize)));
 
+    // Each key is built once: a long list normalises every cell exactly one time.
+    const keys = input.rows.map(keyOf);
     const counts = new Map<string, number>();
-    for (const row of input.rows) {
-      const key = keyOf(row);
-      counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
+    for (const key of keys) counts.set(key, (counts.get(key) ?? 0) + 1);
 
     const countColumn = { id: freeColumnId(input, 'count'), name: strings.countColumn };
     const onlyDuplicates = booleanOption(options, 'onlyDuplicates', true);
 
     // Reporting, not removing: every kept row stays where it was and gains its count.
-    const rows = input.rows
-      .filter((row) => !onlyDuplicates || (counts.get(keyOf(row)) ?? 0) > 1)
-      .map((row) => ({
-        id: row.id,
-        cells: { ...row.cells, [countColumn.id]: String(counts.get(keyOf(row)) ?? 0) },
-      }));
+    const rows: Row[] = [];
+    input.rows.forEach((row, index) => {
+      const count = counts.get(keys[index] ?? '') ?? 0;
+      if (onlyDuplicates && count <= 1) return;
+      rows.push({ id: row.id, cells: { ...row.cells, [countColumn.id]: String(count) } });
+    });
 
     const repeated = [...counts.values()].filter((count) => count > 1).length;
 

@@ -25,6 +25,7 @@ const MESSAGES = {
   unknownTool: en.recipes.skippedUnknown,
   needsSecondList: (name: string) => format(en.recipes.skippedDual, { name }),
   noRawInput: en.recipes.skippedNoRaw,
+  scopeDropped: en.recipes.scopeDropped,
 };
 
 /** A re-parse step has no Tool behind it, so it is named after the parser it runs. */

@@ -1,7 +1,7 @@
 import { numberOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { rowsPhrase, withRows } from '../helpers';
+import { MAX_LISTS, rowsPhrase, withRows } from '../helpers';
 
 const strings = en.tools.chunk;
 
@@ -32,6 +32,15 @@ export const chunkListTool: Tool = {
     }
     if (input.rows.length <= size) {
       return { output: input, summary: en.tools.nothingChanged, warnings: [strings.alreadyShort] };
+    }
+    // The same ceiling as Split by value: more tabs than this is not a help.
+    const count = Math.ceil(input.rows.length / size);
+    if (count > MAX_LISTS) {
+      return {
+        output: input,
+        summary: en.tools.nothingChanged,
+        warnings: [format(strings.tooMany, { n: count, limit: MAX_LISTS })],
+      };
     }
 
     const pattern = stringOption(options, 'pattern', DEFAULT_PATTERN);

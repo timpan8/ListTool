@@ -23,6 +23,8 @@ export interface ReplayMessages {
   unknownTool: string;
   needsSecondList: (name: string) => string;
   noRawInput: string;
+  /** A step that ran on ticked rows runs on the whole list here: row ids mean nothing elsewhere. */
+  scopeDropped: string;
 }
 
 export interface ReplayResult {
@@ -111,9 +113,11 @@ export function applyRecipe(
       }
     }
 
+    if (step.scope !== undefined) warnings.push(messages.scopeDropped);
     const result = tool.run(output, step.options, second);
     output = { ...result.output, id: output.id, name: output.name };
-    applied.push({ ...step, summary: result.summary });
+    const { scope: _scope, ...unscoped } = step;
+    applied.push({ ...unscoped, summary: result.summary });
     warnings.push(...(result.warnings ?? []));
   }
 

@@ -1,8 +1,8 @@
-import { cell, columnId, draftDataset, makeRow, type Column } from '../../core/model';
+import { cell, columnId, makeRow, type Column } from '../../core/model';
 import { booleanOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
-import { rowsPhrase } from '../helpers';
+import { freshDataset, rowsPhrase } from '../helpers';
 
 const strings = en.tools.transpose;
 
@@ -50,7 +50,7 @@ export const transposeTool: Tool = {
     return {
       // A transposed table has nothing to do with the text it was parsed from, so the
       // raw input and the parse options are deliberately dropped.
-      output: { ...draftDataset({ columns, rows }), id: input.id, name: input.name },
+      output: freshDataset(input, columns, rows),
       summary: format(strings.summary, {
         before: rowsPhrase(input.rows.length),
         after: rowsPhrase(rows.length),

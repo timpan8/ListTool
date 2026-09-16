@@ -1,9 +1,9 @@
-import { cell, draftDataset, makeRow } from '../../core/model';
-import { booleanOption, type Tool } from '../../core/registry';
+import { cell, makeRow } from '../../core/model';
+import type { Tool } from '../../core/registry';
 import { normalizeKey } from '../../core/normalize';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { rowsPhrase, targetColumn } from '../helpers';
+import { freshDataset, NORMALIZE_FIELDS, readNormalize, rowsPhrase, targetColumn } from '../helpers';
 
 const strings = en.tools.countValues;
 
@@ -16,17 +16,13 @@ export const countValuesTool: Tool = {
   arity: 'single',
   options: [
     { key: 'column', label: en.tools.shared.column, type: 'column' },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options) {
     const source = targetColumn(input, options);
     if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
 
-    const normalize = {
-      trim: booleanOption(options, 'trim', true),
-      ignoreCase: booleanOption(options, 'ignoreCase', true),
-    };
+    const normalize = readNormalize(options);
 
     // The first spelling seen is the one shown — normalization only groups.
     const groups = new Map<string, { value: string; count: number }>();
@@ -39,15 +35,16 @@ export const countValuesTool: Tool = {
     }
 
     const sorted = [...groups.values()].sort((a, b) => b.count - a.count);
-    const output = draftDataset({
-      columns: [
+    const output = freshDataset(
+      input,
+      [
         { id: 'value', name: strings.valueColumn },
         { id: 'count', name: strings.countColumn },
       ],
-      rows: sorted.map((entry, index) =>
+      sorted.map((entry, index) =>
         makeRow(index, { value: entry.value, count: String(entry.count) }),
       ),
-    });
+    );
 
     return {
       output,

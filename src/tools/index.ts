@@ -49,6 +49,12 @@ import { transposeTool } from './columns/transpose';
 import { groupByTool } from './extract/group-by';
 import { joinListsTool } from './compare/join-lists';
 import { markMembershipTool } from './compare/mark-membership';
+import { normalizeDatesTool } from './clean/normalize-dates';
+import { normalizeNumbersTool } from './clean/normalize-numbers';
+import { validateSwedishIdsTool } from './clean/validate-swedish-ids';
+import { fillDownTool } from './clean/fill-down';
+import { padTruncateTool } from './transform/pad-truncate';
+import { columnMathsTool } from './extract/column-maths';
 
 /**
  * The tool registry. Adding a tool means adding one module, its test, and one line
@@ -105,6 +111,12 @@ export const tools: Tool[] = [
   markMembershipTool,
   fieldDiffTool,
   coalesceTool,
+  normalizeDatesTool,
+  normalizeNumbersTool,
+  validateSwedishIdsTool,
+  fillDownTool,
+  padTruncateTool,
+  columnMathsTool,
 ];
 
 export function toolById(id: string): Tool | undefined {

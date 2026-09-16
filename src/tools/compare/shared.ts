@@ -1,9 +1,11 @@
 import type { CompareLabels, CompareOptions, CompareRow } from '../../core/compare';
 import type { Dataset } from '../../core/model';
-import type { NormalizeOptions } from '../../core/normalize';
-import { booleanOption, stringsOption, type OptionField, type Options } from '../../core/registry';
+import { stringsOption, type OptionField, type Options } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
+import { readNormalize } from '../helpers';
+
+export { NORMALIZE_FIELDS, readNormalize } from '../helpers';
 
 /**
  * What every dual tool asks first: which columns to match on, on each list. The default
@@ -20,34 +22,6 @@ export const KEY_FIELDS: OptionField[] = [
     default: ['email'],
   },
 ];
-
-/** How values are matched — the same four switches, in the same order, in every dual tool. */
-export const NORMALIZE_FIELDS: OptionField[] = [
-  { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-  { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
-  {
-    key: 'collapseWhitespace',
-    label: en.tools.shared.collapseWhitespace,
-    type: 'boolean',
-    default: false,
-  },
-  {
-    key: 'ignoreDiacritics',
-    label: en.tools.shared.ignoreDiacritics,
-    type: 'boolean',
-    default: false,
-    help: en.tools.shared.diacriticsHelp,
-  },
-];
-
-export function readNormalize(options: Options): NormalizeOptions {
-  return {
-    trim: booleanOption(options, 'trim', true),
-    ignoreCase: booleanOption(options, 'ignoreCase', true),
-    collapseWhitespace: booleanOption(options, 'collapseWhitespace', false),
-    ignoreDiacritics: booleanOption(options, 'ignoreDiacritics', false),
-  };
-}
 
 /** The key columns that exist, or the first column. A lone string is read as one column. */
 function keyColumns(options: Options, key: string, dataset: Dataset): string[] {

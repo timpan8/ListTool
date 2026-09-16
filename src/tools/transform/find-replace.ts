@@ -22,13 +22,14 @@ export const findReplaceTool: Tool = {
     { key: 'find', label: strings.find, type: 'text', default: '' },
     { key: 'replace', label: strings.replace, type: 'text', default: '' },
     { key: 'regex', label: strings.regex, type: 'boolean', default: false },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: false },
+    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
   ],
   run(input, options) {
     const find = stringOption(options, 'find', '');
     const replace = stringOption(options, 'replace', '');
     const asRegex = booleanOption(options, 'regex', false);
-    const flags = booleanOption(options, 'ignoreCase', false) ? 'giu' : 'gu';
+    // Case is ignored by default, as it is everywhere else a value is matched.
+    const flags = booleanOption(options, 'ignoreCase', true) ? 'giu' : 'gu';
 
     if (find === '') {
       return { output: input, summary: en.tools.nothingChanged, warnings: [strings.emptyFind] };
@@ -46,7 +47,7 @@ export const findReplaceTool: Tool = {
     });
 
     return {
-      output: withRows(input, rows),
+      output: changed === 0 ? input : withRows(input, rows),
       summary:
         changed === 0
           ? en.tools.nothingChanged

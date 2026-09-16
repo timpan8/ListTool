@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findSimilarTool } from './find-similar';
+import { findSimilarTool, MAX_DISTINCT } from './find-similar';
 import { cell } from '../../core/model';
 import { listOf, tableOf } from '../../test/fixtures';
 
@@ -97,6 +97,45 @@ describe('find similar tool', () => {
 
   it('handles an empty list', () => {
     expect(run([]).summary).toBe('Nothing changed.');
+  });
+
+  it('offers the same four matching rules as every other key-based tool, last', () => {
+    expect(findSimilarTool.options.slice(-4).map((field) => field.key)).toEqual([
+      'trim',
+      'ignoreCase',
+      'collapseWhitespace',
+      'ignoreDiacritics',
+    ]);
+  });
+
+  it('can fold diacritics, so Göteborg and Goteborg are one value rather than near ones', () => {
+    const result = run(['Göteborg', 'Goteborg'], { ignoreDiacritics: true });
+    expect(result.summary).toBe('Nothing changed.');
+  });
+
+  it('refuses a column with more distinct values than it can look through, and says so', () => {
+    const values = Array.from({ length: MAX_DISTINCT + 1 }, (_, index) => `v${index}`);
+    const result = run(values);
+    expect(result.summary).toBe('Nothing changed.');
+    expect(result.warnings?.[0]).toBe(
+      `That column has ${MAX_DISTINCT + 1} different values, and ${MAX_DISTINCT} is as many as this can look through. Narrow the list first.`,
+    );
+    expect(result.output.columns.map((column) => column.id)).toEqual(['value']);
+  });
+
+  it('counts repeats as one value against that limit', () => {
+    const values = Array.from({ length: MAX_DISTINCT * 2 }, (_, index) => `name${index % 10}`);
+    expect(run(values, { threshold: 70 }).summary).toBe(
+      '1 group contain values that are nearly the same',
+    );
+  });
+
+  it('answers within a moment on ten thousand rows', () => {
+    const values = Array.from({ length: 10000 }, (_, index) => `name ${index % 4000}`);
+    const started = performance.now();
+    const result = run(values);
+    expect(performance.now() - started).toBeLessThan(5000);
+    expect(result.summary).toBeDefined();
   });
 
   it('never mutates its input', () => {

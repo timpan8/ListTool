@@ -27,10 +27,22 @@ What the app does:
   copied out of Outlook) · Emails in text.
 - **Tools** in five categories, each with the same flow: pick it, configure it, watch the
   live preview and its summary, then Apply or Apply to new list. Undo is always there. The
-  preview marks the cells, rows and columns the tool would change.
+  preview marks the cells, rows and columns the tool would change. Among them: normalise
+  dates, numbers and phone numbers written six different ways; validate Swedish ID
+  numbers; fill down; pad or cut to length; column maths (rank, running total, share);
+  extract pattern with a column per capture group; sort as text, numbers or dates; find
+  near-duplicates; cross-tab, group and count. Every tool that matches values offers the
+  same four rules in the same order: trim, ignore case, collapse whitespace, ignore
+  diacritics.
+- **Only the ticked rows:** tick rows and any tool offers to run on just those. Its work
+  is merged back by row id — a sort reorders within the ticked slots, a filter removes
+  only ticked rows — and the step says which rows it ran on. A tool that reshapes its
+  rows, like Count values, can only send that result to a new list, and says so.
 - **Worth a look:** the tool picker leads with what the tools would find in the list as it
-  stands — "27 duplicates", "3 addresses look malformed" — with the tool that fixes each
-  one already configured behind it. Nothing is changed by asking.
+  stands — "27 duplicates", "3 addresses look malformed", "the first row looks like
+  column names", "12 phone numbers are written more than one way", "2 columns are empty"
+  — with the tool that fixes each one already configured behind it. Nothing is changed by
+  asking.
 - **Work in the table:** click a header to sort the view (and make that order permanent
   in one click), open the ▾ beside any column to filter it, rename, move or remove it, or
   see the tools that take it. Click a cell to change it; the arrow keys move between

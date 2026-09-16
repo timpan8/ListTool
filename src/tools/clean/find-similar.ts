@@ -1,15 +1,26 @@
-import { cell } from '../../core/model';
+import { cell, type Row } from '../../core/model';
 import { clusterValues } from '../../core/similarity';
 import { normalizeKey } from '../../core/normalize';
 import { booleanOption, numberOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { freeColumnId, targetColumn, withColumns } from '../helpers';
+import {
+  freeColumnId,
+  NORMALIZE_FIELDS,
+  readNormalize,
+  targetColumn,
+  withColumns,
+} from '../helpers';
 
 const strings = en.tools.findSimilar;
 
 const DEFAULT_THRESHOLD = 90;
-const NORMALIZE = { trim: true, ignoreCase: true };
+
+/**
+ * Clustering compares each value with every cluster so far, so the cost grows with the
+ * square of the distinct values. Past this many it would take longer than a person waits.
+ */
+export const MAX_DISTINCT = 5000;
 
 export const findSimilarTool: Tool = {
   id: 'find-similar',
@@ -28,6 +39,7 @@ export const findSimilarTool: Tool = {
       help: strings.thresholdHelp,
     },
     { key: 'onlyGroups', label: strings.onlyGroups, type: 'boolean', default: false },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options) {
     const source = targetColumn(input, options);
@@ -35,14 +47,24 @@ export const findSimilarTool: Tool = {
 
     // A percentage in the form, a fraction in the maths. 100 means exact.
     const threshold = Math.min(100, Math.max(0, numberOption(options, 'threshold', DEFAULT_THRESHOLD))) / 100;
+    const normalize = readNormalize(options);
 
     // Clustered on distinct values: a list of 5 000 rows usually holds far fewer names,
     // and comparing each row against each row would be the slow way to the same answer.
     const display = new Map<string, string>();
-    for (const row of input.rows) {
+    const keys = input.rows.map((row) => {
       const value = cell(row, source.id);
-      const key = normalizeKey(value, NORMALIZE);
+      const key = normalizeKey(value, normalize);
       if (!display.has(key)) display.set(key, value);
+      return key;
+    });
+
+    if (display.size > MAX_DISTINCT) {
+      return {
+        output: input,
+        summary: en.tools.nothingChanged,
+        warnings: [format(strings.tooMany, { n: display.size, limit: MAX_DISTINCT })],
+      };
     }
 
     const clusters = clusterValues([...display.keys()], threshold);
@@ -75,23 +97,19 @@ export const findSimilarTool: Tool = {
     }
 
     const onlyGroups = booleanOption(options, 'onlyGroups', false);
-    const rows = input.rows
-      .filter(
-        (row) =>
-          !onlyGroups ||
-          interesting.has(keyOfCluster.get(normalizeKey(cell(row, source.id), NORMALIZE)) ?? ''),
-      )
-      .map((row) => {
-        const key = normalizeKey(cell(row, source.id), NORMALIZE);
-        return {
-          id: row.id,
-          cells: {
-            ...row.cells,
-            [groupId]: String(groupOf.get(key) ?? 0),
-            [suggestedId]: suggestionOf.get(key) ?? '',
-          },
-        };
+    const rows: Row[] = [];
+    input.rows.forEach((row, index) => {
+      const key = keys[index] ?? '';
+      if (onlyGroups && !interesting.has(keyOfCluster.get(key) ?? '')) return;
+      rows.push({
+        id: row.id,
+        cells: {
+          ...row.cells,
+          [groupId]: String(groupOf.get(key) ?? 0),
+          [suggestedId]: suggestionOf.get(key) ?? '',
+        },
       });
+    });
 
     return {
       // Nothing is replaced: this reports, and the ordinary Find & replace acts on it.

@@ -2,7 +2,7 @@ import { cell } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
-import { matchesText, safeRegExp, targetColumns, withRows } from '../helpers';
+import { matchesText, rowsPhrase, safeRegExp, targetColumns, withRows } from '../helpers';
 
 const strings = en.tools.filter;
 
@@ -55,7 +55,7 @@ export const filterRowsTool: Tool = {
 
     return {
       output: withRows(input, kept),
-      summary: format(strings.summary, { kept: kept.length, before: input.rows.length }),
+      summary: format(strings.summary, { kept: kept.length, before: rowsPhrase(input.rows.length) }),
       stats: { kept: kept.length, removed: input.rows.length - kept.length },
     };
   },

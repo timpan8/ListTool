@@ -1,7 +1,10 @@
+import { dateShapeOf } from '../../core/dates';
+import { cell } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
+import { readSwedishId } from '../../core/swedish-id';
 import { en } from '../../i18n/en';
-import { format } from '../../i18n/format';
-import { mapCells, targetColumns, withRows } from '../helpers';
+import { format, plural } from '../../i18n/format';
+import { mapCells, targetColumn, withRows } from '../helpers';
 
 const strings = en.tools.phone;
 
@@ -9,8 +12,13 @@ const strings = en.tools.phone;
 const MIN_DIGITS = 6;
 const MAX_DIGITS = 15;
 
+const DEFAULT_COUNTRY = '46';
+
 /** Anything a person writes between the digits. A letter means it is not a number. */
 const SEPARATORS = /[\s\-()./]/g;
+
+/** The share of a column's filled cells that must be numbers before it is worth a look. */
+const PHONE_SHARE = 0.6;
 
 /** The digits of a number in international form, or null when it is not one. */
 function toDigits(value: string, country: string): string | null {
@@ -53,6 +61,11 @@ function render(digits: string, shape: string, country: string): string {
     : `+${group(digits)}`;
 }
 
+/** The way a number is written, digits aside: 070-123 45 67 and 070-123 45 68 share one. */
+function shapeOf(value: string): string {
+  return value.trim().replace(/[0-9]+/g, '9');
+}
+
 export const normalizePhoneTool: Tool = {
   id: 'normalize-phone',
   name: strings.name,
@@ -61,12 +74,12 @@ export const normalizePhoneTool: Tool = {
   keywords: ['phone', 'telephone', 'mobile', 'number', 'e164', 'format', 'msisdn'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: en.tools.shared.column, type: 'column' },
     {
       key: 'country',
       label: strings.country,
       type: 'text',
-      default: '46',
+      default: DEFAULT_COUNTRY,
       help: strings.countryHelp,
     },
     {
@@ -83,8 +96,11 @@ export const normalizePhoneTool: Tool = {
     { key: 'keepUnparsed', label: strings.keepUnparsed, type: 'boolean', default: true },
   ],
   run(input, options) {
+    const column = targetColumn(input, options);
+    if (column === undefined) return { output: input, summary: en.tools.nothingChanged };
+
     // A leading + on the country code is punctuation, not a digit.
-    const country = stringOption(options, 'country', '46').replace(/[^0-9]/g, '');
+    const country = stringOption(options, 'country', DEFAULT_COUNTRY).replace(/[^0-9]/g, '');
     const shape = stringOption(options, 'shape', 'e164');
     const keepUnparsed = booleanOption(options, 'keepUnparsed', true);
 
@@ -92,7 +108,7 @@ export const normalizePhoneTool: Tool = {
     let unparsed = 0;
     let total = 0;
 
-    const { rows, changed } = mapCells(input, targetColumns(input, options), (value) => {
+    const { rows, changed } = mapCells(input, [column], (value) => {
       if (value.trim() === '') return value;
       total += 1;
 
@@ -114,9 +130,29 @@ export const normalizePhoneTool: Tool = {
       output: withRows(input, rows),
       summary: format(strings.summary, { count: normalized, total }),
       stats: { normalized, unparsed },
-      ...(unparsed > 0 && keepUnparsed
-        ? { warnings: [format(strings.warnUnparsed, { n: unparsed })] }
-        : {}),
+      ...(unparsed > 0 && keepUnparsed ? { warnings: [plural(unparsed, strings.warnUnparsed)] } : {}),
     };
+  },
+  check(input) {
+    // A column of numbers written more than one way. Dates and identity numbers are
+    // runs of digits too, so they are set aside before anything is counted — an identity
+    // number only when it checks out, since a bare mobile number has the same ten digits.
+    for (const column of input.columns) {
+      let filled = 0;
+      let numbers = 0;
+      const shapes = new Set<string>();
+      for (const row of input.rows) {
+        const value = cell(row, column.id).trim();
+        if (value === '') continue;
+        filled += 1;
+        if (dateShapeOf(value) !== null || readSwedishId(value) !== null) continue;
+        if (toDigits(value, DEFAULT_COUNTRY) === null) continue;
+        numbers += 1;
+        shapes.add(shapeOf(value));
+      }
+      if (numbers === 0 || numbers / filled < PHONE_SHARE || shapes.size < 2) continue;
+      return { summary: plural(numbers, strings.found), count: numbers, options: { column: column.id } };
+    }
+    return null;
   },
 };

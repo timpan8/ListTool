@@ -109,4 +109,28 @@ describe('parse column tool', () => {
     parseColumnTool.run(STUCK, BASE);
     expect(JSON.stringify(STUCK)).toBe(before);
   });
+
+  describe('check', () => {
+    it('points at a column of Name <email> and opens the recipients parser on it', () => {
+      expect(parseColumnTool.check?.(STUCK)).toEqual({
+        summary: '2 cells hold a name and an address together',
+        count: 2,
+        options: { column: 'who', parserId: 'recipients' },
+      });
+    });
+
+    it('accepts a quoted display name', () => {
+      const quoted = tableOf(['who'], [{ who: '"Andersson, Anna" <anna@example.com>' }]);
+      expect(parseColumnTool.check?.(quoted)?.count).toBe(1);
+    });
+
+    it('says nothing about bare addresses, names, or a column that is mostly something else', () => {
+      expect(parseColumnTool.check?.(listOf('anna@example.com', 'bo@example.com'))).toBeNull();
+      expect(parseColumnTool.check?.(listOf('Anna', 'Bo'))).toBeNull();
+      expect(
+        parseColumnTool.check?.(listOf('Bo <bo@example.com>', 'Anna', 'Carl', 'Dora')),
+      ).toBeNull();
+      expect(parseColumnTool.check?.(listOf())).toBeNull();
+    });
+  });
 });
