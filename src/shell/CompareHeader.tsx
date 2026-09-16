@@ -1,7 +1,7 @@
 import type { Dataset } from '../core/model';
 import type { Options } from '../core/registry';
 import { compareListsTool } from '../tools/compare/compare-lists';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { ComparePanel } from './ComparePanel';
 import { OptionsPanel } from './OptionsPanel';
 
@@ -37,9 +37,9 @@ export function CompareHeader({
   return (
     <>
       <div class="compare__head">
-        <h2 class="compare__title">{en.compare.title}</h2>
+        <h2 class="compare__title">{ui.compare.title}</h2>
         <button type="button" class="button button--quiet" onClick={onClose}>
-          {en.compare.close}
+          {ui.compare.close}
         </button>
       </div>
 
@@ -54,8 +54,8 @@ export function CompareHeader({
         <button
           type="button"
           class="button compare__swap"
-          title={en.compare.swap}
-          aria-label={en.compare.swap}
+          title={ui.compare.swap}
+          aria-label={ui.compare.swap}
           onClick={onSwap}
         >
           ⇄

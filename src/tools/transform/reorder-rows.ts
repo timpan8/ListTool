@@ -1,10 +1,10 @@
 import type { Row } from '../../core/model';
 import { numberOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { rowsPhrase, withRows } from '../helpers';
 
-const strings = en.tools.reorderRows;
+const strings = ui.tools.reorderRows;
 
 /**
  * A small deterministic generator (mulberry32). Shuffling has to be reproducible: a

@@ -120,7 +120,8 @@ src/
   shell/      App.tsx Layout.tsx DatasetTabs.tsx DatasetView.tsx StatusBar.tsx
               ImportDialog.tsx ToolPicker.tsx CommandPalette.tsx OptionsPanel.tsx
               ResultPanel.tsx CompareMode.tsx ExportDialog.tsx Settings.tsx
-  i18n/       en.ts        (ALL user-facing strings; components never contain literal UI text)
+  i18n/       en.ts sv.ts  (ALL user-facing strings, one file per language; components never
+              index.ts     contain literal UI text and read `ui` from i18n/index.ts, never `en`)
   styles/     tokens.css globals.css
   test/       fixtures.ts
 ```

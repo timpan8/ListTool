@@ -1,5 +1,5 @@
 import { DELIMITER_PRESETS, escapeDelimiter, unescapeDelimiter } from '../core/detect';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 interface Props {
   id: string;
@@ -16,7 +16,7 @@ function presetIdFor(value: string): string {
 }
 
 function labelFor(presetId: string): string {
-  const labels: Record<string, string> = en.options.delimiters;
+  const labels: Record<string, string> = ui.options.delimiters;
   return labels[presetId] ?? presetId;
 }
 
@@ -46,18 +46,18 @@ export function DelimiterField({ id, label, value, help, onChange }: Props) {
             checked={selected === CUSTOM}
             onChange={() => onChange(value === '' ? ',' : value)}
           />
-          {en.options.custom}
+          {ui.options.custom}
         </label>
       </div>
       {selected === CUSTOM ? (
         <label class="field__custom">
-          <span class="field__label">{en.options.customDelimiter}</span>
+          <span class="field__label">{ui.options.customDelimiter}</span>
           <input
             type="text"
             value={escapeDelimiter(value)}
             onInput={(event) => onChange(unescapeDelimiter(event.currentTarget.value))}
           />
-          <span class="field__help">{en.options.customDelimiterHint}</span>
+          <span class="field__help">{ui.options.customDelimiterHint}</span>
         </label>
       ) : null}
       {help === undefined ? null : <p class="field__help">{help}</p>}

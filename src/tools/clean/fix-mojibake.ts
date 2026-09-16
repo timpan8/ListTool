@@ -1,10 +1,10 @@
 import type { Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { cell } from '../../core/model';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.fixMojibake;
+const strings = ui.tools.fixMojibake;
 
 /**
  * CP1252 puts printable characters at 0x80-0x9F, where Latin-1 has control codes. Text
@@ -65,7 +65,7 @@ export const fixMojibakeTool: Tool = {
   keywords: ['mojibake', 'encoding', 'utf-8', 'latin-1', 'garbled', 'åäö', 'Ã¤', 'charset'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
   ],
   run(input, options) {
     const { rows, changed } = mapCells(input, targetColumns(input, options), (value) =>
@@ -73,7 +73,7 @@ export const fixMojibakeTool: Tool = {
     );
 
     if (changed === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.nothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.nothing] };
     }
 
     return {

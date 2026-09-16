@@ -1,11 +1,11 @@
 import { cell, type Column, type Row } from '../../core/model';
 import { formatNumber, parseNumber } from '../../core/number';
 import { numberOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, rowsPhrase, targetColumn, withColumns } from '../helpers';
 
-const strings = en.tools.columnMaths;
+const strings = ui.tools.columnMaths;
 
 type How = 'rank' | 'denseRank' | 'runningTotal' | 'share' | 'difference';
 
@@ -57,7 +57,7 @@ export const columnMathsTool: Tool = {
   keywords: ['rank', 'running', 'total', 'cumulative', 'share', 'percent', 'difference', 'maths'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     {
       key: 'how',
       label: strings.how,
@@ -80,7 +80,7 @@ export const columnMathsTool: Tool = {
   ],
   run(input, options) {
     const source = targetColumn(input, options);
-    if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (source === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const wanted = stringOption(options, 'how', 'rank');
     const how: How = HOWS.includes(wanted as How) ? (wanted as How) : 'rank';

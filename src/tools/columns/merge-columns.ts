@@ -1,10 +1,10 @@
 import { cell } from '../../core/model';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { freeColumnId, withColumns } from '../helpers';
 
-const strings = en.tools.mergeColumns;
+const strings = ui.tools.mergeColumns;
 
 export const mergeColumnsTool: Tool = {
   id: 'merge-columns',
@@ -28,7 +28,7 @@ export const mergeColumnsTool: Tool = {
     const b = input.columns.find((column) => column.id === stringOption(options, 'columnB', ''))
       ?? input.columns[1];
     if (a === undefined || b === undefined || a.id === b.id) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [en.tools.swap.same] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [ui.tools.swap.same] };
     }
 
     const separator = stringOption(options, 'separator', ' ');

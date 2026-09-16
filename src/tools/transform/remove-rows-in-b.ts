@@ -1,12 +1,12 @@
 import { cell } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import type { Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { rowsPhrase, withRows } from '../helpers';
 import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from '../compare/shared';
 
-const strings = en.tools.removeInB;
+const strings = ui.tools.removeInB;
 
 export const removeRowsInBTool: Tool = {
   id: 'remove-rows-in-b',
@@ -20,8 +20,8 @@ export const removeRowsInBTool: Tool = {
     if (second === undefined) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
-        warnings: [en.tools.shared.secondListMissing],
+        summary: ui.tools.nothingChanged,
+        warnings: [ui.tools.shared.secondListMissing],
       };
     }
 
@@ -37,7 +37,7 @@ export const removeRowsInBTool: Tool = {
       output: withRows(input, kept),
       summary:
         removed === 0
-          ? en.tools.nothingChanged
+          ? ui.tools.nothingChanged
           : format(strings.summary, {
               removed: plural(removed, strings.removed),
               before: rowsPhrase(input.rows.length),

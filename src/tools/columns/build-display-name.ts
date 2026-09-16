@@ -1,10 +1,10 @@
 import { cell } from '../../core/model';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { freeColumnId, rowsPhrase, withColumns } from '../helpers';
 
-const strings = en.tools.displayName;
+const strings = ui.tools.displayName;
 
 export const buildDisplayNameTool: Tool = {
   id: 'build-display-name',
@@ -14,8 +14,8 @@ export const buildDisplayNameTool: Tool = {
   keywords: ['display', 'name', 'full', 'combine', 'first', 'last'],
   arity: 'single',
   options: [
-    { key: 'first', label: en.columns.first, type: 'column', default: 'first' },
-    { key: 'last', label: en.columns.last, type: 'column', default: 'last' },
+    { key: 'first', label: ui.columns.first, type: 'column', default: 'first' },
+    { key: 'last', label: ui.columns.last, type: 'column', default: 'last' },
     {
       key: 'order',
       label: strings.order,

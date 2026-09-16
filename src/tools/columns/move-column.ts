@@ -1,9 +1,9 @@
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { targetColumn, withColumns } from '../helpers';
 
-const strings = en.tools.moveColumn;
+const strings = ui.tools.moveColumn;
 
 export const moveColumnTool: Tool = {
   id: 'move-column',
@@ -13,7 +13,7 @@ export const moveColumnTool: Tool = {
   keywords: ['move', 'reorder', 'column', 'left', 'right', 'order'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     {
       key: 'direction',
       label: strings.direction,
@@ -30,14 +30,14 @@ export const moveColumnTool: Tool = {
   },
   run(input, options) {
     const target = targetColumn(input, options);
-    if (target === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (target === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const direction = stringOption(options, 'direction', 'left');
     const from = input.columns.indexOf(target);
     const to = direction === 'right' ? from + 1 : from - 1;
 
     if (to < 0 || to >= input.columns.length) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.atEdge] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.atEdge] };
     }
 
     const columns = [...input.columns];

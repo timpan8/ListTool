@@ -386,6 +386,8 @@ export function runRecipe(
 const SAVE_DELAY_MS = 400;
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
 let quotaWarned = false;
+/** Who to tell when storage is full: set once persistence starts. */
+let quotaHandler: () => void = () => {};
 
 function persistNow(onQuota: () => void): void {
   const keep = settingsSignal.value.keepLists;
@@ -460,8 +462,19 @@ export function openWorkspaceFile(text: string): boolean {
   return true;
 }
 
+/**
+ * Write now rather than in 400 ms: for a change that must be on disk before the page is
+ * left — the language, which the next load reads before anything else.
+ */
+export function flushPersistence(): void {
+  if (saveTimer !== undefined) clearTimeout(saveTimer);
+  saveTimer = undefined;
+  persistNow(quotaHandler);
+}
+
 /** Start saving on every change. Returns a stop function. */
 export function startPersistence(onQuota: () => void): () => void {
+  quotaHandler = onQuota;
   return effect(() => {
     // Touch everything that is persisted so the effect re-runs when any of it changes.
     void tabs.value;

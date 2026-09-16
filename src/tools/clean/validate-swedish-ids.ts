@@ -1,11 +1,11 @@
 import { cell, type Column, type Row } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { looksLikeSwedishId, readSwedishId, type SwedishIdKind } from '../../core/swedish-id';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, rowsPhrase, targetColumn, withColumns } from '../helpers';
 
-const strings = en.tools.validateSwedishIds;
+const strings = ui.tools.validateSwedishIds;
 
 /** Whether the chosen kind of number takes this one. */
 function accepted(kind: string, found: SwedishIdKind): boolean {
@@ -30,7 +30,7 @@ export const validateSwedishIdsTool: Tool = {
   ],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     {
       key: 'kind',
       label: strings.kind,
@@ -46,7 +46,7 @@ export const validateSwedishIdsTool: Tool = {
   ],
   run(input, options) {
     const source = targetColumn(input, options);
-    if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (source === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const kind = stringOption(options, 'kind', 'any');
     const normalize = booleanOption(options, 'normalize', true);

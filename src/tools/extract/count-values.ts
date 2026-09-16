@@ -1,11 +1,11 @@
 import { cell, makeRow } from '../../core/model';
 import type { Tool } from '../../core/registry';
 import { normalizeKey } from '../../core/normalize';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freshDataset, NORMALIZE_FIELDS, readNormalize, rowsPhrase, targetColumn } from '../helpers';
 
-const strings = en.tools.countValues;
+const strings = ui.tools.countValues;
 
 export const countValuesTool: Tool = {
   id: 'count-values',
@@ -15,12 +15,12 @@ export const countValuesTool: Tool = {
   keywords: ['count', 'frequency', 'tally', 'how many', 'group'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     ...NORMALIZE_FIELDS,
   ],
   run(input, options) {
     const source = targetColumn(input, options);
-    if (source === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (source === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const normalize = readNormalize(options);
 

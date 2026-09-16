@@ -1,9 +1,9 @@
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.changeCase;
+const strings = ui.tools.changeCase;
 
 /**
  * Title-case one word. A hyphen always starts a new part (Anna-Maria). An apostrophe
@@ -61,7 +61,7 @@ export const changeCaseTool: Tool = {
   keywords: ['case', 'upper', 'lower', 'title', 'sentence', 'capital'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
     {
       key: 'mode',
       label: strings.mode,
@@ -84,7 +84,7 @@ export const changeCaseTool: Tool = {
       output: changed === 0 ? input : withRows(input, rows),
       summary:
         changed === 0
-          ? en.tools.nothingChanged
+          ? ui.tools.nothingChanged
           : format(strings.summary, { cells: cellsPhrase(changed) }),
       stats: { changed },
     };

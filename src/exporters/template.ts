@@ -1,9 +1,9 @@
 import type { Dataset } from '../core/model';
 import { booleanOption, stringOption, type Exporter, type Options } from '../core/registry';
 import { fillTemplate } from '../core/template';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
-const strings = en.exporters.template;
+const strings = ui.exporters.template;
 
 const DEFAULT_ROW = '{value}';
 

@@ -3,7 +3,7 @@ import type { Dataset } from '../core/model';
 import type { OptionField, Options, Tool } from '../core/registry';
 import { TOOL_CATEGORIES, toolById, tools } from '../tools';
 import { favorites, recents, toggleFavorite } from '../core/store';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { CheckupList } from './CheckupList';
 
@@ -66,7 +66,7 @@ export function ToolPicker({ dataset, columnId, onAllTools, onPick }: Props) {
           type="button"
           class="picker__star"
           aria-pressed={isFavorite}
-          aria-label={format(isFavorite ? en.panel.unfavorite : en.panel.favorite, {
+          aria-label={format(isFavorite ? ui.panel.unfavorite : ui.panel.favorite, {
             tool: tool.name,
           })}
           onClick={() => toggleFavorite(tool.id)}
@@ -81,18 +81,18 @@ export function ToolPicker({ dataset, columnId, onAllTools, onPick }: Props) {
     <div class="picker">
       {column === undefined ? null : (
         <p class="view__selection" role="status">
-          {format(en.panel.toolsForColumn, { column: column.name })}
+          {format(ui.panel.toolsForColumn, { column: column.name })}
           <button type="button" class="button button--quiet" onClick={onAllTools}>
-            {en.panel.allTools}
+            {ui.panel.allTools}
           </button>
         </p>
       )}
 
       <label class="field">
-        <span class="visually-hidden">{en.panel.searchLabel}</span>
+        <span class="visually-hidden">{ui.panel.searchLabel}</span>
         <input
           type="search"
-          placeholder={en.panel.search}
+          placeholder={ui.panel.search}
           value={query}
           onInput={(event) => setQuery(event.currentTarget.value)}
         />
@@ -102,20 +102,20 @@ export function ToolPicker({ dataset, columnId, onAllTools, onPick }: Props) {
 
       {browsing && starred.length > 0 ? (
         <section class="picker__group">
-          <h3 class="picker__title">{en.panel.favorites}</h3>
+          <h3 class="picker__title">{ui.panel.favorites}</h3>
           <ul class="picker__list">{starred.map(entry)}</ul>
         </section>
       ) : null}
 
       {browsing && recent.length > 0 ? (
         <section class="picker__group">
-          <h3 class="picker__title">{en.panel.recents}</h3>
+          <h3 class="picker__title">{ui.panel.recents}</h3>
           <ul class="picker__list">{recent.map(entry)}</ul>
         </section>
       ) : null}
 
       {available.length === 0 ? (
-        <p class="field__help">{format(en.panel.noTools, { query })}</p>
+        <p class="field__help">{format(ui.panel.noTools, { query })}</p>
       ) : (
         TOOL_CATEGORIES.map((category) => {
           const inCategory = available.filter((tool) => tool.category === category);
@@ -131,7 +131,7 @@ export function ToolPicker({ dataset, columnId, onAllTools, onPick }: Props) {
               }}
             >
               <summary class="picker__title">
-                {en.tools.categories[category]}
+                {ui.tools.categories[category]}
                 <span class="picker__count">{inCategory.length}</span>
               </summary>
               <ul class="picker__list">{inCategory.map(entry)}</ul>

@@ -1,11 +1,11 @@
 import { dateShapeOf, formatDate, parseDate, type DateShape, type DayFirst } from '../../core/dates';
 import { cell } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { cellsPhrase, mapCells, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.normalizeDates;
+const strings = ui.tools.normalizeDates;
 
 function dayFirstOf(options: Record<string, unknown>): DayFirst {
   return stringOption(options, 'dayFirst', 'dmy') === 'mdy' ? 'mdy' : 'dmy';
@@ -24,7 +24,7 @@ export const normalizeDatesTool: Tool = {
   keywords: ['date', 'dates', 'iso', 'format', 'normalise', 'normalize', 'yyyy-mm-dd', 'datum'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
     {
       key: 'dayFirst',
       label: strings.dayFirst,
@@ -66,7 +66,7 @@ export const normalizeDatesTool: Tool = {
     });
 
     if (changed === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.nothing] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.nothing] };
     }
 
     return {

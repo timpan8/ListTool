@@ -1,15 +1,15 @@
 import { booleanOption, type Exporter } from '../core/registry';
 import { renderHtmlTable } from './html-table';
 import { chosenColumns, renderTable } from './table-text';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 export const csvExporter: Exporter = {
   id: 'csv',
-  name: en.exporters.csv.name,
+  name: ui.exporters.csv.name,
   extension: 'csv',
   options: [
-    { key: 'columns', label: en.exporters.shared.columns, type: 'columns' },
-    { key: 'header', label: en.exporters.csv.header, type: 'boolean', default: true },
+    { key: 'columns', label: ui.exporters.shared.columns, type: 'columns' },
+    { key: 'header', label: ui.exporters.csv.header, type: 'boolean', default: true },
   ],
   render(dataset, options) {
     return renderTable(

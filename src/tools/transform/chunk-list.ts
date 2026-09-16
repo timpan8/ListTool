@@ -1,9 +1,9 @@
 import { numberOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { MAX_LISTS, rowsPhrase, withRows } from '../helpers';
 
-const strings = en.tools.chunk;
+const strings = ui.tools.chunk;
 
 const DEFAULT_SIZE = 100;
 const DEFAULT_PATTERN = '{name} {n}';
@@ -28,17 +28,17 @@ export const chunkListTool: Tool = {
   run(input, options) {
     const size = Math.floor(numberOption(options, 'size', DEFAULT_SIZE));
     if (size < 1) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.needSize] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.needSize] };
     }
     if (input.rows.length <= size) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.alreadyShort] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.alreadyShort] };
     }
     // The same ceiling as Split by value: more tabs than this is not a help.
     const count = Math.ceil(input.rows.length / size);
     if (count > MAX_LISTS) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
+        summary: ui.tools.nothingChanged,
         warnings: [format(strings.tooMany, { n: count, limit: MAX_LISTS })],
       };
     }

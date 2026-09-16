@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS,
+  LANGUAGES,
+  readLanguage,
   readSettings,
   settingsOptions,
   sortOptionsOf,
@@ -28,6 +30,27 @@ describe('settings defaults', () => {
 
   it('keeps lists between sessions', () => {
     expect(DEFAULT_SETTINGS.keepLists).toBe(true);
+  });
+
+  it('speaks English until told otherwise', () => {
+    expect(DEFAULT_SETTINGS.language).toBe('en');
+    expect(LANGUAGES).toEqual(['en', 'sv']);
+  });
+});
+
+describe('readLanguage', () => {
+  it('accepts the two languages there are and falls back to English for anything else', () => {
+    expect(readLanguage('sv')).toBe('sv');
+    expect(readLanguage('en')).toBe('en');
+    expect(readLanguage('de')).toBe('en');
+    expect(readLanguage(undefined)).toBe('en');
+    expect(readLanguage(7)).toBe('en');
+  });
+
+  it('is what readSettings uses for the stored language', () => {
+    expect(readSettings({ language: 'sv' }).language).toBe('sv');
+    expect(readSettings({ language: 'nope' }).language).toBe('en');
+    expect(readSettings({}).language).toBe('en');
   });
 });
 

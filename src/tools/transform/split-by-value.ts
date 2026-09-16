@@ -1,7 +1,7 @@
 import { cell, type Row } from '../../core/model';
 import { normalizeKey } from '../../core/normalize';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import {
   MAX_LISTS,
@@ -12,7 +12,7 @@ import {
   withRows,
 } from '../helpers';
 
-const strings = en.tools.splitByValue;
+const strings = ui.tools.splitByValue;
 
 const DEFAULT_PATTERN = '{value}';
 
@@ -24,7 +24,7 @@ export const splitByValueTool: Tool = {
   keywords: ['split', 'by', 'group', 'separate', 'per', 'lists', 'tabs', 'department'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column' },
+    { key: 'column', label: ui.tools.shared.column, type: 'column' },
     {
       key: 'pattern',
       label: strings.pattern,
@@ -36,7 +36,7 @@ export const splitByValueTool: Tool = {
   ],
   run(input, options) {
     const column = targetColumn(input, options);
-    if (column === undefined) return { output: input, summary: en.tools.nothingChanged };
+    if (column === undefined) return { output: input, summary: ui.tools.nothingChanged };
 
     const normalize = readNormalize(options);
 
@@ -51,12 +51,12 @@ export const splitByValueTool: Tool = {
     }
 
     if (groups.size < 2) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.onlyOne] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.onlyOne] };
     }
     if (groups.size > MAX_LISTS) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
+        summary: ui.tools.nothingChanged,
         warnings: [format(strings.tooMany, { n: groups.size, limit: MAX_LISTS })],
       };
     }

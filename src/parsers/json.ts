@@ -1,9 +1,9 @@
 import { columnId, draftDataset, makeRow, valuesDataset, type Column } from '../core/model';
 import type { Parser } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
-const strings = en.parsers.json;
+const strings = ui.parsers.json;
 
 /** One cell's worth of text. A nested value is written as JSON rather than as [object]. */
 function asText(value: unknown): string {
@@ -75,7 +75,7 @@ export const jsonParser: Parser = {
       );
       const columns: Column[] = Array.from({ length: width }, (_, index) => ({
         id: columnId(index),
-        name: format(en.columns.numbered, { n: index + 1 }),
+        name: format(ui.columns.numbered, { n: index + 1 }),
       }));
 
       return draftDataset({
@@ -97,6 +97,6 @@ export const jsonParser: Parser = {
     }
 
     // An array of plain values is a plain list.
-    return valuesDataset(items.map(asText), en.columns.value, input, parse);
+    return valuesDataset(items.map(asText), ui.columns.value, input, parse);
   },
 };

@@ -2,11 +2,11 @@ import { parseDate } from '../../core/dates';
 import { cell, type Column, type Dataset, type Row } from '../../core/model';
 import { parseNumber } from '../../core/number';
 import { stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
 
-const strings = en.tools.headerRow;
+const strings = ui.tools.headerRow;
 
 /** A header plus at least two rows of data: fewer and the first row is anyone's guess. */
 const MIN_ROWS = 3;
@@ -17,7 +17,7 @@ const TYPED_SHARE = 0.8;
 /** The parsers name columns they could not name; those are the names to replace. */
 function namesAreGeneric(dataset: Dataset): boolean {
   return dataset.columns.every(
-    (column, index) => column.name === format(en.columns.numbered, { n: index + 1 }),
+    (column, index) => column.name === format(ui.columns.numbered, { n: index + 1 }),
   );
 }
 
@@ -70,7 +70,7 @@ export const headerRowTool: Tool = {
     if (promote) {
       const first = input.rows[0];
       if (first === undefined) {
-        return { output: input, summary: en.tools.nothingChanged, warnings: [strings.noRows] };
+        return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.noRows] };
       }
 
       // Ids never change: only the names do, and the row that gave them goes.

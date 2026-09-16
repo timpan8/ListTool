@@ -1,6 +1,6 @@
 import type { Column } from '../core/model';
 import type { OptionField as Field } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { plural } from '../i18n/format';
 import { ColumnsField } from './ColumnsField';
 import { DebouncedInput } from './DebouncedInput';
@@ -39,7 +39,7 @@ export function OptionField({ id, field, label, value, columns, onChange }: Prop
       <div class="field">
         <span class="field__label">{label}</span>
         <p class="notice" role="status">
-          {ticked === 0 ? en.options.selectionEmpty : plural(ticked, en.options.selection)}
+          {ticked === 0 ? ui.options.selectionEmpty : plural(ticked, ui.options.selection)}
         </p>
         {help}
       </div>
@@ -84,9 +84,9 @@ export function OptionField({ id, field, label, value, columns, onChange }: Prop
       : field.type === 'column'
         ? [
             ...(field.allowAll === true
-              ? [{ value: '', label: en.options.allColumns }]
+              ? [{ value: '', label: ui.options.allColumns }]
               : field.allowNone === true
-                ? [{ value: '', label: en.options.noColumns }]
+                ? [{ value: '', label: ui.options.noColumns }]
                 : []),
             ...columns.map((column) => ({ value: column.id, label: column.name })),
           ]

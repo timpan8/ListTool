@@ -1,6 +1,6 @@
 import { cellKey } from '../core/diff';
 import { cell, type Column, type Row } from '../core/model';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import type { Marks } from './marks';
 import { TableCell } from './TableCell';
@@ -58,7 +58,7 @@ export function TableRow({
         <td class="table__tick">
           <input
             type="checkbox"
-            aria-label={format(en.view.selectRow, { n: index + 1 })}
+            aria-label={format(ui.view.selectRow, { n: index + 1 })}
             checked={ticked}
             onChange={() => onTick?.(row.id)}
           />
@@ -81,7 +81,7 @@ export function TableRow({
             <TableCell
               key={column.id}
               value={cell(row, column.id)}
-              label={format(en.view.editCell, { column: column.name, n: index + 1 })}
+              label={format(ui.view.editCell, { column: column.name, n: index + 1 })}
               className={className}
               onCommit={(value) => onEdit(row.id, column.id, value)}
             />

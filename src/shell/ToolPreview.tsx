@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import type { DatasetDiff } from '../core/diff';
 import type { Dataset } from '../core/model';
 import { numericColumns } from '../core/profile';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { DataTable } from './DataTable';
 import { marksFromDiff } from './marks';
@@ -23,7 +23,7 @@ export function ToolPreview({ output, summary, warnings, diff }: Props) {
     diff === undefined
       ? {
           rows: output.rows.slice(0, PREVIEW_ROWS),
-          caption: format(en.panel.previewNote, { n: Math.min(PREVIEW_ROWS, output.rows.length) }),
+          caption: format(ui.panel.previewNote, { n: Math.min(PREVIEW_ROWS, output.rows.length) }),
           expandable: false,
         }
       : previewRows(output, diff, expanded);
@@ -41,9 +41,9 @@ export function ToolPreview({ output, summary, warnings, diff }: Props) {
       ))}
 
       <section class="preview">
-        <h4 class="preview__title">{en.panel.preview}</h4>
+        <h4 class="preview__title">{ui.panel.preview}</h4>
         {output.rows.length === 0 ? (
-          <p class="field__help">{en.import.previewEmpty}</p>
+          <p class="field__help">{ui.import.previewEmpty}</p>
         ) : (
           <>
             <p class="field__help preview__caption">
@@ -54,7 +54,7 @@ export function ToolPreview({ output, summary, warnings, diff }: Props) {
                   class="button button--quiet"
                   onClick={() => setExpanded(!expanded)}
                 >
-                  {expanded ? en.panel.previewFewer : en.panel.previewAll}
+                  {expanded ? ui.panel.previewFewer : ui.panel.previewAll}
                 </button>
               ) : null}
             </p>

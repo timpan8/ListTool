@@ -3,7 +3,7 @@ import { defaultOptions, type Exporter, type Options } from '../core/registry';
 import { sortOptionsOf, type Settings } from '../core/settings';
 import { copyScope, scopeRows, withVisible, type RowScope, type ViewState } from '../core/view';
 import { copyExporter, exporterById, isTableExporter } from '../exporters';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format, plural } from '../i18n/format';
 import { copyText } from './clipboard';
 import { withColumnDefaults } from './toolOptions';
@@ -68,20 +68,20 @@ export function copyNotice(
   scope: RowScope,
   exporter: Exporter,
 ): string {
-  if (!copied) return en.toolbar.copyFailed;
+  if (!copied) return ui.toolbar.copyFailed;
   const n = dataset.rows.length;
   const which = plural(
     n,
     scope === 'ticked'
-      ? en.toolbar.copiedTicked
+      ? ui.toolbar.copiedTicked
       : scope === 'shown'
-        ? en.toolbar.copiedShown
-        : en.toolbar.copiedAll,
+        ? ui.toolbar.copiedShown
+        : ui.toolbar.copiedAll,
   );
   const what = isTableExporter(exporter)
-    ? plural(dataset.columns.length, en.toolbar.asTable)
+    ? plural(dataset.columns.length, ui.toolbar.asTable)
     : exporter.name;
-  return format(en.toolbar.copied, { which, what });
+  return format(ui.toolbar.copied, { which, what });
 }
 
 /** Copy what is on screen, and say what was copied. Every copy path in the shell ends here. */
@@ -92,7 +92,7 @@ export async function copyView(
   exporterId?: string,
 ): Promise<string> {
   const rendered = renderView(source, view, settings, exporterId);
-  if (rendered.dataset.rows.length === 0) return en.toolbar.nothingToCopy;
+  if (rendered.dataset.rows.length === 0) return ui.toolbar.nothingToCopy;
   const copied = await copyText(rendered.text, rendered.html);
   return copyNotice(copied, rendered.dataset, rendered.scope, rendered.exporter);
 }

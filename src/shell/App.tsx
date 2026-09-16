@@ -14,7 +14,7 @@ import {
   undo,
 } from '../core/store';
 import { htmlTableParser } from '../parsers/html-table';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { CommandPalette } from './CommandPalette';
 import { ExportDialog } from './ExportDialog';
 import { ImportDialog } from './ImportDialog';
@@ -65,7 +65,7 @@ export function App() {
   const id = activeId.value;
   const open = dialog.kind !== 'none';
 
-  useEffect(() => startPersistence(() => setNotice(en.settings.quota)), []);
+  useEffect(() => startPersistence(() => setNotice(ui.settings.quota)), []);
 
   // Every copy takes what is on screen; without a format named, the list's shape decides.
   async function copyAs(exporterId?: string): Promise<void> {
@@ -128,7 +128,7 @@ export function App() {
   return (
     <>
       <a class="skip-link" href="#content">
-        {en.a11y.skipToContent}
+        {ui.a11y.skipToContent}
       </a>
 
       <Layout
@@ -167,7 +167,7 @@ export function App() {
       {dialog.kind === 'settings' ? (
         <Settings
           onClose={() => setDialog({ kind: 'none' })}
-          onCleared={() => setNotice(en.settings.cleared)}
+          onCleared={() => setNotice(ui.settings.cleared)}
           onNotice={setNotice}
         />
       ) : null}

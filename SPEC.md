@@ -1,6 +1,7 @@
 # List Tool — Functional Specification
 
-UI language: English. Code: English. See `CLAUDE.md` for the model and contracts.
+UI language: English by default, Swedish by choice in Settings (since M9). Code: English.
+See `CLAUDE.md` for the model and contracts.
 
 ## 1. Concepts
 - **Dataset** — one list, always a table. A plain list is a one-column table (`value`).
@@ -182,7 +183,8 @@ keep working in memory. **Clear all data** button in Settings wipes the key imme
 Nothing is ever put in the URL.
 
 ## 10. Settings
-Default delimiter · Sort locale (Swedish `sv` default — å ä ö sort after z; or English) ·
+Language (English default, Swedish; the page reloads in the new language) · Default
+delimiter · Sort locale (Swedish `sv` default — å ä ö sort after z; or English) ·
 Natural/numeric sort on by default · Default name order (Last First) · Keep lists between
 sessions · Clear all data.
 
@@ -262,5 +264,5 @@ either way. Split into batches and Split into lists refuse above 30 lists at onc
 | Fuzzy match review | suggested matches with a similarity score, manual accept/reject, never default | threshold | Later |
 
 ## 13. Later (design for, don't build now)
-Web Workers for large lists · table virtualization · PWA offline caching · JSON import ·
-XLSX export (lazy-loaded SheetJS) · Swedish UI (strings are already centralized in `i18n/en.ts`).
+Web Workers for large lists · table virtualization · PWA offline caching ·
+XLSX export (lazy-loaded SheetJS) · further languages (one file each, next to `i18n/sv.ts`).

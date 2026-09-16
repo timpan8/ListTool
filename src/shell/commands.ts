@@ -3,7 +3,7 @@ import type { Tool } from '../core/registry';
 import { exporters } from '../exporters';
 import { parsers } from '../parsers';
 import { tools } from '../tools';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
 export interface Command {
@@ -31,7 +31,7 @@ export function buildCommands(dataset: Dataset | null, handlers: CommandHandlers
     .map((tool) => ({
       id: `tool:${tool.id}`,
       label: tool.name,
-      group: en.palette.groups.tool,
+      group: ui.palette.groups.tool,
       run: () => handlers.pickTool(tool),
     }));
 
@@ -40,15 +40,15 @@ export function buildCommands(dataset: Dataset | null, handlers: CommandHandlers
       ? []
       : parsers.map((parser) => ({
           id: `parse:${parser.id}`,
-          label: format(en.palette.reparseAs, { parser: parser.name }),
-          group: en.palette.groups.reparse,
+          label: format(ui.palette.reparseAs, { parser: parser.name }),
+          group: ui.palette.groups.reparse,
           run: () => handlers.reparse(parser.id),
         }));
 
   const copyCommands = exporters.map((exporter) => ({
     id: `copy:${exporter.id}`,
-    label: format(en.palette.copyAs, { exporter: exporter.name }),
-    group: en.palette.groups.copy,
+    label: format(ui.palette.copyAs, { exporter: exporter.name }),
+    group: ui.palette.groups.copy,
     run: () => handlers.copyAs(exporter.id),
   }));
 

@@ -11,7 +11,7 @@ import {
   setNotice,
   settings,
 } from '../core/store';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format, plural } from '../i18n/format';
 import { OptionsPanel } from './OptionsPanel';
 import { ResultActions } from './ResultActions';
@@ -74,7 +74,7 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
   const scope = canScope && onTicked ? ticked : null;
   const { chosen, result, diff } = useToolRun(tool, dataset, options, second, ticked, scope);
   const summaryOf = (summary: string): string =>
-    scope === null ? summary : format(plural(scope.length, en.scope.suffix), { summary });
+    scope === null ? summary : format(plural(scope.length, ui.scope.suffix), { summary });
 
   function change(key: string, value: unknown): void {
     latest.current = { ...latest.current, [key]: value };
@@ -104,7 +104,7 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
     if (toNewList) {
       landed = addDataset(
         fresh.result.output,
-        format(en.panel.copySuffix, { name: dataset.name, tool: tool.name }),
+        format(ui.panel.copySuffix, { name: dataset.name, tool: tool.name }),
       );
     } else {
       applyStep(dataset.id, step, fresh.result.output);
@@ -116,7 +116,7 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
     for (const extra of extras) addDataset(extra.dataset, extra.name);
     if (extras.length > 0) {
       setActive(landed);
-      setNotice(plural(extras.length, en.panel.extraLists));
+      setNotice(plural(extras.length, ui.panel.extraLists));
     }
 
     noteToolUsed(tool.id);
@@ -134,7 +134,7 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
       }}
     >
       <button type="button" class="button button--quiet result__back" onClick={onBack}>
-        ← {en.panel.back}
+        ← {ui.panel.back}
       </button>
 
       <div>

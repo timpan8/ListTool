@@ -1,9 +1,9 @@
 import { columnId, draftDataset, makeRow, type Column } from '../core/model';
 import { stringOption, type Parser } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
-const strings = en.parsers.htmlTable;
+const strings = ui.parsers.htmlTable;
 
 /**
  * Hand-written on purpose: the app loads no HTML parser, and what arrives here is the
@@ -150,7 +150,7 @@ export const htmlTableParser: Parser = {
         id: columnId(index),
         name:
           name === undefined || name === ''
-            ? format(en.columns.numbered, { n: index + 1 })
+            ? format(ui.columns.numbered, { n: index + 1 })
             : name,
       };
     });

@@ -1,11 +1,11 @@
 import { compareDatasets, sideBySide } from '../../core/compare';
 import type { Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { rowsPhrase } from '../helpers';
 import { compareLabels, KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
-const strings = en.tools.compareLists;
+const strings = ui.tools.compareLists;
 
 /**
  * The comparison as a table: one row per key, the status first, then every column of
@@ -24,8 +24,8 @@ export const compareListsTool: Tool = {
     if (second === undefined) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
-        warnings: [en.tools.shared.secondListMissing],
+        summary: ui.tools.nothingChanged,
+        warnings: [ui.tools.shared.secondListMissing],
       };
     }
 

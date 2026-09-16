@@ -8,10 +8,10 @@ import {
   type Row,
 } from '../core/model';
 import { booleanOption, stringOption, type Options, type Parser } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
-const strings = en.parsers.delimited;
+const strings = ui.parsers.delimited;
 
 interface Settings {
   delimiter: string;
@@ -44,7 +44,7 @@ function toRows(lines: string[], settings: Settings): { columns: Column[]; rows:
 
   const columns: Column[] = Array.from({ length: width }, (_, index) => ({
     id: columnId(index),
-    name: format(en.columns.numbered, { n: index + 1 }),
+    name: format(ui.columns.numbered, { n: index + 1 }),
   }));
 
   const rows = kept.map((cells, index) =>
@@ -100,6 +100,6 @@ export const delimitedParser: Parser = {
 
     const items = lines.flatMap((line) => splitLine(line, settings));
     const kept = settings.dropEmpty ? items.filter((item) => item.trim() !== '') : items;
-    return valuesDataset(kept, en.columns.value, input, parse);
+    return valuesDataset(kept, ui.columns.value, input, parse);
   },
 };

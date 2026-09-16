@@ -1,10 +1,10 @@
 import { cell, columnId, makeRow, type Column } from '../../core/model';
 import { booleanOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { freshDataset, rowsPhrase } from '../helpers';
 
-const strings = en.tools.transpose;
+const strings = ui.tools.transpose;
 
 /** The column holding the old column names — the row labels of the turned table. */
 const FIELD_COLUMN = 'field';
@@ -19,7 +19,7 @@ export const transposeTool: Tool = {
   options: [{ key: 'header', label: strings.header, type: 'boolean', default: false }],
   run(input, options) {
     if (input.rows.length === 0 || input.columns.length === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.empty] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.empty] };
     }
 
     const header = booleanOption(options, 'header', false);

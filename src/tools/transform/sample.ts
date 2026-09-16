@@ -1,10 +1,10 @@
 import { numberOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format } from '../../i18n/format';
 import { rowsPhrase, withRows } from '../helpers';
 import { shuffle } from './reorder-rows';
 
-const strings = en.tools.sample;
+const strings = ui.tools.sample;
 
 const DEFAULT_COUNT = 20;
 const DEFAULT_STEP = 10;
@@ -57,7 +57,7 @@ export const sampleTool: Tool = {
             : input.rows.slice(0, count);
 
     if (kept.length === input.rows.length) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.alreadyShort] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.alreadyShort] };
     }
 
     return {

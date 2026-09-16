@@ -1,10 +1,10 @@
 import { cell, isBlankRow } from '../../core/model';
 import type { Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { rowsPhrase, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.removeBlank;
+const strings = ui.tools.removeBlank;
 
 export const removeBlankRowsTool: Tool = {
   id: 'remove-blank-rows',
@@ -14,7 +14,7 @@ export const removeBlankRowsTool: Tool = {
   keywords: ['blank', 'empty', 'remove', 'drop', 'clean'],
   arity: 'single',
   options: [
-    { key: 'column', label: en.tools.shared.column, type: 'column', default: '', allowAll: true },
+    { key: 'column', label: ui.tools.shared.column, type: 'column', default: '', allowAll: true },
   ],
   run(input, options) {
     const columns = targetColumns(input, options);
@@ -29,7 +29,7 @@ export const removeBlankRowsTool: Tool = {
       output: withRows(input, kept),
       summary:
         removed === 0
-          ? en.tools.nothingChanged
+          ? ui.tools.nothingChanged
           : format(strings.summary, {
               removed: plural(removed, strings.blankRows),
               before: rowsPhrase(input.rows.length),

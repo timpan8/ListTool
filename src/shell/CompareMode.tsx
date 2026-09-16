@@ -6,7 +6,7 @@ import { openDatasets, settings } from '../core/store';
 import { sorted, type ViewSort } from '../core/view';
 import { compareListsTool } from '../tools/compare/compare-lists';
 import { compareLabels, readCompareOptions } from '../tools/compare/shared';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { CompareActions } from './CompareActions';
 import { CompareHeader } from './CompareHeader';
 import { CompareResult, passesFilter, type CompareFilter } from './CompareResult';
@@ -45,9 +45,9 @@ export function CompareMode({ onImport, onClose }: Props) {
   if (a === undefined || b === undefined || outcome === null) {
     return (
       <section class="compare">
-        <p class="notice">{en.compare.needTwo}</p>
+        <p class="notice">{ui.compare.needTwo}</p>
         <button type="button" class="button button--primary" onClick={onImport}>
-          {en.toolbar.import}
+          {ui.toolbar.import}
         </button>
       </section>
     );

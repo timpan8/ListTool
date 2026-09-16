@@ -1,6 +1,6 @@
 import type { Column } from '../core/model';
 import type { ViewSort } from '../core/view';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 import { ColumnMenu, type MenuItem } from './ColumnMenu';
 import type { Marks } from './marks';
@@ -39,7 +39,7 @@ export function HeaderCell({ column, selected, numeric, marks, sort, onSort, col
           <button
             type="button"
             class="table__head"
-            title={en.table.sortHint}
+            title={ui.table.sortHint}
             onClick={() => onSort(column.id)}
           >
             {column.name}
@@ -52,7 +52,7 @@ export function HeaderCell({ column, selected, numeric, marks, sort, onSort, col
         )}
         {columnMenu === undefined ? null : (
           <ColumnMenu
-            label={format(en.table.menu, { column: column.name })}
+            label={format(ui.table.menu, { column: column.name })}
             items={columnMenu(column)}
           />
         )}

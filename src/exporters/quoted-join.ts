@@ -1,6 +1,6 @@
 import { stringOption, type Exporter } from '../core/registry';
 import { columnValues } from './column';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 /**
  * A quote inside a value is doubled, which is how both SQL and PowerShell escape it.
@@ -13,17 +13,17 @@ function quoteValue(value: string, quote: string): string {
 
 export const quotedJoinExporter: Exporter = {
   id: 'quoted-join',
-  name: en.exporters.quoted.name,
+  name: ui.exporters.quoted.name,
   options: [
-    { key: 'column', label: en.exporters.quoted.column, type: 'column' },
+    { key: 'column', label: ui.exporters.quoted.column, type: 'column' },
     {
       key: 'quote',
-      label: en.exporters.quoted.quote,
+      label: ui.exporters.quoted.quote,
       type: 'text',
       default: "'",
-      help: en.exporters.quoted.help,
+      help: ui.exporters.quoted.help,
     },
-    { key: 'separator', label: en.exporters.quoted.separator, type: 'text', default: ',' },
+    { key: 'separator', label: ui.exporters.quoted.separator, type: 'text', default: ',' },
   ],
   render(dataset, options) {
     const quote = stringOption(options, 'quote', "'");

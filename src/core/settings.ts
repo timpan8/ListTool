@@ -1,6 +1,15 @@
 import type { Options } from './registry';
 import { DEFAULT_LOCALE, type SortOptions } from './sort';
 
+/** The languages the UI comes in. English is the default; Swedish is the one asked for. */
+export type Language = 'en' | 'sv';
+
+export const LANGUAGES: readonly Language[] = ['en', 'sv'];
+
+export function readLanguage(value: unknown): Language {
+  return value === 'sv' ? 'sv' : 'en';
+}
+
 export interface Settings {
   /** Pre-selected delimiter in the import dialog and in delimiter options. */
   defaultDelimiter: string;
@@ -11,6 +20,8 @@ export interface Settings {
   keepLists: boolean;
   /** The format the export dialog opens on: the one used last. '' = let the list decide. */
   lastExporterId: string;
+  /** The language of the UI. Read once at start-up; changing it reloads the page. */
+  language: Language;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -20,6 +31,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultNameOrder: 'last-first',
   keepLists: true,
   lastExporterId: '',
+  language: 'en',
 };
 
 /**
@@ -75,5 +87,6 @@ export function readSettings(value: unknown): Settings {
       typeof raw['lastExporterId'] === 'string'
         ? raw['lastExporterId']
         : DEFAULT_SETTINGS.lastExporterId,
+    language: readLanguage(raw['language']),
   };
 }

@@ -1,5 +1,5 @@
 import type { RowScope } from '../core/view';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
 interface Props {
@@ -17,7 +17,7 @@ export function RowScopeField({ id, value, counts, onChange }: Props) {
   return (
     <div class="field">
       <label class="field__label" for={id}>
-        {en.export.rows}
+        {ui.export.rows}
       </label>
       <select
         id={id}
@@ -26,11 +26,11 @@ export function RowScopeField({ id, value, counts, onChange }: Props) {
       >
         {scopes.map((scope) => (
           <option key={scope} value={scope}>
-            {format(en.export.scopes[scope], { n: counts[scope] })}
+            {format(ui.export.scopes[scope], { n: counts[scope] })}
           </option>
         ))}
       </select>
-      <p class="field__help">{en.export.scopeHelp[value]}</p>
+      <p class="field__help">{ui.export.scopeHelp[value]}</p>
     </div>
   );
 }

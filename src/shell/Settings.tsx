@@ -1,14 +1,17 @@
 import { DELIMITER_PRESETS } from '../core/detect';
+import { LANGUAGES, readLanguage } from '../core/settings';
 import {
   clearAllData,
+  flushPersistence,
   openWorkspaceFile,
   settings,
   updateSettings,
   workspaceFile,
 } from '../core/store';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { Dialog } from './Dialog';
 import { downloadText } from './download';
+import { ShortcutsTable } from './ShortcutsTable';
 
 interface Props {
   onClose: () => void;
@@ -17,26 +20,38 @@ interface Props {
   onNotice: (message: string) => void;
 }
 
-const SHORTCUTS = [
-  'palette',
-  'apply',
-  'undo',
-  'redo',
-  'copy',
-  'close',
-  'paste',
-  'cells',
-  'edit',
-] as const;
-
 export function Settings({ onClose, onCleared, onNotice }: Props) {
   const current = settings.value;
 
   return (
-    <Dialog title={en.settings.title} onClose={onClose}>
+    <Dialog title={ui.settings.title} onClose={onClose}>
+      <div class="field">
+        <label class="field__label" for="settings-language">
+          {ui.settings.language}
+        </label>
+        <select
+          id="settings-language"
+          value={current.language}
+          onChange={(event) => {
+            // The strings are chosen once per page load, so the choice is written out
+            // at once and the page starts over in the new language.
+            updateSettings({ language: readLanguage(event.currentTarget.value) });
+            flushPersistence();
+            location.reload();
+          }}
+        >
+          {LANGUAGES.map((code) => (
+            <option key={code} value={code}>
+              {ui.settings.languages[code]}
+            </option>
+          ))}
+        </select>
+        <p class="field__help">{ui.settings.languageHelp}</p>
+      </div>
+
       <div class="field">
         <label class="field__label" for="settings-delimiter">
-          {en.settings.defaultDelimiter}
+          {ui.settings.defaultDelimiter}
         </label>
         <select
           id="settings-delimiter"
@@ -45,7 +60,7 @@ export function Settings({ onClose, onCleared, onNotice }: Props) {
         >
           {DELIMITER_PRESETS.map((preset) => (
             <option key={preset.id} value={preset.value}>
-              {en.options.delimiters[preset.id as keyof typeof en.options.delimiters]}
+              {ui.options.delimiters[preset.id as keyof typeof ui.options.delimiters]}
             </option>
           ))}
         </select>
@@ -53,21 +68,21 @@ export function Settings({ onClose, onCleared, onNotice }: Props) {
 
       <div class="field">
         <label class="field__label" for="settings-locale">
-          {en.settings.sortLocale}
+          {ui.settings.sortLocale}
         </label>
         <select
           id="settings-locale"
           value={current.sortLocale}
           onChange={(event) => updateSettings({ sortLocale: event.currentTarget.value })}
         >
-          <option value="sv">{en.tools.sort.localeSv}</option>
-          <option value="en">{en.tools.sort.localeEn}</option>
+          <option value="sv">{ui.tools.sort.localeSv}</option>
+          <option value="en">{ui.tools.sort.localeEn}</option>
         </select>
       </div>
 
       <div class="field">
         <label class="field__label" for="settings-order">
-          {en.settings.nameOrder}
+          {ui.settings.nameOrder}
         </label>
         <select
           id="settings-order"
@@ -79,8 +94,8 @@ export function Settings({ onClose, onCleared, onNotice }: Props) {
             })
           }
         >
-          <option value="last-first">{en.parsers.recipients.lastFirst}</option>
-          <option value="first-last">{en.parsers.recipients.firstLast}</option>
+          <option value="last-first">{ui.parsers.recipients.lastFirst}</option>
+          <option value="first-last">{ui.parsers.recipients.firstLast}</option>
         </select>
       </div>
 
@@ -91,7 +106,7 @@ export function Settings({ onClose, onCleared, onNotice }: Props) {
             checked={current.naturalSort}
             onChange={(event) => updateSettings({ naturalSort: event.currentTarget.checked })}
           />
-          {en.settings.naturalSort}
+          {ui.settings.naturalSort}
         </label>
       </div>
 
@@ -102,26 +117,26 @@ export function Settings({ onClose, onCleared, onNotice }: Props) {
             checked={current.keepLists}
             onChange={(event) => updateSettings({ keepLists: event.currentTarget.checked })}
           />
-          {en.settings.keepLists}
+          {ui.settings.keepLists}
         </label>
-        <p class="field__help">{en.settings.keepListsHelp}</p>
+        <p class="field__help">{ui.settings.keepListsHelp}</p>
       </div>
 
       <section class="field">
-        <h3 class="field__label">{en.settings.workspace}</h3>
+        <h3 class="field__label">{ui.settings.workspace}</h3>
         <div class="field__row">
           <button
             type="button"
             class="button"
             onClick={() => {
-              downloadText(`${en.settings.workspaceFilename}.json`, workspaceFile());
-              onNotice(en.settings.saved);
+              downloadText(`${ui.settings.workspaceFilename}.json`, workspaceFile());
+              onNotice(ui.settings.saved);
             }}
           >
-            {en.settings.saveFile}
+            {ui.settings.saveFile}
           </button>
           <label class="button">
-            {en.settings.openFile}
+            {ui.settings.openFile}
             <input
               type="file"
               accept="application/json,.json"
@@ -130,18 +145,18 @@ export function Settings({ onClose, onCleared, onNotice }: Props) {
                 const file = event.currentTarget.files?.[0];
                 if (file === undefined) return;
                 const opened = openWorkspaceFile(await file.text());
-                onNotice(opened ? en.settings.opened : en.settings.openFailed);
+                onNotice(opened ? ui.settings.opened : ui.settings.openFailed);
                 if (opened) onClose();
               }}
             />
           </label>
         </div>
-        <p class="field__help">{en.settings.saveFileHelp}</p>
-        <p class="field__help">{en.settings.openFileHelp}</p>
+        <p class="field__help">{ui.settings.saveFileHelp}</p>
+        <p class="field__help">{ui.settings.openFileHelp}</p>
       </section>
 
       <section class="field">
-        <h3 class="field__label">{en.settings.storage}</h3>
+        <h3 class="field__label">{ui.settings.storage}</h3>
         <button
           type="button"
           class="button"
@@ -151,38 +166,16 @@ export function Settings({ onClose, onCleared, onNotice }: Props) {
             onClose();
           }}
         >
-          {en.settings.clear}
+          {ui.settings.clear}
         </button>
-        <p class="field__help">{en.settings.clearHelp}</p>
+        <p class="field__help">{ui.settings.clearHelp}</p>
       </section>
 
-      <section class="field">
-        <h3 class="field__label">{en.settings.shortcuts}</h3>
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>{en.settings.shortcutKeys}</th>
-                <th>{en.settings.shortcutAction}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {SHORTCUTS.map((key) => (
-                <tr key={key}>
-                  <td>
-                    <kbd>{en.shortcuts.keys[key]}</kbd>
-                  </td>
-                  <td>{en.shortcuts[key]}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <ShortcutsTable />
 
       <div class="dialog__actions">
         <button type="button" class="button button--primary" onClick={onClose}>
-          {en.settings.close}
+          {ui.settings.close}
         </button>
       </div>
     </Dialog>

@@ -2,7 +2,7 @@ import type { Dataset } from '../core/model';
 import type { Tool } from '../core/registry';
 import type { Settings } from '../core/settings';
 import { format } from '../i18n/format';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { tools } from '../tools';
 import { applyTool } from './edits';
 import type { PanelIntent } from './panelIntent';
@@ -52,7 +52,7 @@ export function selectionActions(
     if (presets.length === 0) {
       opening.push({
         id: tool.id,
-        label: format(en.view.openTool, { tool: tool.name }),
+        label: format(ui.view.openTool, { tool: tool.name }),
         run: () => onIntent({ kind: 'tool', tool }),
       });
     }

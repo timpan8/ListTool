@@ -1,7 +1,7 @@
 import { cell, draftDataset, type Column, type Dataset, type Row } from '../core/model';
 import type { NormalizeOptions } from '../core/normalize';
 import { booleanOption, stringOption, type OptionField, type Options } from '../core/registry';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { plural } from '../i18n/format';
 
 /**
@@ -9,20 +9,20 @@ import { plural } from '../i18n/format';
  * of every tool that builds keys, whether it dedupes one list or compares two.
  */
 export const NORMALIZE_FIELDS: OptionField[] = [
-  { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-  { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
+  { key: 'trim', label: ui.tools.shared.trim, type: 'boolean', default: true },
+  { key: 'ignoreCase', label: ui.tools.shared.ignoreCase, type: 'boolean', default: true },
   {
     key: 'collapseWhitespace',
-    label: en.tools.shared.collapseWhitespace,
+    label: ui.tools.shared.collapseWhitespace,
     type: 'boolean',
     default: false,
   },
   {
     key: 'ignoreDiacritics',
-    label: en.tools.shared.ignoreDiacritics,
+    label: ui.tools.shared.ignoreDiacritics,
     type: 'boolean',
     default: false,
-    help: en.tools.shared.diacriticsHelp,
+    help: ui.tools.shared.diacriticsHelp,
   },
 ];
 
@@ -104,7 +104,7 @@ export function freshDataset(input: Dataset, columns: Column[], rows: Row[]): Da
 export const MAX_LISTS = 30;
 
 export function columnsPhrase(count: number): string {
-  return plural(count, en.tools.columnsCount);
+  return plural(count, ui.tools.columnsCount);
 }
 
 /** Same dataset, different rows. rawInput and the parse options survive. */
@@ -118,11 +118,11 @@ export function withColumns(dataset: Dataset, columns: Column[], rows: Row[]): D
 }
 
 export function cellsPhrase(count: number): string {
-  return plural(count, en.tools.cells);
+  return plural(count, ui.tools.cells);
 }
 
 export function rowsPhrase(count: number): string {
-  return plural(count, en.tools.rows);
+  return plural(count, ui.tools.rows);
 }
 
 /** A column id that no existing column uses, derived from a wanted base. */

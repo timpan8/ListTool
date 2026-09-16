@@ -1,12 +1,12 @@
 import type { Exporter } from '../core/registry';
 import { columnValues, selectedColumn } from './column';
 import { renderHtmlTable } from './html-table';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 export const linesExporter: Exporter = {
   id: 'lines',
-  name: en.exporters.lines.name,
-  options: [{ key: 'column', label: en.exporters.lines.column, type: 'column' }],
+  name: ui.exporters.lines.name,
+  options: [{ key: 'column', label: ui.exporters.lines.column, type: 'column' }],
   render(dataset, options) {
     return columnValues(dataset, options).join('\n');
   },

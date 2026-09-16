@@ -1,10 +1,10 @@
 import { cell } from '../../core/model';
 import { booleanOption, stringOption, type OptionField, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { matchesText, rowsPhrase, safeRegExp, targetColumns, withRows } from '../helpers';
 
-const strings = en.tools.filterRules;
+const strings = ui.tools.filterRules;
 
 /** Three slots. A rule with no text is not a rule, which is how you use fewer than three. */
 const SLOTS = [
@@ -14,11 +14,11 @@ const SLOTS = [
 ];
 
 const MODES = [
-  { value: 'contains', label: en.tools.filter.contains },
-  { value: 'equals', label: en.tools.filter.equals },
-  { value: 'starts', label: en.tools.filter.startsWith },
-  { value: 'ends', label: en.tools.filter.endsWith },
-  { value: 'regex', label: en.tools.filter.regex },
+  { value: 'contains', label: ui.tools.filter.contains },
+  { value: 'equals', label: ui.tools.filter.equals },
+  { value: 'starts', label: ui.tools.filter.startsWith },
+  { value: 'ends', label: ui.tools.filter.endsWith },
+  { value: 'regex', label: ui.tools.filter.regex },
 ];
 
 function slotFields(): OptionField[] {
@@ -69,8 +69,8 @@ export const filterRulesTool: Tool = {
       ],
     },
     ...slotFields(),
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
-    { key: 'invert', label: en.tools.filter.invert, type: 'boolean', default: false },
+    { key: 'ignoreCase', label: ui.tools.shared.ignoreCase, type: 'boolean', default: true },
+    { key: 'invert', label: ui.tools.filter.invert, type: 'boolean', default: false },
   ],
   run(input, options) {
     const ignoreCase = booleanOption(options, 'ignoreCase', true);
@@ -84,7 +84,7 @@ export const filterRulesTool: Tool = {
     })).filter((rule) => rule.pattern !== '');
 
     if (rules.length === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.needRule] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.needRule] };
     }
 
     // Checked with the flags it will run with, so what passes here runs there.
@@ -95,8 +95,8 @@ export const filterRulesTool: Tool = {
     if (broken.length > 0) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
-        warnings: [en.tools.filter.badRegex],
+        summary: ui.tools.nothingChanged,
+        warnings: [ui.tools.filter.badRegex],
       };
     }
 

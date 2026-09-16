@@ -1,10 +1,10 @@
 import { cell } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, withColumns } from '../helpers';
 
-const strings = en.tools.generateEmail;
+const strings = ui.tools.generateEmail;
 
 /** Åsa → Asa, Öberg → Oberg: what an address usually has to become. */
 function fold(value: string): string {
@@ -19,8 +19,8 @@ export const generateEmailTool: Tool = {
   keywords: ['generate', 'email', 'address', 'build', 'pattern'],
   arity: 'single',
   options: [
-    { key: 'first', label: en.columns.first, type: 'column', default: 'first' },
-    { key: 'last', label: en.columns.last, type: 'column', default: 'last' },
+    { key: 'first', label: ui.columns.first, type: 'column', default: 'first' },
+    { key: 'last', label: ui.columns.last, type: 'column', default: 'last' },
     {
       key: 'pattern',
       label: strings.pattern,

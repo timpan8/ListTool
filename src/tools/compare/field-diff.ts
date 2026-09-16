@@ -1,12 +1,12 @@
 import { cell, makeRow, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import { booleanOption, stringsOption, type Tool } from '../../core/registry';
-import { en } from '../../i18n/en';
+import { ui } from '../../i18n';
 import { format, plural } from '../../i18n/format';
 import { freshDataset } from '../helpers';
 import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
-const strings = en.tools.fieldDiff;
+const strings = ui.tools.fieldDiff;
 
 export const fieldDiffTool: Tool = {
   id: 'field-diff',
@@ -25,8 +25,8 @@ export const fieldDiffTool: Tool = {
     if (second === undefined) {
       return {
         output: input,
-        summary: en.tools.nothingChanged,
-        warnings: [en.tools.shared.secondListMissing],
+        summary: ui.tools.nothingChanged,
+        warnings: [ui.tools.shared.secondListMissing],
       };
     }
 
@@ -47,7 +47,7 @@ export const fieldDiffTool: Tool = {
     );
 
     if (compared.length === 0) {
-      return { output: input, summary: en.tools.nothingChanged, warnings: [strings.noColumns] };
+      return { output: input, summary: ui.tools.nothingChanged, warnings: [strings.noColumns] };
     }
 
     const lookup = new Map<string, Row>();

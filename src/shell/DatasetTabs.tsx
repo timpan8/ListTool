@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import { activeId, close, duplicate, openDatasets, rename, setActive } from '../core/store';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
 /** Above this many lists the strip also gets a jump menu, so it never has to grow. */
@@ -21,7 +21,7 @@ export function DatasetTabs({ onAdd }: Props) {
   }
 
   return (
-    <div class="tabs" role="group" aria-label={en.tabs.label}>
+    <div class="tabs" role="group" aria-label={ui.tabs.label}>
       <div class="tabs__strip">
         {datasets.map((dataset) => (
           <span
@@ -35,7 +35,7 @@ export function DatasetTabs({ onAdd }: Props) {
                 type="text"
                 autofocus
                 value={dataset.name}
-                aria-label={en.tabs.renamePrompt}
+                aria-label={ui.tabs.renamePrompt}
                 onBlur={(event) => commit(dataset.id, event.currentTarget.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') commit(dataset.id, event.currentTarget.value);
@@ -55,7 +55,7 @@ export function DatasetTabs({ onAdd }: Props) {
                 <button
                   type="button"
                   class="tab__close"
-                  aria-label={format(en.tabs.closeNamed, { name: dataset.name })}
+                  aria-label={format(ui.tabs.closeNamed, { name: dataset.name })}
                   onClick={() => close(dataset.id)}
                 >
                   ✕
@@ -64,15 +64,15 @@ export function DatasetTabs({ onAdd }: Props) {
             )}
           </span>
         ))}
-        <button type="button" class="button button--quiet" title={en.tabs.addHint} onClick={onAdd}>
-          + {en.tabs.add}
+        <button type="button" class="button button--quiet" title={ui.tabs.addHint} onClick={onAdd}>
+          + {ui.tabs.add}
         </button>
       </div>
 
       <div class="tabs__aside">
         {datasets.length > OVERFLOW_AT ? (
           <label class="tabs__goto">
-            <span class="visually-hidden">{en.tabs.goTo}</span>
+            <span class="visually-hidden">{ui.tabs.goTo}</span>
             <select
               value={current ?? ''}
               onChange={(event) => setActive(event.currentTarget.value)}
@@ -93,7 +93,7 @@ export function DatasetTabs({ onAdd }: Props) {
               class="button button--quiet"
               onClick={() => setEditing(current)}
             >
-              {en.tabs.rename}
+              {ui.tabs.rename}
             </button>
             <button
               type="button"
@@ -101,11 +101,11 @@ export function DatasetTabs({ onAdd }: Props) {
               onClick={() => {
                 const source = datasets.find((dataset) => dataset.id === current);
                 if (source !== undefined) {
-                  duplicate(current, format(en.tabs.copySuffix, { name: source.name }));
+                  duplicate(current, format(ui.tabs.copySuffix, { name: source.name }));
                 }
               }}
             >
-              {en.tabs.duplicate}
+              {ui.tabs.duplicate}
             </button>
           </>
         )}

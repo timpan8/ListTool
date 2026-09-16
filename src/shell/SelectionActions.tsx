@@ -1,6 +1,6 @@
 import type { Dataset } from '../core/model';
 import { selectRows, settings } from '../core/store';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { plural } from '../i18n/format';
 import type { PanelIntent } from './panelIntent';
 import { selectionActions } from './selectionTools';
@@ -17,7 +17,7 @@ export function SelectionActions({ dataset, ticked, onIntent }: Props) {
 
   return (
     <p class="view__selection" role="status">
-      <span>{plural(ticked.length, en.view.selection)}</span>
+      <span>{plural(ticked.length, ui.view.selection)}</span>
       {actions.map((action) => (
         <button key={action.id} type="button" class="button button--quiet" onClick={action.run}>
           {action.label}
@@ -29,10 +29,10 @@ export function SelectionActions({ dataset, ticked, onIntent }: Props) {
         class="button button--quiet"
         onClick={() => onIntent({ kind: 'tools' })}
       >
-        {en.view.toolsForRows}
+        {ui.view.toolsForRows}
       </button>
       <button type="button" class="button button--quiet" onClick={() => selectRows([])}>
-        {en.view.clearSelection}
+        {ui.view.clearSelection}
       </button>
     </p>
   );

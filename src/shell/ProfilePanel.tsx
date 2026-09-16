@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import type { Dataset } from '../core/model';
 import { columnProfiles, type ColumnProfile } from '../core/profile';
 import { setViewFilter, viewFilter } from '../core/store';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { format } from '../i18n/format';
 
 interface Props {
@@ -28,7 +28,7 @@ function Value({
     current.value === value &&
     current.mode !== 'contains';
   const blank = value === '';
-  const label = format(blank ? en.profile.onlyBlank : en.profile.onlyRows, {
+  const label = format(blank ? ui.profile.onlyBlank : ui.profile.onlyRows, {
     column: profile.column.name,
     value,
   });
@@ -44,7 +44,7 @@ function Value({
           setViewFilter(active ? null : { columnId: profile.column.id, value })
         }
       >
-        <span class="facet__value">{blank ? en.profile.blankValue : value}</span>
+        <span class="facet__value">{blank ? ui.profile.blankValue : value}</span>
         <span class="facet__count">{count}</span>
       </button>
     </li>
@@ -61,11 +61,11 @@ export function ProfilePanel({ dataset, focusColumn }: Props) {
     wanted.current?.focus();
   }, [focusColumn, dataset]);
 
-  if (dataset.rows.length === 0) return <p class="field__help">{en.profile.empty}</p>;
+  if (dataset.rows.length === 0) return <p class="field__help">{ui.profile.empty}</p>;
 
   return (
     <div class="profile">
-      <p class="field__help">{en.profile.intro}</p>
+      <p class="field__help">{ui.profile.intro}</p>
 
       {columnProfiles(dataset).map((profile) => (
         <section
@@ -77,14 +77,14 @@ export function ProfilePanel({ dataset, focusColumn }: Props) {
           <h4 class="profile__name">{profile.column.name}</h4>
           <p class="profile__stats">
             {[
-              format(en.profile.filled, { n: profile.filled }),
-              format(en.profile.blank, { n: profile.empty }),
-              format(en.profile.unique, { n: profile.unique }),
-              format(en.profile.length, {
+              format(ui.profile.filled, { n: profile.filled }),
+              format(ui.profile.blank, { n: profile.empty }),
+              format(ui.profile.unique, { n: profile.unique }),
+              format(ui.profile.length, {
                 shortest: profile.shortest,
                 longest: profile.longest,
               }),
-            ].join(en.status.separator)}
+            ].join(ui.status.separator)}
           </p>
 
           <ul class="facets">

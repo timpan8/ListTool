@@ -1,6 +1,6 @@
 import type { Dataset } from '../core/model';
 import type { History } from '../core/history';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 import { CompareMode } from './CompareMode';
 import { DatasetTabs } from './DatasetTabs';
 import { DatasetView } from './DatasetView';
@@ -49,10 +49,10 @@ export function Layout({
   return (
     <div class="app">
       <header class="app__header">
-        <h1 class="app__name">{en.app.name}</h1>
+        <h1 class="app__name">{ui.app.name}</h1>
         <DatasetTabs onAdd={onImport} />
         <button type="button" class="button button--quiet" onClick={onSettings}>
-          {en.toolbar.settings}
+          {ui.toolbar.settings}
         </button>
       </header>
 

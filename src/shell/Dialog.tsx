@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
-import { en } from '../i18n/en';
+import { ui } from '../i18n';
 
 interface Props {
   title: string;
@@ -41,7 +41,7 @@ export function Dialog({ title, onClose, children }: Props) {
           type="button"
           class="button button--quiet"
           onClick={onClose}
-          aria-label={en.a11y.dialogClose}
+          aria-label={ui.a11y.dialogClose}
         >
           ✕
         </button>

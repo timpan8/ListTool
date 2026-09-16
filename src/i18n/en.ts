@@ -1087,6 +1087,10 @@ export const en = {
 
   settings: {
     title: 'Settings',
+    language: 'Language',
+    languages: { en: 'English', sv: 'Svenska' },
+    languageHelp:
+      'The page reloads in the new language. Lists are kept when "Keep lists between sessions" is on.',
     defaultDelimiter: 'Default delimiter',
     sortLocale: 'Sort language',
     naturalSort: 'Natural number order by default',
