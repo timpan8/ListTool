@@ -1,9 +1,23 @@
 import { expect, type Page } from '@playwright/test';
 
+/**
+ * Above this many characters the text goes in through the file button instead of the
+ * textarea: Chromium inserts a long text into a textarea a few thousand lines per ten
+ * seconds, which is the harness being slow, not the app.
+ */
+const PASTE_LIMIT = 20000;
+
 /** Paste text into the import dialog, name the list, and confirm. */
 export async function importText(page: Page, text: string, name?: string): Promise<void> {
   await page.getByRole('button', { name: 'Import', exact: true }).first().click();
-  await page.getByLabel('Paste or type your list').fill(text);
+  if (text.length > PASTE_LIMIT) {
+    await page
+      .locator('.dialog input[type=file]')
+      .setInputFiles({ name: 'list.txt', mimeType: 'text/plain', buffer: Buffer.from(text) });
+    await expect(page.getByLabel('Paste or type your list')).toHaveValue(text);
+  } else {
+    await page.getByLabel('Paste or type your list').fill(text);
+  }
   // With a list already open the dialog also offers importing into it.
   const target = page.locator('#import-target');
   if ((await target.count()) > 0) await target.selectOption('new');

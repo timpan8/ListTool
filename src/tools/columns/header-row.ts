@@ -1,10 +1,49 @@
-import { cell, type Column, type Row } from '../../core/model';
+import { parseDate } from '../../core/dates';
+import { cell, type Column, type Dataset, type Row } from '../../core/model';
+import { parseNumber } from '../../core/number';
 import { stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
 import { rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
 
 const strings = en.tools.headerRow;
+
+/** A header plus at least two rows of data: fewer and the first row is anyone's guess. */
+const MIN_ROWS = 3;
+
+/** How much of a column must hold numbers, dates or addresses for a text cell on top to stand out. */
+const TYPED_SHARE = 0.8;
+
+/** The parsers name columns they could not name; those are the names to replace. */
+function namesAreGeneric(dataset: Dataset): boolean {
+  return dataset.columns.every(
+    (column, index) => column.name === format(en.columns.numbered, { n: index + 1 }),
+  );
+}
+
+function isTyped(value: string): boolean {
+  return parseNumber(value) !== null || value.includes('@') || parseDate(value) !== null;
+}
+
+/**
+ * Does the first row look like column names? Every cell filled, distinct and plain text,
+ * over at least one column whose other cells are numbers, dates or addresses.
+ */
+function looksLikeHeader(dataset: Dataset): boolean {
+  const [first, ...rest] = dataset.rows;
+  if (first === undefined || dataset.rows.length < MIN_ROWS || !namesAreGeneric(dataset)) {
+    return false;
+  }
+  const names = dataset.columns.map((column) => cell(first, column.id).trim().toLowerCase());
+  if (names.some((name) => name === '' || isTyped(name))) return false;
+  if (new Set(names).size !== names.length) return false;
+
+  return dataset.columns.some((column) => {
+    const filled = rest.map((row) => cell(row, column.id).trim()).filter((value) => value !== '');
+    if (filled.length < 2) return false;
+    return filled.filter(isTyped).length / filled.length >= TYPED_SHARE;
+  });
+}
 
 export const headerRowTool: Tool = {
   id: 'header-row',
@@ -71,5 +110,9 @@ export const headerRowTool: Tool = {
       }),
       stats: { rows: rows.length },
     };
+  },
+  check(input) {
+    if (!looksLikeHeader(input)) return null;
+    return { summary: strings.found, count: 1, options: { mode: 'promote' } };
   },
 };

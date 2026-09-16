@@ -2,7 +2,7 @@ import { cell } from '../../core/model';
 import { booleanOption, stringOption, type OptionField, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { matchesText, safeRegExp, targetColumns, withRows } from '../helpers';
+import { matchesText, rowsPhrase, safeRegExp, targetColumns, withRows } from '../helpers';
 
 const strings = en.tools.filterRules;
 
@@ -87,8 +87,10 @@ export const filterRulesTool: Tool = {
       return { output: input, summary: en.tools.nothingChanged, warnings: [strings.needRule] };
     }
 
+    // Checked with the flags it will run with, so what passes here runs there.
+    const flags = ignoreCase ? 'iu' : 'u';
     const broken = rules.filter(
-      (rule) => rule.mode === 'regex' && safeRegExp(rule.pattern, 'u') === null,
+      (rule) => rule.mode === 'regex' && safeRegExp(rule.pattern, flags) === null,
     );
     if (broken.length > 0) {
       return {
@@ -112,7 +114,7 @@ export const filterRulesTool: Tool = {
       output: withRows(input, kept),
       summary: format(strings.summary, {
         kept: kept.length,
-        before: input.rows.length,
+        before: rowsPhrase(input.rows.length),
         rules: plural(rules.length, strings.rules),
       }),
       stats: { kept: kept.length, removed: input.rows.length - kept.length, rules: rules.length },

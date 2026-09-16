@@ -1,9 +1,9 @@
-import { cell, draftDataset, makeRow, type Row } from '../../core/model';
+import { cell, makeRow, type Row } from '../../core/model';
 import { normalizeKey } from '../../core/normalize';
-import { booleanOption, stringOption, type Tool } from '../../core/registry';
+import { stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { rowsPhrase, targetColumn } from '../helpers';
+import { freshDataset, NORMALIZE_FIELDS, readNormalize, rowsPhrase, targetColumn } from '../helpers';
 import { parseNumber } from '../../core/number';
 
 const strings = en.tools.groupBy;
@@ -47,8 +47,7 @@ export const groupByTool: Tool = {
       ],
     },
     { key: 'separator', label: strings.separator, type: 'delimiter', default: ', ' },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options) {
     const groupColumn = targetColumn(input, options);
@@ -57,10 +56,7 @@ export const groupByTool: Tool = {
     const how = stringOption(options, 'how', 'count') as How;
     const valueColumn = targetColumn(input, options, 'valueColumn') ?? groupColumn;
     const separator = stringOption(options, 'separator', ', ');
-    const normalize = {
-      trim: booleanOption(options, 'trim', true),
-      ignoreCase: booleanOption(options, 'ignoreCase', true),
-    };
+    const normalize = readNormalize(options);
 
     // The first spelling seen names the group — normalization only decides what joins it.
     const groups = new Map<string, Group>();
@@ -99,23 +95,20 @@ export const groupByTool: Tool = {
     );
 
     return {
-      output: {
-        ...draftDataset({
-          columns: [
-            { id: 'group', name: groupColumn.name },
-            { id: 'result', name: strings.columnNames[how] },
-          ],
-          rows,
-        }),
-        id: input.id,
-        name: input.name,
-      },
+      output: freshDataset(
+        input,
+        [
+          { id: 'group', name: groupColumn.name },
+          { id: 'result', name: strings.columnNames[how] },
+        ],
+        rows,
+      ),
       summary: format(strings.summary, {
         groups: plural(groups.size, strings.groups),
         rows: rowsPhrase(input.rows.length),
       }),
       stats: { groups: groups.size, notNumeric },
-      ...(notNumeric > 0 ? { warnings: [format(strings.notNumeric, { n: notNumeric })] } : {}),
+      ...(notNumeric > 0 ? { warnings: [plural(notNumeric, strings.notNumeric)] } : {}),
     };
   },
 };

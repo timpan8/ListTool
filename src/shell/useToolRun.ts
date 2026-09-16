@@ -1,7 +1,8 @@
 import { useMemo } from 'preact/hooks';
 import { diffDatasets, type DatasetDiff } from '../core/diff';
 import type { Dataset } from '../core/model';
-import type { Options, Tool, ToolResult } from '../core/registry';
+import type { Options, Tool } from '../core/registry';
+import { runOnRows, type ScopedResult } from '../core/scope';
 import { withColumnDefaults, withSelection } from './toolOptions';
 
 /**
@@ -22,9 +23,21 @@ export function finalOptions(
   );
 }
 
+/** One run: on the whole list, or on the ticked rows only, merged back where it can be. */
+export function runTool(
+  tool: Tool,
+  dataset: Dataset,
+  chosen: Options,
+  second: Dataset | undefined,
+  scope: string[] | null,
+): ScopedResult {
+  if (scope !== null && scope.length > 0) return runOnRows(tool, dataset, scope, chosen, second);
+  return { ...tool.run(dataset, chosen, second), merged: true };
+}
+
 export interface ToolRun {
   chosen: Options;
-  result: ToolResult;
+  result: ScopedResult;
   diff: DatasetDiff;
 }
 
@@ -39,12 +52,17 @@ export function useToolRun(
   options: Options,
   second: Dataset | undefined,
   ticked: string[],
+  /** The rows to run on, or null for the whole list. */
+  scope: string[] | null,
 ): ToolRun {
   const chosen = useMemo(
     () => finalOptions(tool, options, dataset, second, ticked),
     [tool, options, dataset, second, ticked],
   );
-  const result = useMemo(() => tool.run(dataset, chosen, second), [tool, dataset, chosen, second]);
+  const result = useMemo(
+    () => runTool(tool, dataset, chosen, second, scope),
+    [tool, dataset, chosen, second, scope],
+  );
   const diff = useMemo(() => diffDatasets(dataset, result.output), [dataset, result]);
   return { chosen, result, diff };
 }

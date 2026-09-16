@@ -1,10 +1,16 @@
 import { cell, type Row } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
-import { format } from '../../i18n/format';
+import { format, plural } from '../../i18n/format';
 import { rowIdsAfter, rowsPhrase, targetColumn, withRows } from '../helpers';
 
 const strings = en.tools.splitIntoRows;
+
+/** "a@example.com; b@example.com": a delimiter with another address after it. */
+const DELIMITED_ADDRESSES = /([;,])\s*[^\s;,<>@]+@[^\s;,<>@]+/u;
+
+/** The share of a column's filled cells that must hold several addresses before it is worth a look. */
+const SHAPED_SHARE = 0.6;
 
 export const splitIntoRowsTool: Tool = {
   id: 'split-into-rows',
@@ -59,5 +65,30 @@ export const splitIntoRowsTool: Tool = {
       }),
       stats: { before: input.rows.length, after: rows.length },
     };
+  },
+  check(input) {
+    // Only the one shape that is unmistakable: several addresses in one cell. Anything
+    // else with a comma in it is more often a sentence than a list.
+    for (const column of input.columns) {
+      let filled = 0;
+      let shaped = 0;
+      let delimiter = '';
+      for (const row of input.rows) {
+        const value = cell(row, column.id).trim();
+        if (value === '') continue;
+        filled += 1;
+        const match = DELIMITED_ADDRESSES.exec(value);
+        if (match === null) continue;
+        shaped += 1;
+        if (delimiter === '') delimiter = match[1] ?? '';
+      }
+      if (shaped === 0 || shaped / filled < SHAPED_SHARE) continue;
+      return {
+        summary: plural(shaped, strings.found),
+        count: shaped,
+        options: { column: column.id, delimiter },
+      };
+    }
+    return null;
   },
 };

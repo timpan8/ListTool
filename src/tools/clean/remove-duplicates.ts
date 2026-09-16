@@ -1,9 +1,9 @@
 import { cell, type Column, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
-import { booleanOption, stringOption, type Tool } from '../../core/registry';
+import { stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { rowsPhrase, targetColumns, withRows } from '../helpers';
+import { NORMALIZE_FIELDS, readNormalize, rowsPhrase, targetColumns, withRows } from '../helpers';
 import { parseNumber } from '../../core/number';
 
 const strings = en.tools.dedupe;
@@ -75,23 +75,11 @@ export const removeDuplicatesTool: Tool = {
       default: '',
       help: strings.keepColumnHelp,
     },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
-    {
-      key: 'ignoreDiacritics',
-      label: en.tools.shared.ignoreDiacritics,
-      type: 'boolean',
-      default: false,
-      help: en.tools.shared.diacriticsHelp,
-    },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options) {
     const columns = targetColumns(input, options);
-    const normalize = {
-      trim: booleanOption(options, 'trim', true),
-      ignoreCase: booleanOption(options, 'ignoreCase', true),
-      ignoreDiacritics: booleanOption(options, 'ignoreDiacritics', false),
-    };
+    const normalize = readNormalize(options);
     const keep = stringOption(options, 'keep', 'first') as Keep;
     const deciderId = stringOption(options, 'keepColumn', '');
     const decider =

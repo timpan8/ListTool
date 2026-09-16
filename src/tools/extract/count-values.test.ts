@@ -38,4 +38,16 @@ describe('count values', () => {
   it('handles an empty list', () => {
     expect(run([]).rows).toEqual([]);
   });
+
+  it('keeps the list it counted as the same tab', () => {
+    const list = listOf('a');
+    const output = countValuesTool.run(list, {}).output;
+    expect(output.id).toBe(list.id);
+    expect(output.name).toBe(list.name);
+  });
+
+  it('can fold diacritics, like every other key-based tool', () => {
+    expect(run(['Åsa', 'Asa'], { ignoreDiacritics: true }).rows).toHaveLength(1);
+    expect(run(['Åsa', 'Asa']).rows).toHaveLength(2);
+  });
 });

@@ -118,7 +118,7 @@ export const joinListsTool: Tool = {
         columns: plural(added.length, strings.columnCount),
       }),
       stats: { matched, unmatched, rows: rows.length },
-      ...(unmatched > 0 ? { warnings: [format(strings.unmatched, { n: unmatched })] } : {}),
+      ...(unmatched > 0 ? { warnings: [plural(unmatched, strings.unmatched)] } : {}),
     };
   },
 };

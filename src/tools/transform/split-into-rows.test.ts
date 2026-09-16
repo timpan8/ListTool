@@ -79,4 +79,28 @@ describe('split into rows tool', () => {
     splitIntoRowsTool.run(dataset, DEFAULTS);
     expect(JSON.stringify(dataset)).toBe(before);
   });
+
+  describe('check', () => {
+    it('points at a column of cells holding several addresses, with the delimiter it saw', () => {
+      const stuck = listOf('a@example.com; b@example.com', 'c@example.com;d@example.com', 'e@example.com');
+      expect(splitIntoRowsTool.check?.(stuck)).toEqual({
+        summary: '2 cells hold several addresses',
+        count: 2,
+        options: { column: VALUE_COLUMN, delimiter: ';' },
+      });
+      expect(splitIntoRowsTool.check?.(listOf('a@example.com, b@example.com'))?.options).toEqual({
+        column: VALUE_COLUMN,
+        delimiter: ',',
+      });
+    });
+
+    it('says nothing about sentences with commas, single addresses, or a mostly plain column', () => {
+      expect(splitIntoRowsTool.check?.(listOf('Hej, hur mår du?', 'Bra, tack'))).toBeNull();
+      expect(splitIntoRowsTool.check?.(listOf('a@example.com', 'b@example.com'))).toBeNull();
+      expect(
+        splitIntoRowsTool.check?.(listOf('a@example.com; b@example.com', 'Anna', 'Bo', 'Carl')),
+      ).toBeNull();
+      expect(splitIntoRowsTool.check?.(listOf())).toBeNull();
+    });
+  });
 });

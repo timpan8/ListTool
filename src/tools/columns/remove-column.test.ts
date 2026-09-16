@@ -26,4 +26,25 @@ describe('remove column', () => {
   it('is hidden on a one-column list', () => {
     expect(removeColumnTool.appliesTo?.(listOf('a'))).toBe(false);
   });
+
+  describe('check', () => {
+    it('counts the columns with nothing in them and opens on the first', () => {
+      const gappy = tableOf(['a', 'b', 'c'], [{ a: 'x', b: '', c: ' ' }, { a: 'y', b: '', c: '' }]);
+      expect(removeColumnTool.check?.(gappy)).toEqual({
+        summary: '2 columns are empty',
+        count: 2,
+        options: { column: 'b' },
+      });
+    });
+
+    it('says nothing when every column holds something', () => {
+      expect(removeColumnTool.check?.(table())).toBeNull();
+    });
+
+    it('says nothing when there are no rows, or no column to keep', () => {
+      expect(removeColumnTool.check?.(tableOf(['a', 'b'], []))).toBeNull();
+      expect(removeColumnTool.check?.(tableOf(['a', 'b'], [{ a: '', b: '' }]))).toBeNull();
+      expect(removeColumnTool.check?.(tableOf(['a'], [{ a: '' }]))).toBeNull();
+    });
+  });
 });

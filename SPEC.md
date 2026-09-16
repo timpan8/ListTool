@@ -113,6 +113,15 @@ Apply / Apply to new list → undo available. Tools report what they did:
 Dual tools show a second-dataset picker (any open tab). `appliesTo` hides tools that
 don't fit the active dataset (e.g. column tools on a one-column list).
 
+**Ticked rows (M9).** With rows ticked in the table, any tool that does not take the
+selection itself offers "Only the N ticked rows", on by default. The tool then sees a
+list of just those rows and its result is merged back by row id: a sort reorders within
+the ticked slots, a filter removes only ticked rows, an added column is empty elsewhere.
+A tool that reshapes its rows (a count, a transpose, a split into lists) cannot be merged
+back, so its result can only go to a new list, and the panel says so. The step's summary
+carries "— on the N ticked rows"; a recipe replays such a step on the whole list with a
+warning, since row ids mean nothing on another list.
+
 ## 6. Compare mode (detailed)
 The only special layout in the shell. Two panels side by side; each is an open dataset or
 a fresh paste box (paste → detection dialog → becomes a dataset tab). Results update live.
@@ -200,6 +209,15 @@ Phases: **MVP** · **P2** (Phase 2) · **Later**. Every tool is one module + tes
 | Change case | UPPER / lower / Title / Sentence | column, mode | MVP |
 | Find duplicates | report duplicates with counts, don't remove | same as dedupe | P2 |
 | Validate emails | flag rows whose email is malformed (new `valid` column) | column | P2 |
+| Normalise dates | `15/09/2026`, `15.9.2026`, `20260915`, `15 sep 2026` → one shape | column/all, day or month first, shape, keep unparsed | M9 |
+| Normalise numbers | `1 234,50` / `1,234.50` → one decimal mark and grouping | column/all, decimal mark, thousands, decimals | M9 |
+| Validate Swedish ID numbers | personnummer, samordningsnummer, organisationsnummer: Luhn, date, century; `valid` column plus a normalised `YYYYMMDD-XXXX` column | column, kind, normalise | M9 |
+| Fill down | fill an empty cell with the value above (or below) it — the merged-cell cleanup | column/all, direction | M9 |
+| Normalise phone numbers | six ways of writing a mobile number → E.164, grouped or digits | column, country code, shape, keep unparsed | P2 |
+
+Every key-based tool (dedupe, find duplicates, count, group, cross-tab, near-duplicates,
+split by value, and every dual tool) offers the same four matching rules in the same
+order: trim, ignore case, collapse whitespace, ignore diacritics.
 
 ### Transform
 | Tool | Purpose | Key options | Phase |
@@ -210,7 +228,11 @@ Phases: **MVP** · **P2** (Phase 2) · **Later**. Every tool is one module + tes
 | Add prefix / suffix | wrap each value | column, prefix, suffix | MVP |
 | Number rows | prepend or add column with numbers | start, as column | P2 |
 | Reverse / shuffle | reorder rows | mode | P2 |
-| Remove rows found in list B | A − B as a single-click tool | key columns, normalization | P2 |
+| Pad or cut to length | pad at the start or end with a character, or cut with an ellipsis | column, mode, length, fill, ellipsis | M9 |
+| Remove rows found in another list | A − B as a single-click tool (id `remove-rows-in-b`; category compare since M9) | key columns, normalization | P2 |
+
+Sort treats values as text, numbers or dates on request; unreadable values go last
+either way. Split into batches and Split into lists refuse above 30 lists at once.
 
 ### Columns
 | Tool | Purpose | Key options | Phase |
@@ -226,8 +248,9 @@ Phases: **MVP** · **P2** (Phase 2) · **Later**. Every tool is one module + tes
 ### Extract
 | Tool | Purpose | Key options | Phase |
 |---|---|---|---|
-| Extract pattern | one tool with presets: email, domain, URL, IPv4/IPv6, GUID, number, custom regex → new column or new list | column, preset/regex, all matches | MVP (email, domain, regex) · P2 (rest) |
+| Extract pattern | one tool with presets: email, domain, URL, IPv4/IPv6, GUID, number, custom regex → new column or new list; capture groups can each take a column | column, preset/regex, all matches, groups | MVP (email, domain, regex) · P2 (rest) · M9 (groups) |
 | Count values | frequency table of a column, sorted by count | column, normalization | P2 |
+| Column maths | rank, dense rank, running total, share of total, difference from previous, as a new column | column, how, direction, decimals, name | M9 |
 
 ### Compare (dual)
 | Tool | Purpose | Key options | Phase |

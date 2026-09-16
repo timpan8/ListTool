@@ -14,10 +14,12 @@ import {
 import { en } from '../i18n/en';
 import { format, plural } from '../i18n/format';
 import { OptionsPanel } from './OptionsPanel';
+import { ResultActions } from './ResultActions';
+import { ScopeToggle } from './ScopeToggle';
 import { SecondListPicker } from './SecondListPicker';
 import { startingOptions } from './toolOptions';
 import { ToolPreview } from './ToolPreview';
-import { finalOptions, useToolRun } from './useToolRun';
+import { finalOptions, runTool, useToolRun } from './useToolRun';
 
 interface Props {
   dataset: Dataset;
@@ -31,7 +33,8 @@ interface Props {
 /**
  * The one flow every tool follows: configure → live preview with its summary → Apply or
  * Apply to new list. There is no bespoke panel per tool; this is generated from the
- * tool's own option list.
+ * tool's own option list. With rows ticked, a tool that does not take the selection
+ * itself runs on the ticked rows only, unless that is switched off.
  */
 export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }: Props) {
   const opening = (): Options => ({
@@ -43,8 +46,17 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
   // committed by the very click that applies is never a render behind.
   const latest = useRef(options);
   const [secondId, setSecondId] = useState('');
+  const [onTicked, setOnTicked] = useState(true);
 
+  // The panel is reused when another tool is picked, so the options start over then —
+  // and only then: the first render already has them, and an effect runs after paint,
+  // late enough to undo a change made in the panel's first moments.
+  const started = useRef(false);
   useEffect(() => {
+    if (!started.current) {
+      started.current = true;
+      return;
+    }
     latest.current = opening();
     setOptions(latest.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -58,7 +70,11 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
       : undefined;
 
   const ticked = selectedRows.value;
-  const { chosen, result, diff } = useToolRun(tool, dataset, options, second, ticked);
+  const canScope = ticked.length > 0 && !tool.options.some((field) => field.type === 'rows');
+  const scope = canScope && onTicked ? ticked : null;
+  const { chosen, result, diff } = useToolRun(tool, dataset, options, second, ticked, scope);
+  const summaryOf = (summary: string): string =>
+    scope === null ? summary : format(plural(scope.length, en.scope.suffix), { summary });
 
   function change(key: string, value: unknown): void {
     latest.current = { ...latest.current, [key]: value };
@@ -71,7 +87,7 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
         ? { chosen, result }
         : (() => {
             const now = finalOptions(tool, latest.current, dataset, second, ticked);
-            return { chosen: now, result: tool.run(dataset, now, second) };
+            return { chosen: now, result: runTool(tool, dataset, now, second, scope) };
           })();
     const step = {
       toolId: tool.id,
@@ -80,8 +96,9 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
         second === undefined
           ? fresh.chosen
           : { ...fresh.chosen, secondListId: second.id, secondListName: second.name },
-      summary: fresh.result.summary,
+      summary: summaryOf(fresh.result.summary),
       at: Date.now(),
+      ...(scope === null ? {} : { scope: { rows: scope } }),
     };
     let landed = dataset.id;
     if (toNewList) {
@@ -110,7 +127,7 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
     <div
       class="result"
       onKeyDown={(event) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
+        if (event.key === 'Enter' && !event.shiftKey && result.merged) {
           event.preventDefault();
           apply(false);
         }
@@ -129,6 +146,8 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
         <SecondListPicker others={others} selected={second} onChange={setSecondId} />
       ) : null}
 
+      {canScope ? <ScopeToggle ticked={ticked.length} on={onTicked} onChange={setOnTicked} /> : null}
+
       <OptionsPanel
         idPrefix={`tool-${tool.id}`}
         fields={tool.options}
@@ -143,24 +162,12 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
 
       <ToolPreview
         output={result.output}
-        summary={result.summary}
+        summary={summaryOf(result.summary)}
         {...(result.warnings === undefined ? {} : { warnings: result.warnings })}
         diff={diff}
       />
 
-      <div class="result__actions">
-        <button type="button" class="button" onClick={() => apply(true)}>
-          {en.panel.applyToNew}
-        </button>
-        <button
-          type="button"
-          class="button button--primary"
-          title={en.panel.applyHint}
-          onClick={() => apply(false)}
-        >
-          {en.panel.apply}
-        </button>
-      </div>
+      <ResultActions canReplace={result.merged} onApply={apply} />
     </div>
   );
 }

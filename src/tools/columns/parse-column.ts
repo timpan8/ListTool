@@ -87,7 +87,33 @@ export const parseColumnTool: Tool = {
         columns: plural(added.length, strings.columnCount),
       }),
       stats: { columns: added.length, unreadable },
-      ...(unreadable > 0 ? { warnings: [format(strings.unreadable, { n: unreadable })] } : {}),
+      ...(unreadable > 0 ? { warnings: [plural(unreadable, strings.unreadable)] } : {}),
     };
   },
+  check(input) {
+    // A column of "Anna Andersson <anna@example.com>" is two columns waiting to happen.
+    for (const column of input.columns) {
+      let filled = 0;
+      let shaped = 0;
+      for (const row of input.rows) {
+        const value = cell(row, column.id).trim();
+        if (value === '') continue;
+        filled += 1;
+        if (NAME_AND_ADDRESS.test(value)) shaped += 1;
+      }
+      if (shaped === 0 || shaped / filled < SHAPED_SHARE) continue;
+      return {
+        summary: plural(shaped, strings.found),
+        count: shaped,
+        options: { column: column.id, parserId: 'recipients' },
+      };
+    }
+    return null;
+  },
 };
+
+/** "Display Name <local@domain>", possibly quoted: what a mail client hands over. */
+const NAME_AND_ADDRESS = /^"?[^<>@"]+"?\s*<[^\s<>@]+@[^\s<>@]+>$/u;
+
+/** The share of a column's filled cells that must have that shape before it is worth a look. */
+const SHAPED_SHARE = 0.6;

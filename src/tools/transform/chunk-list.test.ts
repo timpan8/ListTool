@@ -63,6 +63,17 @@ describe('chunk list tool', () => {
     expect(values(result.output)).toEqual(['a', 'b']);
   });
 
+  it('refuses to open more than thirty batches, and says what to change', () => {
+    const long = listOf(...Array.from({ length: 31 }, (_, index) => `v${index}`));
+    const result = chunkListTool.run(long, { ...DEFAULTS, size: 1 });
+    expect(result.summary).toBe('Nothing changed.');
+    expect(result.warnings?.[0]).toBe(
+      'That would make 31 batches, and 30 is as many as this opens at once. Raise the rows per batch.',
+    );
+    expect(result.extraLists).toBeUndefined();
+    expect(chunkListTool.run(long, { ...DEFAULTS, size: 2 }).extraLists).toHaveLength(15);
+  });
+
   it('splits one row per batch when asked', () => {
     const result = chunkListTool.run(listOf('a', 'b', 'c'), { ...DEFAULTS, size: 1 });
     expect(result.extraLists).toHaveLength(2);

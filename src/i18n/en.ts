@@ -64,6 +64,7 @@ export const en = {
     selection: { one: '{n} row ticked', other: '{n} rows ticked' },
     clearSelection: 'Clear ticks',
     openTool: '{tool}…',
+    toolsForRows: 'Tools for these rows…',
     editCell: 'Edit {column}, row {n}',
     editHint: 'Click a cell to edit it. Enter saves, Esc cancels; the arrow keys move between cells.',
     sortedBy: 'Sorted by {column}, {direction} — the view only',
@@ -104,6 +105,14 @@ export const en = {
 
   menu: {
     ok: 'OK',
+  },
+
+  scope: {
+    only: { one: 'Only the {n} ticked row', other: 'Only the {n} ticked rows' },
+    help: 'Untick to run on the whole list.',
+    suffix: { one: '{summary} — on the {n} ticked row', other: '{summary} — on the {n} ticked rows' },
+    notMergeable:
+      'This tool reshapes the rows it is given, so its result on the ticked rows can only become a new list.',
   },
 
   status: {
@@ -174,7 +183,6 @@ export const en = {
   options: {
     custom: 'Custom',
     allColumns: 'All columns',
-    everyColumn: 'Every column',
     forList: '{label} · {list}',
     noColumns: 'None',
     selection: { one: '{n} row ticked in the table', other: '{n} rows ticked in the table' },
@@ -339,6 +347,10 @@ export const en = {
       descending: 'Z – A',
       by: 'Sort on',
       byValue: 'Value',
+      as: 'Treat values as',
+      asText: 'Text',
+      asNumber: 'Numbers',
+      asDate: 'Dates',
       byLength: 'Length',
       locale: 'Language',
       localeSv: 'Swedish (å ä ö after z)',
@@ -363,7 +375,7 @@ export const en = {
       regex: 'Regular expression',
       pattern: 'Text to match',
       invert: 'Remove matching rows instead of keeping them',
-      summary: 'Kept {kept} of {before} rows',
+      summary: 'Kept {kept} of {before}',
       badRegex: 'That is not a valid regular expression, so nothing was filtered.',
     },
     replace: {
@@ -414,6 +426,8 @@ export const en = {
       presetNumber: 'Number',
       regex: 'Regular expression',
       allMatches: 'Keep every match, not just the first',
+      groups: 'Each capture group into its own column',
+      groupsHelp: 'A named group names its column; the rest are numbered.',
       allMatchesHelp: 'Several matches are joined with a comma.',
       summary: 'Extracted {found} into {column}',
       found: { one: '{n} value', other: '{n} values' },
@@ -491,6 +505,7 @@ export const en = {
       description: 'Drop a column and its values.',
       summary: 'Removed the column {name}',
       lastColumn: 'A list needs at least one column.',
+      found: { one: '{n} column is empty', other: '{n} columns are empty' },
     },
     moveColumn: {
       name: 'Move column',
@@ -521,7 +536,8 @@ export const en = {
       lowercase: 'Lowercase',
       stripDiacritics: 'Replace å ä ö with a a o',
       columnName: 'Generated email',
-      summary: 'Generated {count} addresses',
+      summary: 'Generated {count}',
+      addresses: { one: '{n} address', other: '{n} addresses' },
     },
     countValues: {
       name: 'Count values',
@@ -561,7 +577,10 @@ export const en = {
       matched: { one: '{n} matching row', other: '{n} matching rows' },
       none: 'Every matching row is identical in the columns compared.',
       noColumns: 'The two lists have no column in common to compare.',
-      unmatched: '{n} rows of this list matched nothing in the second.',
+      unmatched: {
+        one: '{n} row of this list matched nothing in the second.',
+        other: '{n} rows of this list matched nothing in the second.',
+      },
     },
     coalesce: {
       name: 'Fill the gaps from another list',
@@ -583,7 +602,14 @@ export const en = {
       summary: 'Read {column} into {columns}',
       columnCount: { one: '{n} column', other: '{n} columns' },
       nothing: 'That parser found nothing in that column.',
-      unreadable: '{n} values could not be read and left their new cells empty.',
+      unreadable: {
+        one: '{n} value could not be read and left its new cells empty.',
+        other: '{n} values could not be read and left their new cells empty.',
+      },
+      found: {
+        one: '{n} cell holds a name and an address together',
+        other: '{n} cells hold a name and an address together',
+      },
     },
     crossTab: {
       name: 'Cross-tab',
@@ -600,7 +626,11 @@ export const en = {
       rowCount: { one: '{n} row', other: '{n} rows' },
       columnCount: { one: '{n} column', other: '{n} columns' },
       tooWide: 'That column has {n} different values, so only the first {limit} became columns.',
-      notNumeric: '{n} values were not numbers and were left out of the totals.',
+      tooTall: 'That column has {n} different values, so only the first {limit} became rows.',
+      notNumeric: {
+        one: '{n} value was not a number and was left out of the totals.',
+        other: '{n} values were not numbers and were left out of the totals.',
+      },
     },
     unpivot: {
       name: 'Turn columns into rows',
@@ -628,7 +658,7 @@ export const en = {
       step: 'n, for every nth row',
       seed: 'Seed',
       seedHelp: 'The same seed always picks the same rows, so a recipe replays exactly.',
-      summary: 'Took {kept} of {before} rows',
+      summary: 'Took {kept} of {before}',
       alreadyShort: 'The list is already that short.',
     },
     splitByValue: {
@@ -640,7 +670,8 @@ export const en = {
       summary: 'Split {rows} into {lists}',
       lists: { one: '{n} list', other: '{n} lists' },
       onlyOne: 'Every row has the same value, so there is nothing to split.',
-      tooMany: 'That column has {n} different values. Splitting would open {n} tabs.',
+      tooMany:
+        'That column has {n} different values. Splitting would open {n} tabs, and {limit} is as many as this opens at once.',
     },
     filterRules: {
       name: 'Filter on several rules',
@@ -652,7 +683,7 @@ export const en = {
       ruleMode: 'Rule {n} — match',
       rulePattern: 'Rule {n} — text',
       ruleHelp: 'A rule with no text is ignored.',
-      summary: 'Kept {kept} of {before} rows, on {rules}',
+      summary: 'Kept {kept} of {before}, on {rules}',
       rules: { one: '{n} rule', other: '{n} rules' },
       needRule: 'Type the text for at least one rule.',
     },
@@ -678,6 +709,7 @@ export const en = {
       demoteSummary: 'Put the column names back as a row ({before} → {after})',
       noRows: 'There is no first row to take the names from.',
       blankName: 'Column {n}',
+      found: 'The first row looks like column names',
     },
     append: {
       name: 'Add another list to the end',
@@ -719,7 +751,14 @@ export const en = {
       digits: 'Digits only',
       keepUnparsed: 'Leave anything that is not a number alone',
       summary: 'Normalised {count} of {total} numbers',
-      warnUnparsed: '{n} values did not look like phone numbers and were left as they are.',
+      warnUnparsed: {
+        one: '{n} value did not look like a phone number and was left as it is.',
+        other: '{n} values did not look like phone numbers and were left as they are.',
+      },
+      found: {
+        one: '{n} phone number is written differently from the rest',
+        other: '{n} phone numbers are written more than one way',
+      },
     },
     splitIntoRows: {
       name: 'Split into rows',
@@ -728,6 +767,7 @@ export const en = {
       dropEmpty: 'Drop empty parts',
       summary: 'Split {before} into {after}',
       nothing: 'No cell in that column contains that delimiter.',
+      found: { one: '{n} cell holds several addresses', other: '{n} cells hold several addresses' },
     },
     chunk: {
       name: 'Split into batches',
@@ -739,6 +779,8 @@ export const en = {
       batches: { one: '{n} batch', other: '{n} batches' },
       needSize: 'A batch needs at least one row.',
       alreadyShort: 'The list already fits in one batch.',
+      tooMany:
+        'That would make {n} batches, and {limit} is as many as this opens at once. Raise the rows per batch.',
     },
     transpose: {
       name: 'Transpose',
@@ -762,7 +804,6 @@ export const en = {
       max: 'Largest',
       join: 'List the values',
       separator: 'Separator',
-      resultColumn: 'Result',
       columnNames: {
         count: 'Count',
         sum: 'Sum',
@@ -773,7 +814,10 @@ export const en = {
       },
       summary: '{groups} from {rows}',
       groups: { one: '{n} group', other: '{n} groups' },
-      notNumeric: '{n} values were not numbers and were left out of the calculation.',
+      notNumeric: {
+        one: '{n} value was not a number and was left out of the calculation.',
+        other: '{n} values were not numbers and were left out of the calculation.',
+      },
     },
     joinLists: {
       name: 'Join lists',
@@ -786,7 +830,7 @@ export const en = {
       summary: 'Matched {matched} of {rows}, bringing {columns}',
       columnCount: { one: '{n} column', other: '{n} columns' },
       nothingToBring: 'Pick at least one column to bring across.',
-      unmatched: '{n} rows matched nothing.',
+      unmatched: { one: '{n} row matched nothing.', other: '{n} rows matched nothing.' },
     },
     markMembership: {
       name: 'Mark what is in another list',
@@ -807,6 +851,8 @@ export const en = {
       summary: '{groups} contain values that are nearly the same',
       groups: { one: '{n} group', other: '{n} groups' },
       none: 'Nothing in that column is close enough to anything else.',
+      tooMany:
+        'That column has {n} different values, and {limit} is as many as this can look through. Narrow the list first.',
     },
     setValue: {
       name: 'Set value',
@@ -823,12 +869,135 @@ export const en = {
       mode: 'Do',
       keep: 'Keep only these',
       remove: 'Remove these',
-      summary: 'Kept {kept} of {before} rows',
-      removedSummary: 'Removed {removed} of {before} rows',
+      summary: 'Kept {kept} of {before}',
+      removedSummary: 'Removed {removed} of {before}',
       keepNothing: 'Keeping none of the rows would empty the list.',
+    },
+    normalizeDates: {
+      name: 'Normalise dates',
+      description: 'Write every date the same way, such as 2026-09-15.',
+      dayFirst: 'A date like 05/09/2026 means',
+      dayFirstDmy: '5 September — day first',
+      dayFirstMdy: '9 May — month first',
+      shape: 'Write dates as',
+      shapeIso: '2026-09-15',
+      shapeDmy: '15/09/2026',
+      shapeMdy: '09/15/2026',
+      shapeCompact: '20260915',
+      keepUnparsed: 'Leave a cell that is not a date as it is',
+      summary: 'Rewrote {cells}',
+      left: {
+        one: '{n} cell is not a date and was left as it is',
+        other: '{n} cells are not dates and were left as they are',
+      },
+      nothing: 'Every date is already written that way.',
+      found: {
+        one: '{n} date is written differently from the others in its column',
+        other: '{n} dates are written in more than one way in their column',
+      },
+    },
+    normalizeNumbers: {
+      name: 'Normalise numbers',
+      description: 'Write every number the same way, such as 1 234,50.',
+      decimal: 'Decimal mark',
+      decimalComma: 'Comma — 1 234,50',
+      decimalPoint: 'Point — 1,234.50',
+      thousands: 'Thousands separator',
+      thousandsNone: 'None',
+      thousandsSpace: 'Space',
+      thousandsComma: 'Comma',
+      thousandsPoint: 'Point',
+      decimals: 'Decimals',
+      decimalsKeep: 'As written',
+      summary: 'Rewrote {cells}',
+      left: {
+        one: '{n} cell is not a number and was left as it is',
+        other: '{n} cells are not numbers and were left as they are',
+      },
+      nothing: 'Every number is already written that way.',
+      found: {
+        one: '{n} number uses a different decimal mark from the others in its column',
+        other: '{n} numbers use a different decimal mark from the others in their column',
+      },
+    },
+    validateSwedishIds: {
+      name: 'Validate Swedish ID numbers',
+      description:
+        'Check personnummer, samordningsnummer and organisationsnummer, and write the valid ones one way.',
+      kind: 'Accept',
+      kindAny: 'Any kind',
+      kindPerson: 'Personnummer and samordningsnummer',
+      kindOrganisation: 'Organisationsnummer',
+      normalize: 'Add a column with the number written as YYYYMMDD-XXXX',
+      validColumn: 'Valid ID',
+      normalizedColumn: 'ID',
+      kinds: {
+        personnummer: 'personnummer',
+        samordningsnummer: 'samordningsnummer',
+        organisationsnummer: 'organisationsnummer',
+      },
+      no: 'no',
+      summary: '{valid} of {rows} check out',
+      found: {
+        one: '{n} value looks like a Swedish ID number but does not check out',
+        other: '{n} values look like Swedish ID numbers but do not check out',
+      },
+    },
+    padTruncate: {
+      name: 'Pad or cut to length',
+      description: 'Bring every value to a fixed length: pad it, or cut it.',
+      mode: 'Do',
+      padStart: 'Pad on the left',
+      padEnd: 'Pad on the right',
+      truncate: 'Cut to the length',
+      length: 'Length',
+      fill: 'Pad with',
+      ellipsis: 'End a cut value with …',
+      summary: 'Changed {cells}',
+    },
+    fillDown: {
+      name: 'Fill down',
+      description:
+        'Give every empty cell the value of the nearest filled cell above it — what a merged cell leaves behind.',
+      direction: 'Take the value from',
+      above: 'Above — fill down',
+      below: 'Below — fill up',
+      summary: 'Filled {cells}',
+      nothing: 'No empty cell has a filled one to take from.',
+    },
+    columnMaths: {
+      name: 'Column maths',
+      description:
+        'Rank, running total, share of total or difference from the row before, into a new column.',
+      how: 'Compute',
+      hows: {
+        rank: 'Rank',
+        denseRank: 'Rank — ties share a number and leave no gap',
+        runningTotal: 'Running total',
+        share: 'Share of the total, in percent',
+        difference: 'Difference from the row before',
+      },
+      direction: 'Rank 1 is',
+      largest: 'The largest value',
+      smallest: 'The smallest value',
+      decimals: 'Decimals',
+      columnName: 'Column name',
+      names: {
+        rank: 'Rank',
+        denseRank: 'Rank',
+        runningTotal: 'Running total',
+        share: 'Share %',
+        difference: 'Difference',
+      },
+      summary: 'Added {name} for {rows}',
+      skipped: {
+        one: '{n} cell is not a number and got no result',
+        other: '{n} cells are not numbers and got no result',
+      },
     },
     cells: { one: '{n} cell', other: '{n} cells' },
     rows: { one: '{n} row', other: '{n} rows' },
+    columnsCount: { one: '{n} column', other: '{n} columns' },
     nothingChanged: 'Nothing changed.',
   },
 
@@ -987,6 +1156,7 @@ export const en = {
     saved: 'Saved the recipe {recipe}.',
     skippedUnknown: 'A step used a tool that is no longer here, so it was skipped.',
     skippedDual: 'A step compares with {name}, which is not open, so it was skipped.',
+    scopeDropped: 'A step ran on ticked rows; a recipe runs on the whole list, so this one did too.',
     skippedNoRaw: 'A step re-parses the original input, and this list has none. It was skipped.',
   },
 

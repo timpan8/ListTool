@@ -87,3 +87,51 @@ describe('header row tool', () => {
     expect(JSON.stringify(RAW)).toBe(before);
   });
 });
+
+describe('header row check', () => {
+  /** What a parser hands over when it could not name the columns. */
+  function unnamed(records: Record<string, string>[]) {
+    const table = tableOf(['c1', 'c2'], records);
+    return { ...table, columns: [{ id: 'c1', name: 'Column 1' }, { id: 'c2', name: 'Column 2' }] };
+  }
+  const DATA = [
+    { c1: 'Anna', c2: 'anna@example.com' },
+    { c1: 'Bo', c2: 'bo@example.com' },
+  ];
+
+  it('notices a first row of plain names over a column of addresses', () => {
+    expect(headerRowTool.check?.(unnamed([{ c1: 'Namn', c2: 'E-post' }, ...DATA]))).toEqual({
+      summary: 'The first row looks like column names',
+      count: 1,
+      options: { mode: 'promote' },
+    });
+  });
+
+  it('notices it over a column of numbers or dates as well', () => {
+    const numbers = unnamed([{ c1: 'Namn', c2: 'Antal' }, { c1: 'Anna', c2: '12' }, { c1: 'Bo', c2: '7' }]);
+    const dates = unnamed([{ c1: 'Namn', c2: 'Datum' }, { c1: 'Anna', c2: '2026-09-15' }, { c1: 'Bo', c2: '2026-09-16' }]);
+    expect(headerRowTool.check?.(numbers)?.count).toBe(1);
+    expect(headerRowTool.check?.(dates)?.count).toBe(1);
+  });
+
+  it('says nothing once the columns have real names', () => {
+    expect(headerRowTool.check?.(tableOf(['c1', 'c2'], [{ c1: 'Namn', c2: 'E-post' }, ...DATA]))).toBeNull();
+  });
+
+  it('says nothing when the first row is data too', () => {
+    expect(headerRowTool.check?.(unnamed([{ c1: 'Carl', c2: 'carl@example.com' }, ...DATA]))).toBeNull();
+    expect(headerRowTool.check?.(unnamed([{ c1: 'Namn', c2: '12' }, ...DATA]))).toBeNull();
+    expect(headerRowTool.check?.(unnamed([{ c1: 'Namn', c2: '' }, ...DATA]))).toBeNull();
+    expect(headerRowTool.check?.(unnamed([{ c1: 'Namn', c2: 'namn' }, ...DATA]))).toBeNull();
+  });
+
+  it('says nothing when the rest of the table is plain text too', () => {
+    const text = unnamed([{ c1: 'Namn', c2: 'Stad' }, { c1: 'Anna', c2: 'Göteborg' }, { c1: 'Bo', c2: 'Malmö' }]);
+    expect(headerRowTool.check?.(text)).toBeNull();
+  });
+
+  it('wants at least two rows of data under the header before it says anything', () => {
+    expect(headerRowTool.check?.(unnamed([{ c1: 'Namn', c2: 'E-post' }, DATA[0]!]))).toBeNull();
+    expect(headerRowTool.check?.(listOf())).toBeNull();
+  });
+});

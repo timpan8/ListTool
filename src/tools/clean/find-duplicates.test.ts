@@ -42,4 +42,16 @@ describe('find duplicates', () => {
   it('finds nothing in an all-unique list', () => {
     expect(run(['a', 'b']).rows).toEqual([]);
   });
+
+  it('can fold diacritics and inner whitespace, like every other key-based tool', () => {
+    expect(run(['Åsa', 'Asa'], { ignoreDiacritics: true }).rows).toHaveLength(2);
+    expect(run(['Anna  Berg', 'Anna Berg'], { collapseWhitespace: true }).rows).toHaveLength(2);
+    expect(run(['Anna  Berg', 'Anna Berg']).rows).toHaveLength(0);
+  });
+
+  it('keeps the row ids, because it only adds a column', () => {
+    const list = listOf('a', 'b', 'a');
+    const output = findDuplicatesTool.run(list, {}).output;
+    expect(output.rows.map((row) => row.id)).toEqual(['r1', 'r3']);
+  });
 });

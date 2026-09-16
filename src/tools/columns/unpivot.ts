@@ -2,7 +2,7 @@ import { cell, makeRow, type Column, type Row } from '../../core/model';
 import { booleanOption, stringOption, stringsOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { withColumns } from '../helpers';
+import { freeColumnId, withColumns } from '../helpers';
 
 const strings = en.tools.unpivot;
 
@@ -31,8 +31,9 @@ export const unpivotTool: Tool = {
       return { output: input, summary: en.tools.nothingChanged, warnings: [strings.keepAll] };
     }
 
-    const nameId = 'field';
-    const valueId = 'value';
+    // A kept column may itself be called field or value; the new ones step aside.
+    const nameId = freeColumnId({ columns: keep }, 'field');
+    const valueId = freeColumnId({ columns: [...keep, { id: nameId, name: '' }] }, 'value');
     const dropEmpty = booleanOption(options, 'dropEmpty', true);
 
     const columns: Column[] = [

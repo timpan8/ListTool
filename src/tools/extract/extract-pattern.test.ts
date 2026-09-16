@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractPatternTool } from './extract-pattern';
+import { captureGroupNames, extractPatternTool } from './extract-pattern';
 import { cell } from '../../core/model';
 import { listOf, tableOf } from '../../test/fixtures';
 
@@ -134,5 +134,49 @@ describe('the IPv6 preset', () => {
 
   it('does not mistake a clock time for an address', () => {
     expect(first('meeting at 12:30')).toBe('');
+  });
+});
+
+describe('capture groups into their own columns', () => {
+  it('names the columns after the named groups, and numbers the rest', () => {
+    const input = listOf('Andersson, Anna', 'Berg, Bo');
+    const result = extractPatternTool.run(input, {
+      column: 'value',
+      preset: 'regex',
+      regex: '(?<last>[^,]+), (\\w+)',
+      groups: true,
+    });
+    expect(result.output.columns.map((column) => column.name)).toEqual(['Value', 'last', 'Match 2']);
+    expect(result.output.rows.map((row) => [cell(row, 'last'), cell(row, 'match2')])).toEqual([
+      ['Andersson', 'Anna'],
+      ['Berg', 'Bo'],
+    ]);
+    expect(result.summary).toBe('Extracted 2 values into last, Match 2');
+  });
+
+  it('leaves the group columns empty where nothing matches', () => {
+    const result = extractPatternTool.run(listOf('nope'), {
+      column: 'value',
+      preset: 'regex',
+      regex: '(\\d+)-(\\d+)',
+      groups: true,
+    });
+    expect(result.output.rows.map((row) => [cell(row, 'match1'), cell(row, 'match2')])).toEqual([['', '']]);
+  });
+
+  it('falls back to the whole match when the pattern has no groups', () => {
+    const result = extractPatternTool.run(listOf('a1'), {
+      column: 'value',
+      preset: 'regex',
+      regex: '\\d',
+      groups: true,
+    });
+    expect(result.output.columns.map((column) => column.id)).toEqual(['value', 'match']);
+  });
+});
+
+describe('captureGroupNames', () => {
+  it('finds capturing groups and skips everything that only looks like one', () => {
+    expect(captureGroupNames('(a)(?<b>b)(?:c)(?=d)(?<!e)\\((f)[(g)]')).toEqual([null, 'b', null]);
   });
 });

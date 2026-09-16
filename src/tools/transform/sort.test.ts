@@ -155,3 +155,39 @@ describe('sorting on several keys', () => {
     expect(result.output.rows.map((row) => cell(row, 'b'))).toEqual(['zz', 'z', 'zzz']);
   });
 });
+
+describe('sorting as numbers and dates', () => {
+  const values = (rows: { cells: Record<string, string> }[]): string[] =>
+    rows.map((row) => row.cells[VALUE_COLUMN] ?? '');
+
+  it('orders numbers by size rather than by their digits, whatever their shape', () => {
+    const input = listOf('999', '1 234,50', '12', 'n/a', '-5');
+    expect(values(sortTool.run(input, { column: VALUE_COLUMN, as: 'number' }).output.rows)).toEqual([
+      '-5',
+      '12',
+      '999',
+      '1 234,50',
+      'n/a',
+    ]);
+    expect(
+      values(sortTool.run(input, { column: VALUE_COLUMN, as: 'number', direction: 'desc' }).output.rows),
+    ).toEqual(['1 234,50', '999', '12', '-5', 'n/a']);
+  });
+
+  it('orders dates by the calendar, whatever their shape', () => {
+    const input = listOf('15/09/2026', '2026-01-05', '20250101', 'unknown');
+    expect(values(sortTool.run(input, { column: VALUE_COLUMN, as: 'date' }).output.rows)).toEqual([
+      '20250101',
+      '2026-01-05',
+      '15/09/2026',
+      'unknown',
+    ]);
+  });
+
+  it('still sorts as text by default', () => {
+    expect(values(sortTool.run(listOf('999', '1 234,50'), { column: VALUE_COLUMN }).output.rows)).toEqual([
+      '1 234,50',
+      '999',
+    ]);
+  });
+});

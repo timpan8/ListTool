@@ -43,10 +43,11 @@ describe('filter rows', () => {
     expect(filterRowsTool.run(listOf('a'), { pattern: '' }).summary).toBe('Nothing changed.');
   });
 
-  it('reports how many rows survived', () => {
+  it('reports how many rows survived, in the singular when it was one', () => {
     expect(filterRowsTool.run(listOf('a', 'b'), { pattern: 'a' }).summary).toBe(
       'Kept 1 of 2 rows',
     );
+    expect(filterRowsTool.run(listOf('a'), { pattern: 'x' }).summary).toBe('Kept 0 of 1 row');
   });
 
   it('matches in any column by default', () => {

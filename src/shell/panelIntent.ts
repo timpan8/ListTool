@@ -7,5 +7,6 @@ import type { Options, Tool } from '../core/registry';
  */
 export type PanelIntent =
   | { kind: 'tool'; tool: Tool; options?: Options }
+  | { kind: 'tools' }
   | { kind: 'column-tools'; columnId: string }
   | { kind: 'column-values'; columnId: string };

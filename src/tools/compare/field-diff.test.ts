@@ -91,7 +91,7 @@ describe('field diff tool', () => {
 
   it('warns about the rows that matched nothing', () => {
     const result = fieldDiffTool.run(BEFORE, BASE, AFTER);
-    expect(result.warnings).toContain('1 rows of this list matched nothing in the second.');
+    expect(result.warnings).toContain('1 row of this list matched nothing in the second.');
   });
 
   it('says so plainly when the matching rows are identical', () => {

@@ -21,7 +21,7 @@ export const trimTool: Tool = {
     const { rows, changed } = mapCells(input, columns, (value) => value.trim());
 
     return {
-      output: withRows(input, rows),
+      output: changed === 0 ? input : withRows(input, rows),
       summary:
         changed === 0
           ? en.tools.nothingChanged

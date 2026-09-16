@@ -204,6 +204,53 @@ describe('row identity', () => {
   });
 });
 
+describe('key-based tools', () => {
+  // A tool that both trims and folds case is building keys; it offers the whole set.
+  const keyed = tools.filter(
+    (tool) =>
+      tool.options.some((field) => field.key === 'trim') &&
+      tool.options.some((field) => field.key === 'ignoreCase'),
+  );
+
+  it('include the ones that dedupe, count, group and split on a value', () => {
+    const ids = keyed.map((tool) => tool.id);
+    for (const id of [
+      'remove-duplicates',
+      'find-duplicates',
+      'count-values',
+      'group-by',
+      'cross-tab',
+      'find-similar',
+      'split-by-value',
+      'compare-lists',
+    ]) {
+      expect(ids).toContain(id);
+    }
+  });
+
+  it('all offer the same four matching rules, in the same order, last', () => {
+    for (const tool of keyed) {
+      expect(tool.options.slice(-4).map((field) => field.key), tool.id).toEqual([
+        'trim',
+        'ignoreCase',
+        'collapseWhitespace',
+        'ignoreDiacritics',
+      ]);
+    }
+  });
+
+  it('all honour ignoreDiacritics, so Åsa and Asa become one key', () => {
+    const pair = tableOf(['name', 'n'], [{ name: 'Åsa', n: '1' }, { name: 'Asa', n: '2' }]);
+    for (const tool of keyed) {
+      if (tool.arity === 'dual' || tool.id === 'find-similar') continue;
+      const options = { ...defaultOptions(tool.options), column: 'name' };
+      const folded = tool.run(pair, { ...options, ignoreDiacritics: true });
+      const kept = tool.run(pair, { ...options, ignoreDiacritics: false });
+      expect(JSON.stringify(folded.output) !== JSON.stringify(kept.output), tool.id).toBe(true);
+    }
+  });
+});
+
 describe('dual tools', () => {
   // Appending matches nothing, so it has no keys and no rules; every other dual tool matches.
   const dual = tools.filter((tool) => tool.arity === 'dual' && tool.id !== 'append-rows');

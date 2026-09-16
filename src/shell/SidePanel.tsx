@@ -36,6 +36,10 @@ export function SidePanel({ dataset, history, intent, onIntentHandled, onClose }
       setTab('tools');
       setTool(intent.tool);
       setOpening(intent.options);
+    } else if (intent.kind === 'tools') {
+      setTab('tools');
+      setTool(null);
+      setColumnId(undefined);
     } else if (intent.kind === 'column-tools') {
       setTab('tools');
       setTool(null);

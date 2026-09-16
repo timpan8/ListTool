@@ -1,9 +1,9 @@
-import { cell, columnId, draftDataset, makeRow, type Column } from '../../core/model';
-import { joinKeys, normalizeKey } from '../../core/normalize';
+import { cell, columnId, makeRow, type Column } from '../../core/model';
+import { normalizeKey, type NormalizeOptions } from '../../core/normalize';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
-import { targetColumn } from '../helpers';
+import { freshDataset, NORMALIZE_FIELDS, readNormalize, targetColumn } from '../helpers';
 import { parseNumber } from '../../core/number';
 
 const strings = en.tools.crossTab;
@@ -11,26 +11,35 @@ const strings = en.tools.crossTab;
 /** How many columns a cross-tab may grow to before it stops being readable. */
 const MAX_COLUMNS = 40;
 
-const NORMALIZE = { trim: true, ignoreCase: true };
+/** How many rows down the side before it is a list again, not a summary of one. */
+const MAX_ROWS = 500;
 
 /** A number as people write it, or null. The same reading as Group and summarise. */
 function short(value: number): string {
   return String(Number(value.toFixed(6)));
 }
 
-/** Distinct values of a column, in first-seen order, keeping the first spelling. */
-function distinct(values: string[]): string[] {
-  const seen = new Map<string, string>();
-  for (const value of values) {
-    const key = normalizeKey(value, NORMALIZE);
-    if (!seen.has(key)) seen.set(key, value.trim());
-  }
-  return [...seen.values()];
+/** The distinct values of a column in first-seen order, by key, keeping the first spelling. */
+interface Axis {
+  keys: string[];
+  labels: Map<string, string>;
+  /** How many distinct values there were before the cap. */
+  total: number;
 }
 
-/** One cell of the grid, addressed by both keys at once. */
-function at(down: string, across: string): string {
-  return joinKeys([down, across]);
+function axis(values: string[], normalize: NormalizeOptions, limit: number): Axis {
+  const labels = new Map<string, string>();
+  const keys: string[] = [];
+  let total = 0;
+  for (const value of values) {
+    const key = normalizeKey(value, normalize);
+    if (labels.has(key)) continue;
+    total += 1;
+    if (keys.length === limit) continue;
+    keys.push(key);
+    labels.set(key, value.trim());
+  }
+  return { keys, labels, total };
 }
 
 export const crossTabTool: Tool = {
@@ -56,6 +65,7 @@ export const crossTabTool: Tool = {
     },
     { key: 'valueColumn', label: strings.valueColumn, type: 'column', allowNone: true, default: '' },
     { key: 'total', label: strings.total, type: 'boolean', default: true },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options) {
     const down = targetColumn(input, options);
@@ -67,55 +77,66 @@ export const crossTabTool: Tool = {
     const summing = stringOption(options, 'how', 'count') === 'sum';
     const valueColumn = targetColumn(input, options, 'valueColumn') ?? down;
     const withTotal = booleanOption(options, 'total', true);
+    const normalize = readNormalize(options);
 
-    const rowValues = distinct(input.rows.map((row) => cell(row, down.id)));
-    const allAcross = distinct(input.rows.map((row) => cell(row, across.id)));
-    const colValues = allAcross.slice(0, MAX_COLUMNS);
-    const colKeys = new Set(colValues.map((value) => normalizeKey(value, NORMALIZE)));
+    // Every key is built once per row, and the grid is one map of maps: a row of the
+    // list touches exactly one cell of it.
+    const downKeys = input.rows.map((row) => normalizeKey(cell(row, down.id), normalize));
+    const acrossKeys = input.rows.map((row) => normalizeKey(cell(row, across.id), normalize));
+    const rowAxis = axis(input.rows.map((row) => cell(row, down.id)), normalize, MAX_ROWS);
+    const colAxis = axis(input.rows.map((row) => cell(row, across.id)), normalize, MAX_COLUMNS);
+    const inRows = new Set(rowAxis.keys);
+    const inCols = new Set(colAxis.keys);
 
-    // Totalled by key, so two spellings of the same value land in the same cell.
-    const totals = new Map<string, number>();
+    const grid = new Map<string, Map<string, number>>();
     let notNumeric = 0;
 
-    for (const row of input.rows) {
-      const acrossKey = normalizeKey(cell(row, across.id), NORMALIZE);
-      if (!colKeys.has(acrossKey)) continue;
-      const key = at(normalizeKey(cell(row, down.id), NORMALIZE), acrossKey);
+    input.rows.forEach((row, index) => {
+      const downKey = downKeys[index] ?? '';
+      const acrossKey = acrossKeys[index] ?? '';
+      if (!inRows.has(downKey) || !inCols.has(acrossKey)) return;
 
-      if (!summing) {
-        totals.set(key, (totals.get(key) ?? 0) + 1);
-        continue;
+      let amount = 1;
+      if (summing) {
+        const value = cell(row, valueColumn.id);
+        if (value.trim() === '') return;
+        const parsed = parseNumber(value);
+        if (parsed === null) {
+          notNumeric += 1;
+          return;
+        }
+        amount = parsed;
       }
-      const value = cell(row, valueColumn.id);
-      if (value.trim() === '') continue;
-      const parsed = parseNumber(value);
-      if (parsed === null) notNumeric += 1;
-      else totals.set(key, (totals.get(key) ?? 0) + parsed);
-    }
 
+      const line = grid.get(downKey) ?? new Map<string, number>();
+      line.set(acrossKey, (line.get(acrossKey) ?? 0) + amount);
+      grid.set(downKey, line);
+    });
+
+    const label = (value: string): string => (value === '' ? en.profile.blankValue : value);
     const columns: Column[] = [
       { id: 'label', name: down.name },
-      ...colValues.map((value, index) => ({
+      ...colAxis.keys.map((key, index) => ({
         id: columnId(index),
-        name: value === '' ? en.profile.blankValue : value,
+        name: label(colAxis.labels.get(key) ?? ''),
       })),
       ...(withTotal ? [{ id: 'total', name: strings.totalName }] : []),
     ];
 
-    const rows = rowValues.map((value, index) => {
-      const downKey = normalizeKey(value, NORMALIZE);
-      const cells: Record<string, string> = {
-        label: value === '' ? en.profile.blankValue : value,
-      };
-      let line = 0;
+    const columnTotals = new Map<string, number>();
+    const rows = rowAxis.keys.map((downKey, index) => {
+      const line = grid.get(downKey);
+      const cells: Record<string, string> = { label: label(rowAxis.labels.get(downKey) ?? '') };
+      let lineTotal = 0;
 
-      colValues.forEach((acrossValue, position) => {
-        const found = totals.get(at(downKey, normalizeKey(acrossValue, NORMALIZE))) ?? 0;
-        line += found;
+      colAxis.keys.forEach((acrossKey, position) => {
+        const found = line?.get(acrossKey) ?? 0;
+        lineTotal += found;
+        columnTotals.set(acrossKey, (columnTotals.get(acrossKey) ?? 0) + found);
         // An empty cell reads better than a grid of zeroes.
         cells[columnId(position)] = found === 0 ? '' : short(found);
       });
-      if (withTotal) cells['total'] = short(line);
+      if (withTotal) cells['total'] = short(lineTotal);
 
       return makeRow(index, cells);
     });
@@ -123,12 +144,8 @@ export const crossTabTool: Tool = {
     if (withTotal && rows.length > 0) {
       const cells: Record<string, string> = { label: strings.totalName };
       let grand = 0;
-      colValues.forEach((acrossValue, position) => {
-        const acrossKey = normalizeKey(acrossValue, NORMALIZE);
-        const column = rowValues.reduce(
-          (sum, value) => sum + (totals.get(at(normalizeKey(value, NORMALIZE), acrossKey)) ?? 0),
-          0,
-        );
+      colAxis.keys.forEach((acrossKey, position) => {
+        const column = columnTotals.get(acrossKey) ?? 0;
         grand += column;
         cells[columnId(position)] = short(column);
       });
@@ -137,19 +154,22 @@ export const crossTabTool: Tool = {
     }
 
     const warnings = [
-      ...(allAcross.length > colValues.length
-        ? [format(strings.tooWide, { n: allAcross.length, limit: MAX_COLUMNS })]
+      ...(rowAxis.total > rowAxis.keys.length
+        ? [format(strings.tooTall, { n: rowAxis.total, limit: MAX_ROWS })]
         : []),
-      ...(notNumeric > 0 ? [format(strings.notNumeric, { n: notNumeric })] : []),
+      ...(colAxis.total > colAxis.keys.length
+        ? [format(strings.tooWide, { n: colAxis.total, limit: MAX_COLUMNS })]
+        : []),
+      ...(notNumeric > 0 ? [plural(notNumeric, strings.notNumeric)] : []),
     ];
 
     return {
-      output: { ...draftDataset({ columns, rows }), id: input.id, name: input.name },
+      output: freshDataset(input, columns, rows),
       summary: format(strings.summary, {
-        rows: plural(rowValues.length, strings.rowCount),
-        columns: plural(colValues.length, strings.columnCount),
+        rows: plural(rowAxis.keys.length, strings.rowCount),
+        columns: plural(colAxis.keys.length, strings.columnCount),
       }),
-      stats: { rows: rowValues.length, columns: colValues.length, notNumeric },
+      stats: { rows: rowAxis.keys.length, columns: colAxis.keys.length, notNumeric },
       ...(warnings.length > 0 ? { warnings } : {}),
     };
   },

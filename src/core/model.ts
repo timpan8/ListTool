@@ -58,6 +58,23 @@ export function makeRow(index: number, cells: Record<string, string>): Row {
   return { id: rowId(index), cells };
 }
 
+/**
+ * Fresh row ids for rows a tool creates: each call gives the next id past the highest
+ * one the list already uses. Ids are never re-derived from positions — after a removal
+ * the positions have gaps, and `r3` may well still be someone.
+ */
+export function rowIdsAfter(dataset: { rows: Row[] }): () => string {
+  let highest = 0;
+  for (const row of dataset.rows) {
+    const match = /^r(\d+)$/.exec(row.id);
+    if (match !== null) highest = Math.max(highest, Number(match[1]));
+  }
+  return () => {
+    highest += 1;
+    return `r${highest}`;
+  };
+}
+
 /** Every cell of a row, in column order. */
 export function rowValues(row: Row, columns: Column[]): string[] {
   return columns.map((column) => cell(row, column.id));

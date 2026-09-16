@@ -11,6 +11,7 @@ const MESSAGES = {
   unknownTool: 'unknown tool',
   needsSecondList: (name: string) => `needs ${name || 'a second list'}`,
   noRawInput: 'no original input',
+  scopeDropped: 'scope dropped',
 };
 
 function step(toolId: string, options: Record<string, unknown> = {}): Step {
@@ -136,6 +137,14 @@ describe('applyRecipe', () => {
       expect(result.warnings).toEqual(['needs Old leads']);
       expect(result.output.rows).toHaveLength(2);
     });
+  });
+
+  it('runs a step that was scoped to ticked rows on the whole list, and says so', () => {
+    const scoped = { ...step('trim-whitespace', { column: '' }), scope: { rows: ['r1'] } };
+    const result = applyRecipe(createRecipe('r', 'r', [scoped], 0), listOf(' a ', ' b '), LOOKUP, MESSAGES);
+    expect(result.warnings).toEqual(['scope dropped']);
+    expect(result.output.rows.map((row) => cell(row, 'value'))).toEqual(['a', 'b']);
+    expect(result.applied[0]).not.toHaveProperty('scope');
   });
 
   it('skips a re-parse when the list has no original input', () => {

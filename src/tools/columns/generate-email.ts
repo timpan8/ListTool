@@ -1,7 +1,7 @@
 import { cell } from '../../core/model';
 import { booleanOption, stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
-import { format } from '../../i18n/format';
+import { format, plural } from '../../i18n/format';
 import { freeColumnId, withColumns } from '../helpers';
 
 const strings = en.tools.generateEmail;
@@ -71,7 +71,7 @@ export const generateEmailTool: Tool = {
 
     return {
       output: withColumns(input, [...input.columns, target], rows),
-      summary: format(strings.summary, { count }),
+      summary: format(strings.summary, { count: plural(count, strings.addresses) }),
       stats: { generated: count },
     };
   },

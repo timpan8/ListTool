@@ -110,7 +110,7 @@ describe('group by tool', () => {
     });
     expect(cell(result.output.rows[0]!, 'result')).toBe('10');
     expect(result.warnings?.[0]).toBe(
-      '1 values were not numbers and were left out of the calculation.',
+      '1 value was not a number and was left out of the calculation.',
     );
   });
 

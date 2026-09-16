@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { normalizePhoneTool } from './normalize-phone';
 import { cell, VALUE_COLUMN } from '../../core/model';
-import { listOf } from '../../test/fixtures';
+import { listOf, tableOf } from '../../test/fixtures';
 
 const DEFAULTS = { column: '', country: '46', shape: 'e164', keepUnparsed: true };
 
@@ -79,7 +79,7 @@ describe('normalize phone tool', () => {
     expect(result.summary).toBe('Normalised 1 of 2 numbers');
     expect(result.stats).toEqual({ normalized: 1, unparsed: 1 });
     expect(result.warnings?.[0]).toBe(
-      '1 values did not look like phone numbers and were left as they are.',
+      '1 value did not look like a phone number and was left as it is.',
     );
   });
 
@@ -93,5 +93,48 @@ describe('normalize phone tool', () => {
     const before = JSON.stringify(dataset);
     normalizePhoneTool.run(dataset, DEFAULTS);
     expect(JSON.stringify(dataset)).toBe(before);
+  });
+
+  it('works on one column, never on all of them at once', () => {
+    const column = normalizePhoneTool.options.find((field) => field.key === 'column');
+    expect(column?.type === 'column' && column.allowAll).toBeUndefined();
+    const table = tableOf(['a', 'b'], [{ a: '070-123 45 67', b: '070-123 45 67' }]);
+    const output = normalizePhoneTool.run(table, { ...DEFAULTS, column: 'b' }).output;
+    expect(cell(output.rows[0]!, 'a')).toBe('070-123 45 67');
+    expect(cell(output.rows[0]!, 'b')).toBe('+46701234567');
+  });
+});
+
+describe('normalize phone check', () => {
+  function check(values: string[]) {
+    return normalizePhoneTool.check?.(listOf(...values)) ?? null;
+  }
+
+  it('points at a column of numbers written more than one way', () => {
+    // 0701234569 would pass as a personnummer by Luhn chance, so the bare one is 073.
+    const finding = check(['070-123 45 67', '+46 70 123 45 68', '0731234567', 'ring mig']);
+    expect(finding).toEqual({
+      summary: '3 phone numbers are written more than one way',
+      count: 3,
+      options: { column: VALUE_COLUMN },
+    });
+  });
+
+  it('says nothing when every number is written the same way', () => {
+    expect(check(['070-123 45 67', '070-123 45 68', '070-123 45 69'])).toBeNull();
+  });
+
+  it('says nothing about a column that is mostly not numbers', () => {
+    expect(check(['0701234567', '+46701234568', 'Anna', 'Bo', 'Carl', 'Dora'])).toBeNull();
+  });
+
+  it('does not mistake dates or identity numbers for phone numbers', () => {
+    expect(check(['2026-09-15', '15/09/2026', '20260915'])).toBeNull();
+    expect(check(['811278-9865', '19811278-9865', '8112789865'])).toBeNull();
+  });
+
+  it('says nothing about names or an empty list', () => {
+    expect(check(['Anna', 'Bo'])).toBeNull();
+    expect(check([])).toBeNull();
   });
 });

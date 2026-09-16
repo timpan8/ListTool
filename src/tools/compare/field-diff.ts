@@ -1,8 +1,9 @@
-import { cell, draftDataset, makeRow, type Row } from '../../core/model';
+import { cell, makeRow, type Row } from '../../core/model';
 import { joinKeys, normalizeKey } from '../../core/normalize';
 import { booleanOption, stringsOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
+import { freshDataset } from '../helpers';
 import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
 const strings = en.tools.fieldDiff;
@@ -85,23 +86,20 @@ export const fieldDiffTool: Tool = {
     const unmatched = input.rows.length - matched;
     const warnings = [
       ...(rows.length === 0 ? [strings.none] : []),
-      ...(unmatched > 0 ? [format(strings.unmatched, { n: unmatched })] : []),
+      ...(unmatched > 0 ? [plural(unmatched, strings.unmatched)] : []),
     ];
 
     return {
-      output: {
-        ...draftDataset({
-          columns: [
-            { id: 'key', name: strings.keyColumn },
-            { id: 'field', name: strings.fieldColumn },
-            { id: 'a', name: input.name },
-            { id: 'b', name: second.name },
-          ],
-          rows,
-        }),
-        id: input.id,
-        name: input.name,
-      },
+      output: freshDataset(
+        input,
+        [
+          { id: 'key', name: strings.keyColumn },
+          { id: 'field', name: strings.fieldColumn },
+          { id: 'a', name: input.name },
+          { id: 'b', name: second.name },
+        ],
+        rows,
+      ),
       summary: format(strings.summary, {
         changes: plural(rows.length, strings.changes),
         rows: plural(matched, strings.matched),

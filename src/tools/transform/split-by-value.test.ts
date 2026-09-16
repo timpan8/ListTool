@@ -74,8 +74,19 @@ describe('split into lists by a value', () => {
       Array.from({ length: 40 }, (_, index) => ({ city: `c${index}` })),
     );
     const result = splitByValueTool.run(many, BASE);
-    expect(result.warnings?.[0]).toContain('40 different values');
+    expect(result.warnings?.[0]).toBe(
+      'That column has 40 different values. Splitting would open 40 tabs, and 30 is as many as this opens at once.',
+    );
     expect(result.extraLists).toBeUndefined();
+  });
+
+  it('offers the same four matching rules as every other key-based tool, last', () => {
+    expect(splitByValueTool.options.slice(-4).map((field) => field.key)).toEqual([
+      'trim',
+      'ignoreCase',
+      'collapseWhitespace',
+      'ignoreDiacritics',
+    ]);
   });
 
   it('says what it split', () => {

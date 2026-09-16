@@ -71,9 +71,7 @@ describe('cross-tab tool', () => {
       how: 'sum',
       valueColumn: 'v',
     });
-    expect(result.warnings?.[0]).toBe(
-      '1 values were not numbers and were left out of the totals.',
-    );
+    expect(result.warnings?.[0]).toBe('1 value was not a number and was left out of the totals.');
   });
 
   it('stops growing columns before the table stops being readable', () => {
@@ -84,6 +82,41 @@ describe('cross-tab tool', () => {
     const result = crossTabTool.run(wide, { ...BASE, column: 'a', by: 'b' });
     expect(result.stats?.['columns']).toBe(40);
     expect(result.warnings?.[0]).toContain('60 different values');
+  });
+
+  it('stops growing rows before the summary is longer than the list', () => {
+    const tall = tableOf(
+      ['a', 'b'],
+      Array.from({ length: 520 }, (_, index) => ({ a: `r${index}`, b: 'x' })),
+    );
+    const result = crossTabTool.run(tall, { ...BASE, column: 'a', by: 'b' });
+    expect(result.stats?.['rows']).toBe(500);
+    expect(result.warnings?.[0]).toBe(
+      'That column has 520 different values, so only the first 500 became rows.',
+    );
+    // The total row counts what was shown, and the label column is still first.
+    expect(result.output.rows).toHaveLength(501);
+    expect(cell(result.output.rows[500]!, 'label')).toBe('Total');
+    expect(cell(result.output.rows[500]!, 'c1')).toBe('500');
+  });
+
+  it('offers the same four matching rules as every other key-based tool, last', () => {
+    expect(crossTabTool.options.slice(-4).map((field) => field.key)).toEqual([
+      'trim',
+      'ignoreCase',
+      'collapseWhitespace',
+      'ignoreDiacritics',
+    ]);
+  });
+
+  it('keeps two spellings apart when told to respect case', () => {
+    expect(grid({ ignoreCase: false })).toHaveLength(4);
+  });
+
+  it('keeps the list it summarised as the same tab', () => {
+    const output = crossTabTool.run(SALES, BASE).output;
+    expect(output.id).toBe(SALES.id);
+    expect(output.name).toBe(SALES.name);
   });
 
   it('names an empty value rather than showing a blank heading', () => {

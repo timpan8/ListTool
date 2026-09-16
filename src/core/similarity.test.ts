@@ -1,11 +1,50 @@
 import { describe, expect, it } from 'vitest';
 import {
   bestSimilarity,
+  charMask,
   clusterValues,
+  couldBeSimilar,
   editDistance,
   similarity,
   tokenSortSimilarity,
+  type Cluster,
 } from './similarity';
+
+/** A small deterministic generator that stays inside 32 bits. */
+function random(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
+
+/** Surname-like words from few syllables: they share most letters, which is the hard case. */
+function syllableNames(count: number, seed = 11): string[] {
+  const parts = ['an', 'ders', 'berg', 'lund', 'ström', 'kvist', 'son', 'gren', 'holm', 'sten'];
+  const next = random(seed);
+  const seen = new Set<string>();
+  while (seen.size < count) {
+    const pieces = 2 + Math.floor(next() * 2);
+    let name = '';
+    for (let i = 0; i < pieces; i += 1) name += parts[Math.floor(next() * parts.length)] ?? '';
+    seen.add(`${name}${seen.size}`);
+  }
+  return [...seen];
+}
+
+/** The same greedy pass with no bounds at all: what the fast one must agree with. */
+function clusterSlowly(values: string[], threshold: number): Cluster[] {
+  const clusters: Cluster[] = [];
+  for (const value of values) {
+    const home = clusters.find(
+      (cluster) => bestSimilarity(cluster.representative, value) >= threshold,
+    );
+    if (home === undefined) clusters.push({ representative: value, values: [value] });
+    else home.values.push(value);
+  }
+  return clusters;
+}
 
 describe('editDistance', () => {
   it('is zero for identical strings', () => {
@@ -99,5 +138,74 @@ describe('clusterValues', () => {
   it('groups empty strings with each other rather than with everything', () => {
     const clusters = clusterValues(['', '', 'anna'], 0.8);
     expect(clusters.map((cluster) => cluster.values)).toEqual([['', ''], ['anna']]);
+  });
+
+  it('gives exactly the answer the unbounded pass gives, at every threshold', () => {
+    const values = [
+      ...syllableNames(300),
+      'AB Volvo',
+      'Volvo AB',
+      'Anna  Andersson',
+      'Andersson Anna',
+      '',
+      'Åsa Öberg',
+      'Asa Oberg',
+      '12345',
+      '54321',
+    ];
+    for (const threshold of [1, 0.9, 0.8, 0.7, 0.5, 0]) {
+      expect(clusterValues(values, threshold), String(threshold)).toEqual(
+        clusterSlowly(values, threshold),
+      );
+    }
+  });
+
+  it('stays quick on thousands of distinct values that share their letters', () => {
+    const values = syllableNames(5000);
+    const started = performance.now();
+    const clusters = clusterValues(values, 0.7);
+    // Well under a second here; the budget leaves room for a slow build machine.
+    expect(performance.now() - started).toBeLessThan(5000);
+    expect(clusters.length).toBeGreaterThan(1000);
+  });
+});
+
+describe('couldBeSimilar', () => {
+  it('rules a pair out on length alone', () => {
+    expect(couldBeSimilar('anna', 'anna andersson', 0.9)).toBe(false);
+    expect(couldBeSimilar('anna', 'anne', 0.7)).toBe(true);
+  });
+
+  it('rules a pair out on the characters they do not share', () => {
+    expect(couldBeSimilar('abcdefghij', 'klmnopqrst', 0.5)).toBe(false);
+    expect(couldBeSimilar('aaaaaaaaaa', 'aaaaaaaaab', 0.9)).toBe(true);
+  });
+
+  it('rules a pair out on the counts, not only the set, of characters', () => {
+    // Same letters, very different counts: the set bound passes, the bag bound does not.
+    expect(couldBeSimilar('aaaaaaaaab', 'abbbbbbbbb', 0.9)).toBe(false);
+  });
+
+  it('never rules out a pair that is in fact alike', () => {
+    const values = syllableNames(200, 3);
+    for (let i = 0; i < values.length; i += 1) {
+      for (let j = 0; j < i; j += 1) {
+        const a = values[i] ?? '';
+        const b = values[j] ?? '';
+        if (similarity(a, b) >= 0.7) expect(couldBeSimilar(a, b, 0.7), `${a} ${b}`).toBe(true);
+      }
+    }
+  });
+
+  it('treats two empty values as alike', () => {
+    expect(couldBeSimilar('', '', 1)).toBe(true);
+  });
+});
+
+describe('charMask', () => {
+  it('sets a bit per character and is order-blind', () => {
+    expect(charMask('abc')).toBe(charMask('cba'));
+    expect(charMask('abc')).not.toBe(charMask('abd'));
+    expect(charMask('')).toBe(0);
   });
 });
