@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { startingOptions, withColumnDefaults, withSelection } from './toolOptions';
+import { labelFor, startingOptions, withColumnDefaults, withSelection } from './toolOptions';
 import { DEFAULT_SETTINGS } from '../core/settings';
 import type { Column } from '../core/model';
 import type { OptionField, Tool } from '../core/registry';
@@ -195,5 +195,34 @@ describe('every tool, opened on a three-column table', () => {
         expect(new Set(mine).size, `${tool.id}`).toBe(mine.length);
       }
     }
+  });
+});
+
+describe('labelFor', () => {
+  const names = { input: 'Kunder', second: 'Leads' };
+
+  it('adds the list name to a column field when two lists are in play', () => {
+    expect(labelFor({ key: 'keyA', label: 'Match on', type: 'columns' }, names)).toBe(
+      'Match on · Kunder',
+    );
+    expect(
+      labelFor({ key: 'keyB', label: 'Match on', type: 'columns', from: 'second' }, names),
+    ).toBe('Match on · Leads');
+    expect(labelFor({ key: 'column', label: 'Column', type: 'column' }, names)).toBe(
+      'Column · Kunder',
+    );
+  });
+
+  it('leaves every other field, and every field with no names, alone', () => {
+    expect(labelFor({ key: 'trim', label: 'Trim', type: 'boolean', default: true }, names)).toBe(
+      'Trim',
+    );
+    expect(labelFor({ key: 'keyA', label: 'Match on', type: 'columns' })).toBe('Match on');
+  });
+
+  it('leaves a second-list field plain when there is no second list yet', () => {
+    expect(
+      labelFor({ key: 'keyB', label: 'Match on', type: 'columns', from: 'second' }, { input: 'Kunder' }),
+    ).toBe('Match on');
   });
 });

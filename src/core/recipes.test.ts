@@ -9,7 +9,7 @@ import { OUTLOOK_RECIPIENTS, listOf } from '../test/fixtures';
 const LOOKUP = { tool: toolById, parser: parserById };
 const MESSAGES = {
   unknownTool: 'unknown tool',
-  needsSecondList: 'needs a second list',
+  needsSecondList: (name: string) => `needs ${name || 'a second list'}`,
   noRawInput: 'no original input',
 };
 
@@ -96,11 +96,46 @@ describe('applyRecipe', () => {
     expect(cell(result.output.rows[0]!, 'value')).toBe('a');
   });
 
-  it('skips a dual tool, which has no second list on a fresh run', () => {
+  it('skips a dual tool when nothing can find its second list', () => {
     const recipe = createRecipe('r', 'r', [step('set-operation')], 0);
     expect(applyRecipe(recipe, listOf('a'), LOOKUP, MESSAGES).warnings).toEqual([
       'needs a second list',
     ]);
+  });
+
+  describe('a dual step', () => {
+    const leads = { ...listOf('a', 'z'), id: 'd2', name: 'Leads' };
+    const lookup = {
+      ...LOOKUP,
+      dataset: (id: string, name: string) =>
+        [leads].find((candidate) => candidate.id === id) ??
+        [leads].find((candidate) => candidate.name === name),
+    };
+    const remove = step('remove-rows-in-b', {
+      keyA: ['value'],
+      keyB: ['value'],
+      secondListId: 'd2',
+      secondListName: 'Leads',
+    });
+
+    it('runs against the list found by id', () => {
+      const result = applyRecipe(createRecipe('r', 'r', [remove], 0), listOf('a', 'b'), lookup, MESSAGES);
+      expect(result.warnings).toEqual([]);
+      expect(result.output.rows.map((row) => cell(row, 'value'))).toEqual(['b']);
+    });
+
+    it('falls back to the list found by name', () => {
+      const renumbered = { ...remove, options: { ...remove.options, secondListId: 'd99' } };
+      const result = applyRecipe(createRecipe('r', 'r', [renumbered], 0), listOf('a', 'b'), lookup, MESSAGES);
+      expect(result.output.rows.map((row) => cell(row, 'value'))).toEqual(['b']);
+    });
+
+    it('is skipped, naming the list, when neither is open', () => {
+      const gone = { ...remove, options: { ...remove.options, secondListId: 'd99', secondListName: 'Old leads' } };
+      const result = applyRecipe(createRecipe('r', 'r', [gone], 0), listOf('a', 'b'), lookup, MESSAGES);
+      expect(result.warnings).toEqual(['needs Old leads']);
+      expect(result.output.rows).toHaveLength(2);
+    });
   });
 
   it('skips a re-parse when the list has no original input', () => {

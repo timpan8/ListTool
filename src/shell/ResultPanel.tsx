@@ -75,7 +75,11 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
           })();
     const step = {
       toolId: tool.id,
-      options: second === undefined ? fresh.chosen : { ...fresh.chosen, secondListId: second.id },
+      // The second list travels by id and by name, so a recipe can find it again.
+      options:
+        second === undefined
+          ? fresh.chosen
+          : { ...fresh.chosen, secondListId: second.id, secondListName: second.name },
       summary: fresh.result.summary,
       at: Date.now(),
     };
@@ -131,6 +135,9 @@ export function ResultPanel({ dataset, tool, initialOptions, onBack, onApplied }
         options={chosen}
         columns={dataset.columns}
         secondColumns={second?.columns ?? []}
+        {...(tool.arity === 'dual'
+          ? { names: { input: dataset.name, ...(second === undefined ? {} : { second: second.name }) } }
+          : {})}
         onChange={change}
       />
 

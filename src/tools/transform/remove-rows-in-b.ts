@@ -1,32 +1,21 @@
 import { cell } from '../../core/model';
-import { normalizeKey } from '../../core/normalize';
-import { booleanOption, stringOption, type Tool } from '../../core/registry';
+import { joinKeys, normalizeKey } from '../../core/normalize';
+import type { Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
 import { rowsPhrase, withRows } from '../helpers';
+import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from '../compare/shared';
 
 const strings = en.tools.removeInB;
 
 export const removeRowsInBTool: Tool = {
   id: 'remove-rows-in-b',
   name: strings.name,
-  category: 'transform',
+  category: 'compare',
   description: strings.description,
-  keywords: ['remove', 'exclude', 'subtract', 'minus', 'without', 'second'],
+  keywords: ['remove', 'exclude', 'subtract', 'minus', 'without', 'second', 'another'],
   arity: 'dual',
-  options: [
-    { key: 'keyA', label: en.compare.listA, type: 'column' },
-    { key: 'keyB', label: en.compare.listB, type: 'column', from: 'second' },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
-    {
-      key: 'ignoreDiacritics',
-      label: en.tools.shared.ignoreDiacritics,
-      type: 'boolean',
-      default: false,
-      help: en.tools.shared.diacriticsHelp,
-    },
-  ],
+  options: [...KEY_FIELDS, ...NORMALIZE_FIELDS],
   run(input, options, second) {
     if (second === undefined) {
       return {
@@ -36,20 +25,12 @@ export const removeRowsInBTool: Tool = {
       };
     }
 
-    const normalize = {
-      trim: booleanOption(options, 'trim', true),
-      ignoreCase: booleanOption(options, 'ignoreCase', true),
-      ignoreDiacritics: booleanOption(options, 'ignoreDiacritics', false),
-    };
-    const keyA = stringOption(options, 'keyA', input.columns[0]?.id ?? '');
-    const keyB = stringOption(options, 'keyB', second.columns[0]?.id ?? '');
+    const { keyA, keyB, normalize } = readCompareOptions(options, input, second);
+    const keyOf = (row: Parameters<typeof cell>[0], ids: string[]): string =>
+      joinKeys(ids.map((id) => normalizeKey(cell(row, id), normalize)));
 
-    const exclude = new Set(
-      second.rows.map((row) => normalizeKey(cell(row, keyB), normalize)),
-    );
-    const kept = input.rows.filter(
-      (row) => !exclude.has(normalizeKey(cell(row, keyA), normalize)),
-    );
+    const exclude = new Set(second.rows.map((row) => keyOf(row, keyB)));
+    const kept = input.rows.filter((row) => !exclude.has(keyOf(row, keyA)));
     const removed = input.rows.length - kept.length;
 
     return {

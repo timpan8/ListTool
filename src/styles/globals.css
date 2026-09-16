@@ -1301,3 +1301,40 @@ details[open].picker__group > summary::before {
   text-transform: none;
   letter-spacing: 0;
 }
+
+/* ---------- compare: the two lists' names over their columns, and rows that differ ---------- */
+
+.table__groups th {
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  border-bottom: 0;
+}
+
+.table__groups th:empty {
+  background: var(--color-surface);
+}
+
+.table tr.is-only-a > td,
+.table tr.is-only-b > td,
+.table tr.is-count-differs > td {
+  background: var(--color-surface-marked);
+}
+
+.compare__panels {
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.compare__swap {
+  font-size: var(--text-lg);
+}
+
+@media (max-width: 60rem) {
+  .compare__panels {
+    grid-template-columns: 1fr;
+  }
+}

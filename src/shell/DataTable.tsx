@@ -1,10 +1,12 @@
 import { useState } from 'preact/hooks';
+import type { ColumnGroup } from '../core/compare';
 import type { Column, Row } from '../core/model';
 import type { ViewSort } from '../core/view';
 import { en } from '../i18n/en';
 import { format } from '../i18n/format';
 import type { MenuItem } from './ColumnMenu';
 import { nextCell } from './gridKeys';
+import { groupCells } from './groups';
 import { HeaderCell } from './HeaderCell';
 import type { Marks } from './marks';
 import { TableRow } from './TableRow';
@@ -33,6 +35,8 @@ interface Props {
   columnMenu?: (column: Column) => MenuItem[];
   /** Columns shown as numbers: right-aligned, like a spreadsheet. */
   numeric?: ReadonlySet<string>;
+  /** Headings over runs of columns: the two lists of a comparison. */
+  groups?: ColumnGroup[];
   rowClass?: (row: Row) => string | undefined;
   cap?: number;
 }
@@ -51,6 +55,7 @@ export function DataTable({
   onSort,
   columnMenu,
   numeric,
+  groups,
   rowClass,
   cap = ROW_CAP,
 }: Props) {
@@ -74,6 +79,21 @@ export function DataTable({
     <div class="table-wrap">
       <table class="table" onKeyDown={onKeyDown}>
         <thead>
+          {groups === undefined ? null : (
+            <tr class="table__groups">
+              {tickable ? <th /> : null}
+              {showRowNumbers === true ? <th /> : null}
+              {groupCells(columns, groups).map((group, at) =>
+                group === null ? (
+                  <th key={at} />
+                ) : (
+                  <th key={at} colSpan={group.span} scope="colgroup">
+                    {group.name}
+                  </th>
+                ),
+              )}
+            </tr>
+          )}
           <tr>
             {tickable ? (
               <th class="table__tick">

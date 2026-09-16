@@ -1,9 +1,10 @@
 import { compareDatasets, type CompareRow } from '../../core/compare';
 import { valuesDataset, type Dataset, type Row } from '../../core/model';
-import { booleanOption, stringOption, stringsOption, type Tool } from '../../core/registry';
+import { stringOption, type Tool } from '../../core/registry';
 import { en } from '../../i18n/en';
 import { format } from '../../i18n/format';
 import { rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
+import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
 const strings = en.tools.setOperation;
 
@@ -57,8 +58,7 @@ export const setOperationTool: Tool = {
   keywords: ['set', 'intersection', 'union', 'difference', 'minus', 'both', 'except'],
   arity: 'dual',
   options: [
-    { key: 'keyA', label: en.compare.listA, type: 'columns' },
-    { key: 'keyB', label: en.compare.listB, type: 'columns', from: 'second' },
+    ...KEY_FIELDS,
     {
       key: 'mode',
       label: strings.mode,
@@ -72,15 +72,7 @@ export const setOperationTool: Tool = {
         { value: 'symmetric', label: strings.symmetric },
       ],
     },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
-    {
-      key: 'ignoreDiacritics',
-      label: en.tools.shared.ignoreDiacritics,
-      type: 'boolean',
-      default: false,
-      help: en.tools.shared.diacriticsHelp,
-    },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options, second) {
     if (second === undefined) {
@@ -91,16 +83,8 @@ export const setOperationTool: Tool = {
       };
     }
 
-    const keyA = stringsOption(options, 'keyA', [input.columns[0]?.id ?? '']);
-    const result = compareDatasets(input, second, {
-      keyA,
-      keyB: stringsOption(options, 'keyB', [second.columns[0]?.id ?? '']),
-      normalize: {
-        trim: booleanOption(options, 'trim', true),
-        ignoreCase: booleanOption(options, 'ignoreCase', true),
-        ignoreDiacritics: booleanOption(options, 'ignoreDiacritics', false),
-      },
-    });
+    const { keyA, keyB, normalize } = readCompareOptions(options, input, second);
+    const result = compareDatasets(input, second, { keyA, keyB, normalize });
 
     const mode = stringOption(options, 'mode', 'intersection') as Mode;
     const picked = pick(result.rows, mode);

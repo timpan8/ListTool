@@ -4,6 +4,7 @@ import { booleanOption, stringOption, stringsOption, type Tool } from '../../cor
 import { en } from '../../i18n/en';
 import { format, plural } from '../../i18n/format';
 import { freeColumnId, rowIdsAfter, rowsPhrase, withColumns } from '../helpers';
+import { KEY_FIELDS, NORMALIZE_FIELDS, readCompareOptions } from './shared';
 
 const strings = en.tools.joinLists;
 
@@ -15,8 +16,7 @@ export const joinListsTool: Tool = {
   keywords: ['join', 'lookup', 'vlookup', 'merge', 'enrich', 'bring', 'second'],
   arity: 'dual',
   options: [
-    { key: 'keyA', label: en.compare.listA, type: 'columns' },
-    { key: 'keyB', label: en.compare.listB, type: 'columns', from: 'second' },
+    ...KEY_FIELDS,
     { key: 'bring', label: strings.bring, type: 'columns', from: 'second' },
     { key: 'prefix', label: strings.prefix, type: 'text', default: '' },
     { key: 'keepUnmatched', label: strings.keepUnmatched, type: 'boolean', default: true },
@@ -27,15 +27,7 @@ export const joinListsTool: Tool = {
       default: true,
       help: strings.firstMatchHelp,
     },
-    { key: 'trim', label: en.tools.shared.trim, type: 'boolean', default: true },
-    { key: 'ignoreCase', label: en.tools.shared.ignoreCase, type: 'boolean', default: true },
-    {
-      key: 'ignoreDiacritics',
-      label: en.tools.shared.ignoreDiacritics,
-      type: 'boolean',
-      default: false,
-      help: en.tools.shared.diacriticsHelp,
-    },
+    ...NORMALIZE_FIELDS,
   ],
   run(input, options, second) {
     if (second === undefined) {
@@ -46,8 +38,7 @@ export const joinListsTool: Tool = {
       };
     }
 
-    const keyA = stringsOption(options, 'keyA', [input.columns[0]?.id ?? '']);
-    const keyB = stringsOption(options, 'keyB', [second.columns[0]?.id ?? '']);
+    const { keyA, keyB, normalize } = readCompareOptions(options, input, second);
     const bringIds = stringsOption(
       options,
       'bring',
@@ -63,11 +54,6 @@ export const joinListsTool: Tool = {
       };
     }
 
-    const normalize = {
-      trim: booleanOption(options, 'trim', true),
-      ignoreCase: booleanOption(options, 'ignoreCase', true),
-      ignoreDiacritics: booleanOption(options, 'ignoreDiacritics', false),
-    };
     const keyOf = (row: Row, ids: string[]): string =>
       joinKeys(ids.map((id) => normalizeKey(cell(row, id), normalize)));
 

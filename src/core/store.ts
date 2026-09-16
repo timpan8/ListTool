@@ -355,7 +355,18 @@ export function runRecipe(
   const tab = tabs.value.find((candidate) => candidate.id === datasetId);
   if (recipe === undefined || tab === undefined) return [];
 
-  const result = applyRecipe(recipe, current(tab.history), lookup, messages);
+  // A dual step finds its second list among the other open ones: by id, then by name.
+  const others = tabs.value
+    .filter((candidate) => candidate.id !== datasetId)
+    .map((candidate) => current(candidate.history));
+  const withLists: ReplayLookup = {
+    ...lookup,
+    dataset: (id, name) =>
+      others.find((candidate) => candidate.id === id) ??
+      others.find((candidate) => candidate.name === name),
+  };
+
+  const result = applyRecipe(recipe, current(tab.history), withLists, messages);
   applyStep(
     datasetId,
     {

@@ -41,10 +41,14 @@ What the app does:
 - **Columns tab:** what is actually in each column — filled, empty, distinct, lengths and
   the commonest values. Click a value to show only its rows. Like the search box it
   narrows the view and never the list.
-- **Compare** two lists on one or several columns of each, with normalization you control,
-  duplicate counts kept, filter chips, and "Create list from…" to turn any part of the
-  result into a new list. Join lists brings columns across; Mark what is in another list
-  answers the same question for three lists or thirty.
+- **Compare** two lists, called by their names throughout: one row per key with both
+  lists' columns side by side, the cells that differ marked, "Only in Kunder" / "Only in
+  Leads" as statuses, chips and "Create list from…" buttons, and Copy what is shown for
+  the table as it stands. Match on one or several columns of each list, with the matching
+  rules you choose; duplicate counts are kept. Every tool that takes a second list names
+  both lists in its form, and a recipe replays such a step when the second list is open.
+  Join lists brings columns across; Mark what is in another list answers the same
+  question for three lists or thirty.
 - **Export** as lines, a joined line, a quoted list, CSV, TSV, JSON, a PowerShell array, a
   SQL `IN` list, a Markdown/HTML table, or your own template, choosing which columns go in.
   Copy is one click and takes what is on screen — the ticked rows if any, else the rows

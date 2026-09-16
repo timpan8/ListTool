@@ -1,4 +1,5 @@
-import { cell, draftDataset, makeRow, type Dataset, type Row } from './model';
+import { cellKey } from './diff';
+import { cell, draftDataset, rowId, type Column, type Dataset, type Row } from './model';
 import { joinKeys, normalizeKey, type NormalizeOptions } from './normalize';
 
 export type CompareStatus = 'match' | 'count-differs' | 'only-a' | 'only-b';
@@ -108,39 +109,142 @@ export function compareDatasets(
   return { rows, stats };
 }
 
-export interface AlignedLabels {
-  a: string;
-  b: string;
+/** The words the side-by-side table needs. Formatted by the caller: core knows no i18n. */
+export interface CompareLabels {
   status: string;
   countA: string;
   countB: string;
+  /** What a cell shows when that side has no row: an em dash. */
   missing: string;
-  statuses: Record<CompareStatus, string>;
+  /** The status of one row, with the list names and the counts in it. */
+  statusText: (row: CompareRow) => string;
+}
+
+export interface ColumnGroup {
+  name: string;
+  columnIds: string[];
+}
+
+export interface SideBySide {
+  /** One row per key: the status, then every column of each list, side by side. */
+  dataset: Dataset;
+  /** Which columns belong to which list, so a table can head them with the names. */
+  groups: ColumnGroup[];
+  /** `cellKey(rowId, columnId)` of both cells of a paired column whose values differ. */
+  changedCells: Set<string>;
+  statusOf: Map<string, CompareStatus>;
+}
+
+export const STATUS_COLUMN = 'status';
+const SIDE_A = 'a_';
+const SIDE_B = 'b_';
+/** No column id ever holds a #, so the count columns cannot collide with a list's own. */
+const COUNT_A = 'a_#';
+const COUNT_B = 'b_#';
+
+const NAME_MATCH: NormalizeOptions = { trim: true, ignoreCase: true };
+
+/**
+ * Which column of one list is which column of the other: by name first, then by id for
+ * whatever is left. Two lists pasted from the same kind of export have the same names;
+ * two plain lists both have "Value". Kept in the first list's order.
+ */
+export function pairColumns(a: Dataset, b: Dataset): [Column, Column][] {
+  const pairs = new Map<string, Column>();
+  const taken = new Set<string>();
+
+  const byName = new Map<string, Column>();
+  for (const column of b.columns) {
+    const name = normalizeKey(column.name, NAME_MATCH);
+    if (!byName.has(name)) byName.set(name, column);
+  }
+  for (const column of a.columns) {
+    const match = byName.get(normalizeKey(column.name, NAME_MATCH));
+    if (match !== undefined && !taken.has(match.id)) {
+      pairs.set(column.id, match);
+      taken.add(match.id);
+    }
+  }
+  for (const column of a.columns) {
+    if (pairs.has(column.id)) continue;
+    const match = b.columns.find((candidate) => candidate.id === column.id && !taken.has(candidate.id));
+    if (match !== undefined) {
+      pairs.set(column.id, match);
+      taken.add(match.id);
+    }
+  }
+
+  return a.columns
+    .filter((column) => pairs.has(column.id))
+    .map((column) => [column, pairs.get(column.id) as Column]);
 }
 
 /**
- * The comparison as a Dataset, so the ordinary table view renders it and the ordinary
- * exporters can copy it. Status is text, never colour alone.
+ * The comparison as one table: the status, then A's columns, then B's, one row per key,
+ * with the first row of each side behind it. Where both sides have the row, every paired
+ * column whose values differ is marked on both sides — the "what differs" a list of
+ * matches never shows. Count columns appear only when some key repeats. Status is text
+ * and an icon, never colour alone.
  */
-export function toAlignedDataset(rows: CompareRow[], labels: AlignedLabels): Dataset {
-  return draftDataset({
-    columns: [
-      { id: 'a', name: labels.a },
-      { id: 'b', name: labels.b },
-      { id: 'status', name: labels.status },
-      { id: 'countA', name: labels.countA },
-      { id: 'countB', name: labels.countB },
-    ],
-    rows: rows.map((row, index) =>
-      makeRow(index, {
-        a: row.countA === 0 ? labels.missing : row.a,
-        b: row.countB === 0 ? labels.missing : row.b,
-        status: labels.statuses[row.status],
-        countA: String(row.countA),
-        countB: String(row.countB),
-      }),
-    ),
+export function sideBySide(
+  result: CompareResult,
+  a: Dataset,
+  b: Dataset,
+  labels: CompareLabels,
+  normalize: NormalizeOptions,
+): SideBySide {
+  const countsMatter = result.rows.some((row) => row.countA > 1 || row.countB > 1);
+  const idsA = a.columns.map((column) => `${SIDE_A}${column.id}`);
+  const idsB = b.columns.map((column) => `${SIDE_B}${column.id}`);
+  const columns: Column[] = [
+    { id: STATUS_COLUMN, name: labels.status },
+    ...a.columns.map((column, index) => ({ id: idsA[index] as string, name: column.name })),
+    ...(countsMatter ? [{ id: COUNT_A, name: labels.countA }] : []),
+    ...b.columns.map((column, index) => ({ id: idsB[index] as string, name: column.name })),
+    ...(countsMatter ? [{ id: COUNT_B, name: labels.countB }] : []),
+  ];
+  const pairs = pairColumns(a, b);
+  const changedCells = new Set<string>();
+  const statusOf = new Map<string, CompareStatus>();
+
+  const rows: Row[] = result.rows.map((row, index) => {
+    const id = rowId(index);
+    const first = row.rowsA[0];
+    const second = row.rowsB[0];
+    const cells: Record<string, string> = { [STATUS_COLUMN]: labels.statusText(row) };
+    a.columns.forEach((column, at) => {
+      cells[idsA[at] as string] = first === undefined ? labels.missing : cell(first, column.id);
+    });
+    b.columns.forEach((column, at) => {
+      cells[idsB[at] as string] = second === undefined ? labels.missing : cell(second, column.id);
+    });
+    if (countsMatter) {
+      cells[COUNT_A] = String(row.countA);
+      cells[COUNT_B] = String(row.countB);
+    }
+    if (first !== undefined && second !== undefined) {
+      for (const [columnA, columnB] of pairs) {
+        const left = normalizeKey(cell(first, columnA.id), normalize);
+        const right = normalizeKey(cell(second, columnB.id), normalize);
+        if (left !== right) {
+          changedCells.add(cellKey(id, `${SIDE_A}${columnA.id}`));
+          changedCells.add(cellKey(id, `${SIDE_B}${columnB.id}`));
+        }
+      }
+    }
+    statusOf.set(id, row.status);
+    return { id, cells };
   });
+
+  return {
+    dataset: draftDataset({ columns, rows }),
+    groups: [
+      { name: a.name, columnIds: [...idsA, ...(countsMatter ? [COUNT_A] : [])] },
+      { name: b.name, columnIds: [...idsB, ...(countsMatter ? [COUNT_B] : [])] },
+    ],
+    changedCells,
+    statusOf,
+  };
 }
 
 export type SelectionKind = 'both' | 'only-a' | 'only-b' | 'union' | 'differences';
